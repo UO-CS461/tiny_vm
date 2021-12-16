@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xl="http://www.w3.org/1999/xlink" xmlns:dc="http://purl.org/dc/elements/1.1/" version="1.1" viewBox="-538.25 51.25 672.105 333.57" width="672.105" height="333.57">
+  <defs>
+    <font-face font-family="Helvetica Neue" font-size="16" panose-1="2 0 5 3 0 0 0 2 0 4" units-per-em="1000" underline-position="-100" underline-thickness="50" slope="0" x-height="517" cap-height="714" ascent="951.9958" descent="-212.99744" font-weight="400">
+      <font-face-src>
+        <font-face-name name="HelveticaNeue"/>
+      </font-face-src>
+    </font-face>
+    <marker orient="auto" overflow="visible" markerUnits="strokeWidth" id="FilledArrow_Marker" stroke-linejoin="miter" stroke-miterlimit="10" viewBox="-1 -4 10 8" markerWidth="10" markerHeight="8" color="black">
+      <g>
+        <path d="M 8 0 L 0 -3 L 0 3 Z" fill="currentColor" stroke="currentColor" stroke-width="1"/>
+      </g>
+    </marker>
+  </defs>
+  <metadata> Produced by OmniGraffle 7.19.2\n2021-12-11 22:33:41 +0000</metadata>
+  <g id="Canvas_1" fill="none" fill-opacity="1" stroke-opacity="1" stroke-dasharray="none" stroke="none">
+    <title>Canvas 1</title>
+    <g id="Canvas_1_Layer_1">
+      <title>Layer 1</title>
+      <g id="Graphic_2">
+        <ellipse cx="-415.3" cy="210" rx="46.2600739189414" ry="20.320031074275" fill="white"/>
+        <ellipse cx="-415.3" cy="210" rx="46.2600739189414" ry="20.320031074275" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+        <text transform="translate(-447.308 200.776)" fill="black">
+          <tspan font-family="Helvetica Neue" font-size="16" font-weight="400" fill="black" x="0" y="15">builtins.c</tspan>
+        </text>
+      </g>
+      <g id="Graphic_3">
+        <ellipse cx="-491.3" cy="287" rx="46.4500742225429" ry="20.3200310742751" fill="white"/>
+        <ellipse cx="-491.3" cy="287" rx="46.4500742225429" ry="20.3200310742751" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+        <text transform="translate(-523.46 277.776)" fill="black">
+          <tspan font-family="Helvetica Neue" font-size="16" font-weight="400" fill="black" x="0" y="15">builtins.h</tspan>
+        </text>
+      </g>
+      <g id="Line_4">
+        <path d="M -433.6847 228.65228 C -443.42746 238.51226 -455.37683 250.59313 -465.95443 261.29492" marker-end="url(#FilledArrow_Marker)" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+      </g>
+      <g id="Graphic_5">
+        <ellipse cx="-415.3" cy="364" rx="52.750084289326" ry="20.3200310742751" fill="white"/>
+        <ellipse cx="-415.3" cy="364" rx="52.750084289326" ry="20.3200310742751" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+        <text transform="translate(-452.5 354.776)" fill="black">
+          <tspan font-family="Helvetica Neue" font-size="16" font-weight="400" fill="black" x="7247536e-19" y="15">vm_core.h</tspan>
+        </text>
+      </g>
+      <g id="Line_6">
+        <path d="M -415.3 210 C -415.3 230.19837 -415.3 292.29142 -415.3 333.78175" marker-end="url(#FilledArrow_Marker)" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+      </g>
+      <g id="Graphic_7">
+        <ellipse cx="-332.3" cy="287" rx="55.1600881402694" ry="20.3200310742751" fill="white"/>
+        <ellipse cx="-332.3" cy="287" rx="55.1600881402694" ry="20.3200310742751" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+        <text transform="translate(-371.428 277.776)" fill="black">
+          <tspan font-family="Helvetica Neue" font-size="16" font-weight="400" fill="black" x="6039613e-19" y="15">vm_state.h</tspan>
+        </text>
+      </g>
+      <g id="Line_8">
+        <path d="M -395.4997 228.3707 C -384.78734 238.3092 -371.58792 250.55482 -359.9196 261.37954" marker-end="url(#FilledArrow_Marker)" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+      </g>
+      <g id="Graphic_9">
+        <ellipse cx="-100.755" cy="243.07" rx="49.6000792559344" ry="20.320031074275" fill="white"/>
+        <ellipse cx="-100.755" cy="243.07" rx="49.6000792559344" ry="20.320031074275" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+        <text transform="translate(-135.435 233.846)" fill="black">
+          <tspan font-family="Helvetica Neue" font-size="16" font-weight="400" fill="black" x="29132252e-20" y="15">vm_ops.c</tspan>
+        </text>
+      </g>
+      <g id="Graphic_10">
+        <ellipse cx="47.7" cy="287" rx="49.7900795595358" ry="20.3200310742751" fill="white"/>
+        <ellipse cx="47.7" cy="287" rx="49.7900795595358" ry="20.3200310742751" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+        <text transform="translate(12.868 277.776)" fill="black">
+          <tspan font-family="Helvetica Neue" font-size="16" font-weight="400" fill="black" x="3339551e-19" y="15">vm_ops.h</tspan>
+        </text>
+      </g>
+      <g id="Line_11">
+        <path d="M -62.46887 255.99058 C -43.29776 260.83507 -19.9103 266.25775 .37646815 271.3092" marker-end="url(#FilledArrow_Marker)" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+      </g>
+      <g id="Line_12">
+        <path d="M -137.08671 256.90365 C -183.60925 265.0736 -231.56467 272.50523 -270.9839 278.29858" marker-end="url(#FilledArrow_Marker)" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+      </g>
+      <g id="Line_13">
+        <path d="M -352.6616 305.89047 C -363.3099 315.769 -376.30896 327.82813 -387.80507 338.49298" marker-end="url(#FilledArrow_Marker)" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+      </g>
+      <g id="Graphic_14">
+        <ellipse cx="53.565" cy="72.07" rx="79.7901274965927" ry="20.320031074275" fill="white"/>
+        <ellipse cx="53.565" cy="72.07" rx="79.7901274965927" ry="20.320031074275" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+        <text transform="translate(-5.266999 62.846)" fill="black">
+          <tspan font-family="Helvetica Neue" font-size="16" font-weight="400" fill="black" x="3339551e-19" y="15">vm_bytecodes.c</tspan>
+        </text>
+      </g>
+      <g id="Graphic_15">
+        <ellipse cx="53.375" cy="133.945" rx="79.9801278001941" ry="20.320031074275" fill="white"/>
+        <ellipse cx="53.375" cy="133.945" rx="79.9801278001941" ry="20.320031074275" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+        <text transform="translate(-5.608999 124.721)" fill="black">
+          <tspan font-family="Helvetica Neue" font-size="16" font-weight="400" fill="black" x="37658765e-20" y="15">vm_bytecodes.h</tspan>
+        </text>
+      </g>
+      <g id="Line_16">
+        <path d="M 53.06062 92.3896 C 53.2141 96.03751 53.41059 99.89194 53.60055 103.73497" marker-end="url(#FilledArrow_Marker)" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+      </g>
+      <g id="Graphic_17">
+        <ellipse cx="-116.16" cy="186.82" rx="82.5701319387602" ry="20.320031074275" fill="white"/>
+        <ellipse cx="-116.16" cy="186.82" rx="82.5701319387602" ry="20.320031074275" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+        <text transform="translate(-177.216 177.596)" fill="black">
+          <tspan font-family="Helvetica Neue" font-size="16" font-weight="400" fill="black" x="50448534e-20" y="15">vm_code_table.h</tspan>
+        </text>
+      </g>
+      <g id="Line_18">
+        <path d="M -156.88066 204.50298 C -194.857 222.31862 -248.30436 248.95543 -287.40352 267.3864" marker-end="url(#FilledArrow_Marker)" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+      </g>
+      <g id="Line_19">
+        <path d="M -84.62103 205.605 C -57.016116 222.61436 -17.991383 247.19388 10.988686 265.0845" marker-end="url(#FilledArrow_Marker)" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+      </g>
+      <g id="Line_20">
+        <path d="M -472.9051 305.6646 C -463.2674 315.4181 -451.47203 327.34245 -440.98177 337.955" marker-end="url(#FilledArrow_Marker)" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+      </g>
+      <g id="Graphic_21">
+        <ellipse cx="-243.65" cy="94.57" rx="36.0800576522998" ry="20.320031074275" fill="white"/>
+        <ellipse cx="-243.65" cy="94.57" rx="36.0800576522998" ry="20.320031074275" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+        <text transform="translate(-267.514 85.346)" fill="black">
+          <tspan font-family="Helvetica Neue" font-size="16" font-weight="400" fill="black" x="0" y="15">main.c</tspan>
+        </text>
+      </g>
+      <g id="Line_22">
+        <path d="M -273.93973 105.61825 C -322.8612 135.48728 -331.92077 212.5226 -332.869 256.7822" marker-end="url(#FilledArrow_Marker)" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+      </g>
+      <g id="Line_23">
+        <path d="M -221.23987 110.49743 C -140.69248 143.50724 128.14376 187.25216 106.7508 230.6776 C 103.91335 236.4329 89.85573 249.6328 76.00454 261.9883" marker-end="url(#FilledArrow_Marker)" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+      </g>
+      <g id="Line_24">
+        <path d="M -209.53065 101.19143 C -164.32609 107.27874 -83.84819 114.94137 -23.697967 121.79651" marker-end="url(#FilledArrow_Marker)" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+      </g>
+      <g id="Line_25">
+        <path d="M -279.40972 97.27953 C -370.1402 104.40433 -406.58726 112.03509 -472.25016 189.6808 C -482.6464 201.97348 -487.3695 232.00042 -489.55094 256.81806" marker-end="url(#FilledArrow_Marker)" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+      </g>
+      <g id="Line_26">
+        <path d="M 1.1216338 149.32988 C -16.742976 155.3042 -35.349266 161.92284 -53.59519 168.1176" marker-end="url(#FilledArrow_Marker)" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+      </g>
+      <g id="Graphic_27">
+        <ellipse cx="-262.54" cy="210" rx="54.970087836668" ry="20.320031074275" fill="white"/>
+        <ellipse cx="-262.54" cy="210" rx="54.970087836668" ry="20.320031074275" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+        <text transform="translate(-301.516 200.776)" fill="black">
+          <tspan font-family="Helvetica Neue" font-size="16" font-weight="400" fill="black" x="56132876e-20" y="15">vm_state.c</tspan>
+        </text>
+      </g>
+      <g id="Line_28">
+        <path d="M -280.1227 229.25723 C -288.63995 238.72018 -298.84926 250.12604 -308.0586 260.37704" marker-end="url(#FilledArrow_Marker)" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+      </g>
+    </g>
+  </g>
+</svg>

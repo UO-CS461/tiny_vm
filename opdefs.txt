@@ -1,0 +1,8 @@
+#
+#  List of operations, which will be used to produce opdefs.h
+#
+#
+halt,vm_op_halt,0       # Stops the processor.
+const,vm_op_const,1     # Push constant; constant value follows
+add,vm_op_add,0         # Add elements on top of eval stack
+call,vm_op_methodcall,1 # Call a native_method on an object

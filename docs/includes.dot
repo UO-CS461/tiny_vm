@@ -1,0 +1,18 @@
+digraph depends {
+builtins.c	->	builtins.h
+builtins.c	->	vm_core.h
+builtins.c	->	vm_state.h
+vm_ops.c	->	vm_ops.h
+vm_ops.c	->	vm_state.h
+vm_state.h	->	vm_core.h
+vm_bytecodes.c	->	vm_bytecodes.h
+vm_code_table.h	->	vm_state.h
+vm_code_table.h	->	vm_ops.h
+builtins.h	->	vm_core.h
+main.c	->	vm_state.h
+main.c	->	vm_ops.h
+main.c	->	vm_bytecodes.h
+main.c	->	builtins.h
+vm_bytecodes.h	->	vm_code_table.h
+vm_state.c	->	vm_state.h
+}

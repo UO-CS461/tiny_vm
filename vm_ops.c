@@ -6,18 +6,8 @@
 #include "vm_state.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <assert.h>
 
-void vm_op_add(void) {
-    // FIXME
-    obj_ref op_right = vm_eval_pop();
-    obj_ref op_left = vm_eval_pop();
-    vm_eval_push(op_left);  // STUB
-}
-
-// For now we'll consider in-line constants.
-// To be reconsidered; we could have objects
-// in a VM heap or on the VM frame stack.
-//
 
 /*  Push inline constant (by constant table index).
  *  The constant is not CREATED here; it is REFERENCED here.
@@ -36,6 +26,7 @@ void vm_op_halt(void) {
     vm_run_state = VM_HALTED;
 }
 
+/* ========  Linkage instructions =========== */
 
 /* Call a method on an object; the object
  * should be on the eval stack, and the
@@ -43,13 +34,20 @@ void vm_op_halt(void) {
  * be the index of the native_method in the vtable.
  */
 extern void vm_op_methodcall(void) {
-    vm_call();
-//    int method_index = vm_fetch_next().intval;
-//    printf("Method call to method slot %d\n", method_index);
-//    obj_ref this = vm_eval_pop();
-//    class_ref its_class = this->header.clazz;
-//    vm_addr m = its_class->vtable[method_index];
-//    FIXME
+    int method_index = vm_fetch_next().intval;
+    // New "this" will be receiver object
+    vm_addr new_fp = vm_sp;
+    // Save program counter for return
+    vm_frame_push_word((vm_Word) {.code_addr = vm_pc});
+    // Save caller's frame pointer
+    vm_frame_push_word((vm_Word) {.frame_addr = vm_fp});
+    vm_fp = new_fp;
+    // Address of code for called method, found in the
+    // class vtable.
+    struct class_struct *clazz = (*vm_fp).obj->header.clazz;
+    vm_addr method_addr = clazz->vtable[method_index];
+    vm_pc = method_addr;
+    return;
 }
 
 /* Call a native_method on an object; the object
@@ -67,6 +65,28 @@ extern void vm_op_call_native(void) {
     obj_ref result = m(this);
     vm_Word word = {.obj = result};
     vm_frame_push_word(word);
+}
+
+
+extern void vm_op_enter() {
+    // Currently does nothing
+    printf("Function entered\n");
+}
+
+
+
+extern void vm_op_return() {
+    // Needs arity to reclaim arguments correctly
+    int arity = vm_fetch_next().intval;
+    assert(0 <= arity);   // Sanity check -- arity is non-negative
+    assert(10 >= arity);  // Sanity check --- arity at most 10
+    vm_Word return_value = vm_frame_pop_word();
+    vm_sp = vm_fp + 2;
+    vm_fp = vm_frame_pop_word().frame_addr;
+    vm_pc = vm_frame_pop_word().code_addr;
+    vm_sp -= arity;
+    *vm_fp = return_value;
+    return;
 }
 
 /* The object allocator should be called just before

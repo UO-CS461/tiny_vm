@@ -55,26 +55,26 @@ obj_ref native_tbd() {
  * (unimplemented) method for each each arity 0..2.
  */
 vm_Word method_tbd_0[] = {
-        {.instr = vm_enter},
+        {.instr = vm_op_enter},
         {.instr = vm_op_call_native},
         {.native = native_tbd},
-        {.instr = vm_return},
+        {.instr = vm_op_return},
         {.intval = 0}
 };
 
 vm_Word method_tbd_1[] = {
-        {.instr = vm_enter},
+        {.instr = vm_op_enter},
         {.instr = vm_op_call_native},
         {.native = native_tbd},
-        {.instr = vm_return},
+        {.instr = vm_op_return},
         {.intval = 1}
 };
 
 vm_Word method_tbd_2[] = {
-        {.instr = vm_enter},
+        {.instr = vm_op_enter},
         {.instr = vm_op_call_native},
         {.native = native_tbd},
-        {.instr = vm_return},
+        {.instr = vm_op_return},
         {.intval = 2}
 };
 
@@ -359,10 +359,10 @@ obj_ref native_int_print(obj_ref this) {
 }
 
 vm_Word method_int_print[] = {
-        {.instr = vm_enter},
+        {.instr = vm_op_enter},
         {.instr = vm_op_call_native},
         {.native = native_int_print},
-        {.instr = vm_return},
+        {.instr = vm_op_return},
         {.intval = 0}
 };
 

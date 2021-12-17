@@ -68,21 +68,6 @@ extern vm_Word vm_frame_top_word();  // Without popping
 
 /* FIXME:  Add functions for fetch/store relative to frame pointer */
 
-/* The vm calling convention pushes and
- * pops whole activation records.
- *
- * vm_call:  What the calling procedure does to make
- *           the call.
- * vm_enter:  What the called procedure does initially,
- *            including allocation of local variables in the frame.
- * vm_return: What the called procedure does to resume
- *            execution in the calling procedure.
- */
-
-extern void vm_call();   // Args and receiver are on stack; method index follows
-extern void vm_enter();  // Currently a no-op
-extern void vm_return(); // Expects arity next in code, to pop args
-
 
 /* ---------------- Constant Pool --------------------- */
 /* We keep a table of constants corresponding to

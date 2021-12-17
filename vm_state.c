@@ -71,61 +71,10 @@ obj_ref vm_eval_pop() {
     return w.obj;
 }
 
-
 // FIXME:  Add load/store relative to fp
 
-/* -------------  Call / Return protocol ----------- */
-
-/* The vm calling convention pushes and
- * pops whole activation records.
- *
- * vm_call:  What the calling procedure does to make
- *           the call.
- * vm_enter:  What the called procedure does initially,
- *            including allocation of local variables in the frame.
- * vm_return: What the called procedure does to resume
- *            execution in the calling procedure.
- *
- *            FIXME:  Allow arguments on the stack
- */
-
-extern void vm_call() {
-    int method_index = vm_fetch_next().intval;
-    // New "this" will be receiver object
-    vm_addr new_fp = vm_sp;
-    // Save program counter for return
-    vm_frame_push_word((vm_Word) {.code_addr = vm_pc});
-    // Save caller's frame pointer
-    vm_frame_push_word((vm_Word) {.frame_addr = vm_fp});
-    vm_fp = new_fp;
-    // Address of code for called method, found in the
-    // class vtable.
-    struct class_struct *clazz = (*vm_fp).obj->header.clazz;
-    vm_addr method_addr = clazz->vtable[method_index];
-    vm_pc = method_addr;
-    return;
-}
 
 
-extern void vm_enter() {
-    // Currently does nothing
-    printf("Function entered\n");
-}
-
-
-extern void vm_return() {
-    // Needs arity to reclaim arguments correctly
-    int arity = vm_fetch_next().intval;
-    assert(0 <= arity);   // Sanity check -- arity is non-negative
-    assert(10 >= arity);  // Sanity check --- arity at most 10
-    vm_Word return_value = vm_frame_pop_word();
-    vm_sp = vm_fp + 2;
-    vm_fp = vm_frame_pop_word().frame_addr;
-    vm_pc = vm_frame_pop_word().code_addr;
-    vm_sp -= arity;
-    *vm_fp = return_value;
-    return;
-}
 
 
 /* --------------------- Constant pool --------------- */

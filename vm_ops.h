@@ -56,7 +56,21 @@ extern void vm_op_methodcall(void);
   */
  extern obj_ref vm_new_obj(class_ref clazz);
 
+/*
+ * The vm calling convention pushes and
+ * pops whole activation records.
+ *
+ * vm_op_call:  What the calling procedure does to make
+ *    the call.
+ * vm_op_enter:  What the called procedure does initially,
+ *     including allocation of local variables in the frame.
+ * vm_opreturn: What the called procedure does to resume
+ *     execution in the calling procedure.
+ */
 
+extern void vm_op_call();   // Args and receiver are on stack; method index follows
+extern void vm_op_enter();  // Currently a no-op
+extern void vm_op_return(); // Expects arity next in code, to pop args
 
 
 #endif //TINY_VM_VM_OPS_H

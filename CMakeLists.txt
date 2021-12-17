@@ -3,9 +3,11 @@ project(tiny_vm C)
 set(CMAKE_C_STANDARD 11)
 
 add_custom_command(
-        OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/vm_code_table.c
-        COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/opdefs.txt ${CMAKE_CURRENT_BINARY_DIR}/vm_code_table.c
-        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/opdefs.txt
+        OUTPUT  ${CMAKE_CURRENT_SOURCE_DIR}/vm_code_table.c
+        COMMAND python3 ${CMAKE_SOURCE_DIR}/build_bytecode_table.py ${CMAKE_SOURCE_DIR}/opdefs.txt ${CMAKE_CURRENT_BINARY_DIR}/vm_code_table.c
+        MAIN_DEPENDENCY ${CMAKE_SOURCE_DIR}/opdefs.txt
+        DEPENDS ${CMAKE_SOURCE_DIR}/build_bytecode_table.py
+        DEPENDS ${CMAKE_SOURCE_DIR}/vm_code_table.h
 )
 
 add_executable(tiny_vm
@@ -13,6 +15,7 @@ add_executable(tiny_vm
         vm_state.c
         vm_ops.c vm_ops.h
         vm_code_table.h
+        vm_code_table.c
         vm_bytecodes.c vm_bytecodes.h
         builtins.c builtins.h
         vm_core.h)

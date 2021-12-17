@@ -264,7 +264,8 @@ extern class_ref the_class_Int;
 /* Integer objects may be created by built-in methods,
  * and integer literals may be created by the loader.
  */
-extern obj_ref int_literal(char *n_lit);
+extern int int_literal_const(char *n_lit);
+extern obj_ref new_int(int n);
 
 
 

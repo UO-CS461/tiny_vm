@@ -110,7 +110,6 @@ extern int create_const_value(char *literal, obj_ref value);
 extern obj_ref get_const_value(int index);
 
 
-
 /* Execution control */
 void vm_run();
 

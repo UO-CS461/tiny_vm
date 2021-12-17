@@ -350,12 +350,21 @@ obj_ref Int_method_EQUALS(obj_Int this, obj_Obj other) {
 /* Inherit Obj:PRINT, which will call Int:STRING */
 
 /* STUB (fixme): special native for printing int. */
+
 obj_ref native_int_print(obj_ref this) {
     assert_is_type(this, the_class_Int);
     obj_Int this_int = (obj_Int) this;
     printf("Printing integer value: %d\n", this_int->value);
     return nothing;
 }
+
+vm_Word method_int_print[] = {
+        {.instr = vm_enter},
+        {.instr = vm_op_call_native},
+        {.native = native_int_print},
+        {.instr = vm_return},
+        {.intval = 0}
+};
 
 /* LESS (new native_method) */
 obj_ref Int_method_LESS(obj_Int this, obj_Int other) {

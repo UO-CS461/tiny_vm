@@ -7,14 +7,10 @@
 
 #include "vm_core.h"
 
-/* Add top two eval stack elements (as integers) */
-extern void vm_op_add(void);
-
-/* Push inline constant onto the eval stack.
- * The next word should be an object reference.
- * FIXME: Use constant pool instead
+/* Push value of inline constant onto the eval stack.
+ * The next word is index of constant.
  *
- * vm_op_const(ref): [] -> [ref]
+ * vm_op_const(index): [] -> [ const[index] ]
  */
 extern void vm_op_const(void);
 
@@ -59,6 +55,8 @@ extern void vm_op_methodcall(void);
   * built-in method, without executing a VM instruction.
   */
  extern obj_ref vm_new_obj(class_ref clazz);
+
+
 
 
 #endif //TINY_VM_VM_OPS_H

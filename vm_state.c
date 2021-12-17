@@ -3,6 +3,7 @@
 //
 
 #include "vm_state.h"
+#include "vm_code_table.h"
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
@@ -19,6 +20,7 @@ int vm_run_state = VM_RUNNING;
  */
 vm_Word vm_fetch_next(void) {
     vm_Word cur = (*vm_pc);
+    printf("Fetched %p\n", cur);
     vm_pc ++;
     return cur;
 }
@@ -53,6 +55,22 @@ vm_Word vm_frame_top_word() {
     vm_Word value = *vm_sp;
     return value;
 }
+
+/* While many higher level VMs (e.g., the Java virtual machine) keep
+ * a separate stack for expression evaluation, we will integrate the
+ * evaluation stack with the procedure call stack.  This is closer to
+ * how a stack would be used in native code, although native code would
+ * typically be register-oriented and make less use of an evaluation stack.
+ */
+void vm_eval_push(obj_ref v) {
+    vm_frame_push_word((vm_Word) {.obj = v});
+}
+
+obj_ref vm_eval_pop() {
+    vm_Word w = vm_frame_pop_word();
+    return w.obj;
+}
+
 
 // FIXME:  Add load/store relative to fp
 
@@ -158,16 +176,30 @@ extern obj_ref get_const_value(int index) {
  * Maybe for now.
  */
 
+/* Debugging/tracing support */
+char *op_name(vm_Instr op) {
+    static char buff[100];
+    /* Is it an instruction? */
+    for (int i=0; vm_op_bytecodes[i].name; ++i) {
+        if (vm_op_bytecodes[i].instr == op) {
+            return vm_op_bytecodes[i].name;
+        }
+    }
+    // Not an instruction ... what else could it be?
+    sprintf(buff, "%p",  op);
+    return buff;
+}
+
 /* One execution step, at current PC */
 void vm_step() {
     vm_Instr instr = vm_fetch_next().instr;
+    printf("Step:  %s\n", op_name(instr));
     (*instr)();
 }
 
 void vm_run() {
     vm_run_state = VM_RUNNING;
     while (vm_run_state == VM_RUNNING) {
-        printf("Step\n");
         vm_step();
     }
 }

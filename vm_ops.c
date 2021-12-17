@@ -43,22 +43,25 @@ void vm_op_halt(void) {
  * be the index of the native_method in the vtable.
  */
 extern void vm_op_methodcall(void) {
-    int method_index = vm_fetch_next().intval;
-    obj_ref this = vm_eval_pop();
-    class_ref its_class = this->header.clazz;
-    vm_addr m = its_class->vtable[method_index];
-    m->native(this);
+    vm_call();
+//    int method_index = vm_fetch_next().intval;
+//    printf("Method call to method slot %d\n", method_index);
+//    obj_ref this = vm_eval_pop();
+//    class_ref its_class = this->header.clazz;
+//    vm_addr m = its_class->vtable[method_index];
+//    FIXME
 }
 
 /* Call a native_method on an object; the object
  * should be on the eval stack, and the
  * next word in the instruction stream should
- * be the index of the native_method in the vtable.
+ * be the address of the native_method.
  * The result of the native method call replaces
  * the "this" object on the stack.
  * vm_op_call_native(native_function): [this] -> [result]
  */
 extern void vm_op_call_native(void) {
+    printf("Making native call\n");
     obj_ref this = vm_eval_pop();
     vm_Native m = vm_fetch_next().native;
     obj_ref result = m(this);

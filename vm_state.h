@@ -68,6 +68,8 @@ extern vm_Word vm_frame_top_word();  // Without popping
 
 /* FIXME:  Add functions for fetch/store relative to frame pointer */
 
+/* Debugging */
+void stack_dump(int n_words);
 
 /* ---------------- Constant Pool --------------------- */
 /* We keep a table of constants corresponding to

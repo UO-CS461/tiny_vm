@@ -8,7 +8,6 @@
 #include <stdio.h>
 #include <assert.h>
 
-
 /*  Push inline constant (by constant table index).
  *  The constant is not CREATED here; it is REFERENCED here.
  *
@@ -50,19 +49,26 @@ extern void vm_op_methodcall(void) {
     return;
 }
 
-/* Call a native_method on an object; the object
- * should be on the eval stack, and the
- * next word in the instruction stream should
- * be the address of the native_method.
- * The result of the native method call replaces
- * the "this" object on the stack.
- * vm_op_call_native(native_function): [this] -> [result]
- */
+/* Trampoline to a native method.
+ * Wrap this inside an interpreted method
+ * to handle the frame layout properly.
+ *
+ * The native method is parameterless, but has
+ * access to the virtual machine state including
+ * the "this" object at fp and the contents of
+ * the stack.  The native method returns a value
+ * which will be pushed onto the stack by the
+ * trampoline.
+ *
+ * vm_op_call_native(native_function): [] -> [result]
+*/
 extern void vm_op_call_native(void) {
     printf("Making native call\n");
-    obj_ref this = vm_eval_pop();
     vm_Native m = vm_fetch_next().native;
-    obj_ref result = m(this);
+    obj_ref result = m(*vm_fp);
+    assert(result->header.tag == GOOD_OBJ_TAG);
+    printf("Native method returned %s\n",
+           result->header.clazz->header.class_name);
     vm_Word word = {.obj = result};
     vm_frame_push_word(word);
 }
@@ -71,6 +77,7 @@ extern void vm_op_call_native(void) {
 extern void vm_op_enter() {
     // Currently does nothing
     printf("Function entered\n");
+    stack_dump(10);
 }
 
 
@@ -85,7 +92,7 @@ extern void vm_op_return() {
     vm_fp = vm_frame_pop_word().frame_addr;
     vm_pc = vm_frame_pop_word().code_addr;
     vm_sp -= arity;
-    *vm_fp = return_value;
+    *vm_sp = return_value;
     return;
 }
 
@@ -107,6 +114,7 @@ extern obj_ref vm_new_obj(class_ref clazz) {
     printf("Allocating a new object of type %s\n", clazz->header.class_name);
     obj_ref new_thing = (obj_ref) malloc(clazz->header.object_size);
     new_thing->header.clazz = clazz;
+    new_thing->header.tag = GOOD_OBJ_TAG;
     return new_thing;
 }
 

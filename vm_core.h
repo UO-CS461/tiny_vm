@@ -23,8 +23,16 @@ class_ref;
 
 struct obj_header_struct {
     class_ref clazz;
+    int tag; // Validation tag for test & debug
     // To do:  garbage collector metadata would go here.
 };
+
+/* A validation tag is an arbitrary number,
+ * but should be unlikely to appear by chance.
+ * I failed to make this a constant variable!
+ */
+#define GOOD_OBJ_TAG 0xceed
+  // == 52973 decimal
 
 struct obj_struct {
     struct obj_header_struct header;

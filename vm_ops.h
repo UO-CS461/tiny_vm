@@ -17,20 +17,6 @@ extern void vm_op_const(void);
 /* Halt the virtual machine */
 extern void vm_op_halt(void);
 
-/* Trampoline to a native method.
- * Wrap this inside an interpreted method
- * to handle the frame layout properly.
- *
- * The object should be on the stack, and the
- * next word in the instruction stream should
- * be the index of the native_method in the vtable.
- * The result of the native method call replaces
- * the "this" object on the stack.
- *
- * vm_op_call_native(native_function): [this] -> [result]
- */
-extern void vm_op_call_native(void);
-
 /* Call a method (virtual function) indirectly
  * through the vtable of an object's class.
  * Next word should be method index.
@@ -38,6 +24,21 @@ extern void vm_op_call_native(void);
  * vm_op_methodcall(m_index): [arg, arg, ...,  receiver] -> [result]
  */
 extern void vm_op_methodcall(void);
+
+/* Trampoline to a native method.
+ * Wrap this inside an interpreted method
+ * to handle the frame layout properly.
+ *
+ * The native method is parameterless, but has
+ * access to the virtual machine state including
+ * the "this" object at fp and the contents of
+ * the stack.  The native method returns a value
+ * which will be pushed onto the stack by the
+ * trampoline.
+ *
+ * vm_op_call_native(native_function): [] -> [result]
+*/
+extern void vm_op_call_native(void);
 
 /* The object allocator should be called just before
  * a call to the constructor. It creates an object with the
@@ -50,6 +51,7 @@ extern void vm_op_methodcall(void);
  * new(class): [ ] -> [ instance ]
  */
  extern void vm_op_new(void);
+
 
  /* The interpreter may also create an object from within a
   * built-in method, without executing a VM instruction.

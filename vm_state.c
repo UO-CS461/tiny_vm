@@ -1,6 +1,7 @@
-//
-// Created by Michal Young on 6/23/21.
-//
+/*  The core state of the virtual machine
+ *  including the code page and the stack
+ *  (but not the heap, for now).
+ */
 
 #include "vm_state.h"
 #include "vm_code_table.h"
@@ -14,13 +15,15 @@ vm_Word vm_code_block[CODE_CAPACITY];
 vm_addr vm_pc =   &vm_code_block[0];
 int vm_run_state = VM_RUNNING;
 
+char *guess_description(vm_Word w);
+
 /* --------- Program code -------------- */
 /* Fetch next word from code block,
  * advancing the program counter.
  */
 vm_Word vm_fetch_next(void) {
     vm_Word cur = (*vm_pc);
-    printf("Fetched %p\n", cur);
+    printf("Fetched %p (%s)\n", cur.native, guess_description(cur));
     vm_pc ++;
     return cur;
 }
@@ -63,11 +66,13 @@ vm_Word vm_frame_top_word() {
  * typically be register-oriented and make less use of an evaluation stack.
  */
 void vm_eval_push(obj_ref v) {
+    assert(v->header.tag == GOOD_OBJ_TAG);
     vm_frame_push_word((vm_Word) {.obj = v});
 }
 
 obj_ref vm_eval_pop() {
     vm_Word w = vm_frame_pop_word();
+    assert(w.obj->header.tag == GOOD_OBJ_TAG);
     return w.obj;
 }
 
@@ -131,7 +136,8 @@ char *op_name(vm_Instr op) {
     /* Is it an instruction? */
     for (int i=0; vm_op_bytecodes[i].name; ++i) {
         if (vm_op_bytecodes[i].instr == op) {
-            return vm_op_bytecodes[i].name;
+            char *name = vm_op_bytecodes[i].name;
+            return name;
         }
     }
     // Not an instruction ... what else could it be?
@@ -139,11 +145,83 @@ char *op_name(vm_Instr op) {
     return buff;
 }
 
+char *guess_description(vm_Word w) {
+    static char buff[500];
+    /* Is it an instruction? */
+    for (int i=0; vm_op_bytecodes[i].name; ++i) {
+        if (vm_op_bytecodes[i].instr == w.instr) {
+            char *name = vm_op_bytecodes[i].name;
+            return name;
+        }
+    }
+    /*  A small integer constant? */
+    if (w.intval >= 0 && w.intval <= 1000) {
+        sprintf(buff, "(int) %d", w.intval);
+        return buff;
+    }
+    /* The remaining checks all assume it is
+     * a valid (readable) memory address.
+     */
+
+    /* An object? */
+    if (w.obj->header.tag == GOOD_OBJ_TAG) {
+        sprintf(buff, "(%s object) %p",
+                w.obj->header.clazz->header.class_name,
+                w.obj);
+        return buff;
+    }
+    /* An address on the stack? */
+    long stack_base =  (long) &vm_frame_stack[0];
+    long stack_limit = (long) &vm_frame_stack[FRAME_CAPACITY];
+    long as_frame = (long) w.frame_addr;
+    if (stack_base <= as_frame && as_frame < stack_limit) {
+        int frame_num = w.frame_addr - vm_frame_stack;
+        sprintf(buff, "(stack ptr) %d", frame_num);
+        return buff;
+    }
+    /* We can't currently distinguish class objects
+     * from other things.
+     */
+    sprintf(buff, "Unknown thing: %p",  w.instr);
+    return buff;
+}
+
+void stack_dump(int n_words) {
+    const char* fp_ind = "-fp->";
+    const char* not_fp = "     ";
+    printf("===\n");
+    vm_addr top = vm_sp;
+    int depth = top - vm_frame_stack;
+    /* Start up to n_words below the top */
+    vm_addr cur_cell;
+    if (depth > n_words) {
+        cur_cell = top - n_words;
+    } else {
+        cur_cell = vm_frame_stack;
+    }
+    while (cur_cell <= top) {
+        char *indic;
+        if (vm_fp == cur_cell) {
+            indic = fp_ind;
+        } else {
+            indic = not_fp;
+        }
+        int frame_num = cur_cell - vm_frame_stack;
+        printf("%s %d : %s\n", indic, frame_num,
+               guess_description(*cur_cell));
+        cur_cell += 1;
+    }
+    printf("===\n");
+}
+
 /* One execution step, at current PC */
 void vm_step() {
     vm_Instr instr = vm_fetch_next().instr;
-    printf("Step:  %s\n", op_name(instr));
+    // char *name = op_name(instr);
+    char *name = guess_description((vm_Word) instr);
+    printf("Step:  %s\n",name );
     (*instr)();
+    stack_dump(3);
 }
 
 void vm_run() {

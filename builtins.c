@@ -18,6 +18,10 @@
  * or halts execution with an error.
  */
 void assert_is_type(obj_ref thing, class_ref expected) {
+    if (thing->header.tag != GOOD_OBJ_TAG) {
+        fprintf(stderr, "Type check failure: %p is Not on object!\n", thing);
+        assert(0);
+    }
     class_ref thing_class = thing->header.clazz;
     class_ref clazz = thing_class;
     while (clazz) {
@@ -103,6 +107,7 @@ static const int EQUALS_METHOD = 3;
 obj_ref new_Obj(  ) {
     obj_ref new_thing = (obj_ref) malloc(sizeof(struct obj_struct));
     new_thing->header.clazz = the_class_Obj;
+    new_thing->header.tag = GOOD_OBJ_TAG;
     return new_thing;
 }
 
@@ -314,8 +319,10 @@ class_ref the_class_Nothing = &the_class_Nothing_struct;
  * This is the only instance of class Nothing that
  * should ever exist
  */
-struct obj_Nothing_struct nothing_struct =
-        { .header.clazz = &the_class_Nothing_struct };
+static struct obj_Nothing_struct nothing_struct =
+        { .header.clazz = &the_class_Nothing_struct,
+          .header.tag = GOOD_OBJ_TAG
+        };
 obj_ref nothing = (obj_ref) &nothing_struct;
 
 /* ================
@@ -351,7 +358,8 @@ obj_ref Int_method_EQUALS(obj_Int this, obj_Obj other) {
 
 /* STUB (fixme): special native for printing int. */
 
-obj_ref native_int_print(obj_ref this) {
+obj_ref native_int_print(void ) {
+    obj_ref this = vm_fp->obj;
     assert_is_type(this, the_class_Int);
     obj_Int this_int = (obj_Int) this;
     printf("Printing integer value: %d\n", this_int->value);
@@ -389,7 +397,7 @@ struct  class_struct  the_class_Int_struct = {
         .vtable = {
                 method_tbd_0, // constructor
                 method_tbd_0, // STRING
-                method_tbd_0, // PRINT
+                method_int_print, // PRINT
                 method_tbd_1  // EQUALS
         }
  };

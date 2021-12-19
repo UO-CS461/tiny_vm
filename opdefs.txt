@@ -6,4 +6,6 @@ halt,vm_op_halt,0       # Stops the processor.
 const,vm_op_const,1     # Push constant; constant value follows
 call,vm_op_methodcall,1 # Call an interpreted method
 call_native,vm_op_call_native,1 # Trampoline to native method
+enter,vm_op_enter,0     # Prologue of called method
+return,vm_op_return,1  # Return from method, reclaiming locals
 new,vm_op_new,1  # Allocate a new object instance

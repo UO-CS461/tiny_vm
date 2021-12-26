@@ -56,18 +56,7 @@ extern obj_ref int_literal(char *n);      // token: [0-9]+, e.g., 17
  * access them.
  *================================
  */
-//obj_ref Obj_method_STRING(obj_ref this);
-//obj_ref Obj_method_PRINT(obj_ref this);
-//obj_ref Obj_method_EQUALS(obj_ref this);
-//obj_ref String_method_STRING(obj_ref this);
-//obj_ref String_method_PRINT(obj_ref this);
-//obj_ref String_method_EQUALS(obj_ref this);
-//obj_ref Boolean_method_STRING(obj_ref this);
-//obj_ref Nothing_method_STRING(obj_ref this);
-//obj_ref Int_method_STRING(obj_ref this);
-//obj_ref Int_method_EQUALS(obj_ref this);
-//obj_ref Int_method_LESS(obj_ref this);
-//obj_ref Int_method_PLUS(obj_ref this);
+
 
 /* While we make all methods return obj_ref, a specific
  * object structure for each class is used for a constructor

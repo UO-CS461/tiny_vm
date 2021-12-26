@@ -219,6 +219,68 @@ is a
 trampolines that just invoke invoke corresponding native code through function
 pointers.
 
+# Object code and the loader
+
+A system that supports separate compilation must have a
+specified format for code that has been compiled but not
+yet linked together.  The `.o` files produced by the C compiler
+are an example, as are the `.class` files produced by the
+Java compiler.  An interpreter doesn't always need a specified
+"object" format if it reads only source code, but it does
+if it can incorporate pre-compiled libraries, and especially
+if those libraries may be written in another language. Thus Python
+has the `.pyc` format, even though the Python compiler
+is usually run as a step in interpretation. 
+
+Our system will need an object code format because we want to
+separate the compiler (translator) from the runtime system,
+for pedagogical as well as practical reasons.  But we could easily
+spend a full academic term just on object code formats and
+linking, and we can't afford that, so we want to keep it
+extremely simply.  We need object files with some structure,
+but performance is not important this project.  Since we will
+spend a lot of time debugging, a somewhat readable format
+is also a good idea. JSON is a format with these properties: 
+Somewhat human readable and writeable (at least for small files),
+flexible enough for our needs, and supported by existing
+libraries in most programming languages, including Python,
+C++, and C.
+
+## The loader
+
+A *loader* is a program that loads object code into 
+memory and prepares it for execution.  A *linker* 
+or *link editor* 
+combines multiple object code files, typically 
+resolving references between modules (thus "linking" 
+references to referants).  A *linking loader* combines
+these two functions: It resolves references between
+modules while loading them into memory for execution.
+
+We need at least to resolve references from user-written
+classes and the built-in classes as we load object
+code for execution by the virtual machine.  Thus we need
+a kind of linking loader.  
+
+## What does the loader neeed? 
+
+Consider a programming language like C.  A function 
+*f* might reside in `foo.c`, compiled to `food.o`.  
+A call to *f* might reside in `bar.c`, compiled to 
+`bar.o`.  The link editor or linking loader must 
+*resolve* the call to jump to memory address of *f*.
+
+![Resolving inter-module references](img/linking.png)
+
+In an object-oriented language that has methods but
+no stand-alone functions, only the class containing
+a method *m* needs to know the address of *m*.  
+All calls to methods (or *virtual functions*, in 
+C++ lingo) are indirect through the vtable of 
+a class.   The loader must resolve method addresses
+to fill in the vtable of a class, but for a method
+call all it needs is the vtable slot offset. 
+
 # Dependency structures
 
 ## Includes (.h files)

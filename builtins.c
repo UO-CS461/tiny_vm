@@ -383,9 +383,26 @@ obj_ref Int_method_LESS(obj_Int this, obj_Int other) {
 }
 
 /* PLUS (new native_method) */
-obj_ref Int_method_PLUS(obj_Int this, obj_Int other) {
-    return new_int(this->value + other->value);
+obj_ref native_int_plus(void ) {
+    obj_ref this = vm_fp->obj;
+    assert_is_type(this, the_class_Int);
+    obj_Int this_int = (obj_Int) this;
+    obj_ref other = (vm_fp - 1)->obj;
+    assert_is_type(other, the_class_Int);
+    obj_Int other_int = (obj_Int) other;
+    printf("Adding integer values: %d + %d\n",
+           this_int->value, other_int->value);
+    obj_ref sum = new_int(this_int->value + other_int->value);
+    return sum;
 }
+
+vm_Word method_int_plus[] = {
+        {.instr = vm_op_enter},
+        {.instr = vm_op_call_native},
+        {.native = native_int_plus},
+        {.instr = vm_op_return},
+        {.intval = 1}
+};
 
 /* The Int Class (a singleton) */
 struct  class_struct  the_class_Int_struct = {
@@ -398,7 +415,9 @@ struct  class_struct  the_class_Int_struct = {
                 method_tbd_0, // constructor
                 method_tbd_0, // STRING
                 method_int_print, // PRINT
-                method_tbd_1  // EQUALS
+                method_tbd_1,  // EQUALS
+                 method_tbd_1, // LESS
+                 method_int_plus
         }
  };
 

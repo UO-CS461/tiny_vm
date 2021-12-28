@@ -11,7 +11,7 @@ int main() {
     int everything = int_literal_const("99");
     int even_more = int_literal_const("98");
     printf("Load from sample.json\n");
-    vm_load_from_path("unit_tests/sample.json");
+    vm_load_from_path("sample.json");
     printf("Code Loaded.\n");
     vm_run();
     printf("Ran\n");

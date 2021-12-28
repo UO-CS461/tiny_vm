@@ -1,0 +1,11 @@
+{
+  "class_name": "Int",
+  "methods": [ "$constructor",
+               "string",
+               "print",
+                "equals",
+                "less",
+                "plus"
+  ],
+  "fields": []
+}

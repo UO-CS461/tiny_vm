@@ -1,5 +1,7 @@
 #
-#  List of operations, which will be used to produce opdefs.h
+#  List of operations, used to translate assembly code to
+#  bytecode, and (after translation by build_bytecode_table.py)
+#  used to translate bytecode to the internal form of instructions.
 #
 #
 halt,vm_op_halt,0       # Stops the processor.

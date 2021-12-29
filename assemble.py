@@ -16,7 +16,7 @@ import sys
 import json
 from pathlib import Path
 import argparse
-from typing import Dict, List,  Optional
+from typing import Dict, List,  Optional, Tuple
 
 import logging
 logging.basicConfig()
@@ -182,8 +182,7 @@ class Instruction:
 class ObjectCode:
     def __init__(self):
         # Constant pool
-        self.int_constants = []
-        self.str_constants = []
+        self.constants: List[Tuple[str, int]] = []
         # Method code (instructions)
         self.code = []  # Will expand to code per method
         # Things to be resolved
@@ -233,18 +232,19 @@ class ObjectCode:
             # We have integer constants and string
             # constants.  They reside in the same
             # runtime table, but are initialized
-            # by different vm operations.
+            # by different vm operations.  We need to
+            # keep them together in one list to give them
+            # consistent internal numbers that can be remapped
+            # in the loader.
             if re.match("[0-9]+", operand):
-                if operand in self.int_constants:
-                    return self.int_constants.index(operand)
-                else:
-                    self.int_constants.append(operand)
-                    return len(self.int_constants) - 1
+                kind = "i"
+            elif re.match('["][^"]*["]', operand):
+                kind = "s"
+                operand = operand.strip("\"")
             else:
-                if operand in self.str_constants:
-                    return self.str_constants.index(operand)
-                else:
-                    return len(self.str_constants) - 1
+                log.error(f"Could not type operand '{operand}'")
+            self.constants.append({"kind": kind, "value": operand})
+            return len(self.constants) - 1
         if op == "call":
             slot = resolve_call(operand)
             return slot
@@ -253,11 +253,10 @@ class ObjectCode:
 
     def json(self) -> str:
         struct = {
-            "const_ints": self.int_constants,
-            "const_strings": self.str_constants,
+            "constants": self.constants,
             "instructions": self.code
         }
-        return json.dumps(struct)
+        return json.dumps(struct, indent=4)
 
     def __str__(self) -> str:
         return self.json()
@@ -279,7 +278,7 @@ INSTR_PAT = re.compile(r"""
     ((?P<label> \w+):)?   # Optional label
     \s*
     (?P<opname> \w+)      # Operation name is required
-    (\s+ (?P<operand> (\w|:)+))?
+    (\s+ (?P<operand> (\w|[:"])+))?
     """, re.VERBOSE)
 
 

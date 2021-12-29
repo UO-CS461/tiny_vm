@@ -56,21 +56,32 @@ static int load_json(char buf[]) {
     int constant_renumber_map[30];
     int next_local_const = 0;
     val = cJSON_GetObjectItemCaseSensitive(tree,
-                                           "const_ints");
+                                           "constants");
     if (val == NULL) {
-        perror("Missing 'const_ints' element in json");
+        perror("Missing 'constants' element in json");
         return 0;
     }
     int literal_count = 0;
     cJSON_ArrayForEach(el, val) {
-        char *literal = el->valuestring;
-        int internal = int_literal_const(literal);
+
+        cJSON *kind_el = cJSON_GetObjectItemCaseSensitive(el, "kind");
+        cJSON *value_el = cJSON_GetObjectItemCaseSensitive(el, "value");
+        char *kind = kind_el->valuestring;
+        char *literal = value_el->valuestring;
+        int internal;
+        if (kind[0] == 'i') {
+            internal = int_literal_const(literal);
+        } else if (kind[0] == 's') {
+            internal = str_literal_const(literal);
+        } else {
+            perror("Constant of unknown type");
+        }
         constant_renumber_map[literal_count] = internal;
         printf("Literal %s internal %d remapped to %d\n",
                literal, literal_count, internal);
         ++literal_count;
     }
-    // FIXME: Add string literals in the same way
+
 
     // Translating code.  Constants are an ugly
     // special case.  Is there any way around that?

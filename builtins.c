@@ -100,24 +100,39 @@ obj_ref new_string(char *s);
  */
 
 /* Constructor */
-obj_ref new_Obj(  ) {
-    obj_ref new_thing = (obj_ref) malloc(sizeof(struct obj_struct));
-    new_thing->header.clazz = the_class_Obj;
-    new_thing->header.tag = GOOD_OBJ_TAG;
-    return new_thing;
-}
 
-/* Obj:STRING
+vm_Word method_Obj_constructor[] = {
+        {.instr = vm_op_enter},
+         // Nothing to initialize
+        {.instr = vm_op_return},
+        {.intval = 0}
+};
+
+
+/* Obj:string
  * Creates "<Object at 0xAAAA>" where AAAA is address of this
  */
-obj_ref Obj_method_STRING(obj_ref this) {
-    assert_is_type(this, the_class_Obj);  // Probably can't fail
-    char *rep;
-    asprintf(&rep, "<Object at 0x%ld>", (long) this);
-    obj_ref str = new_string(rep);
-    return str;
+
+obj_ref native_Obj_string() {
+    obj_ref this = vm_fp->obj;
+    /* Checked downcast */
+    assert_is_type(this, the_class_Obj);
+    /* Similar to object.__str__ in Python */
+    char *s;
+    asprintf(&s, "<Object at 0x%p>", this);
+    obj_ref string_rep = new_string(s);
+    return string_rep;
 }
 
+vm_Word method_Obj_string[] = {
+        {.instr = vm_op_enter},
+        {.instr = vm_op_call_native},
+        {.native = native_Obj_string },
+        {.instr = vm_op_return},
+        {.intval = 0 }
+};
+
+/* Obj:print */
 
 vm_Word method_Obj_print[] = {
         {.instr = vm_op_enter},
@@ -131,26 +146,43 @@ vm_Word method_Obj_print[] = {
         {.intval = 0}
 };
 
-///* Obj:EQUALS (Note we may want to replace this */
-//obj_ref Obj_method_EQUALS(obj_ref this) {
-//    obj_ref other = vm_eval_pop();
-//    if (this == other) {
-//        return lit_true;
-//    } else {
-//        return lit_false;
-//    }
-//}
-//
+/* For Obj, equality is identity */
+obj_ref native_Obj_equals() {
+    obj_ref this = vm_fp->obj;
+    /* Checked downcast */
+    assert_is_type(this, the_class_Obj);
+    obj_ref other = (vm_fp - 1)->obj;
+    assert_is_type(other, the_class_Obj);
+    if (this == other) {
+        return lit_true;
+    } else {
+        return lit_false;
+    }
+}
+
+vm_Word method_Obj_equals[] = {
+        {.instr = vm_op_enter},
+        {.instr = vm_op_load},
+        {.intval = 0},   // this
+        {.instr = vm_op_load},
+        {.intval = -1},  // other
+        {.instr = vm_op_call_native},
+        {.native = native_Obj_equals},
+        {.instr = vm_op_return},
+        {.intval = 1}  // consume other
+};
+
+
 /* The Obj Class (a singleton) */
 struct  class_struct  the_class_Obj_struct = {
         .header = {"object",
                    0,
                    sizeof(struct obj_Obj_struct) },
         .vtable =
-                {method_tbd_0, // constructor
-                 method_tbd_0, // STRING
+                {method_Obj_constructor, // constructor
+                 method_Obj_string, // STRING
                  method_Obj_print, // PRINT
-                 method_tbd_1  // EQUALS
+                 method_Obj_equals  // EQUALS
                 }
 };
 
@@ -230,7 +262,7 @@ obj_ref native_String_print() {
     assert_is_type(this, the_class_String);
     struct obj_String_struct* this_string = (struct obj_String_struct*)  this;
     /* Then we can access fields */
-    fprintf(stdout, "PRINT |%s|\n", this_string->text); //FIXME
+    fprintf(stdout, "**** PRINT |%s| ****\n", this_string->text); //FIXME
     return nothing;
 }
 
@@ -259,14 +291,44 @@ obj_ref String_method_EQUALS(obj_ref this) {
     }
 }
 
+/* String:equals  */
+
+obj_ref native_String_equals(void ) {
+    obj_ref this = vm_fp->obj;
+    assert_is_type(this, the_class_String);
+    obj_String this_str = (obj_String) this;
+    obj_ref other = (vm_fp - 1)->obj;
+    assert_is_type(other, the_class_String);
+    obj_String other_str = (obj_String) other;
+    if (strcmp(this_str->text, other_str->text) == 0) {
+        return lit_true;
+    } else {
+        return lit_false;
+    }
+}
+
+vm_Word method_String_equals[] = {
+        {.instr = vm_op_enter},
+        {.instr = vm_op_load},
+        {.intval = 0},   // this
+        {.instr = vm_op_load},
+        {.intval = -1},  // other
+        {.instr = vm_op_call_native},
+        {.native = native_String_equals},
+        {.instr = vm_op_return},
+        {.intval = 1}  // consume other
+};
+
+
 /* The String Class (a singleton) */
 struct  class_struct  the_class_String_struct = {
         .header = {.class_name="String",
+                   .object_size = sizeof(struct obj_String_struct),
                    .super=the_class_Obj},
         method_String_constructor,     /* Constructor */
         method_String_string,
         method_String_print,
-        method_tbd_1
+        method_String_equals
 };
 
 class_ref the_class_String = &the_class_String_struct;
@@ -277,12 +339,32 @@ class_ref the_class_String = &the_class_String_struct;
  * Fields:
  *    One hidden field, an int (0 for False, -1 for True)
  * Methods:
- *    Those of Obj
+ *    Those of Obj:
+ *    Constructor
+ *    STRING
+ *    PRINT
+ *    EQUALS
+ *
  * =================
  */
 
-/* Boolean:STRING */
-obj_ref Boolean_method_STRING(obj_ref this) {
+/* Boolean:constructor */
+obj_ref native_Boolean_constructor() {
+    // There really should not be other booleans!
+    return lit_false;
+}
+
+vm_Word method_Boolean_constructor[] = {
+        {.instr = vm_op_enter},
+        {.instr = vm_op_call_native},
+        {.instr = vm_op_return},
+        {.intval = 0}
+};
+
+/* Boolean:string */
+
+obj_ref native_Boolean_string() {
+    obj_ref this = vm_fp->obj;
     if (this == lit_true) {
         return get_const_value(str_literal_const("true"));
     } else if (this == lit_false) {
@@ -292,11 +374,19 @@ obj_ref Boolean_method_STRING(obj_ref this) {
     }
 }
 
-/* Inherit Obj:EQUAL, since we have only two
+vm_Word method_Boolean_string[] = {
+        {.instr = vm_op_enter},
+        {.instr = vm_op_call_native},
+        {.native = native_Boolean_string},
+        {.instr = vm_op_return},
+        {.intval = 0 }
+};
+
+/* Inherit Obj:equals, since we have only two
  * objects of class Boolean.
  */
 
-/* Inherit Obj:PRINT, which will call Boolean:STRING */
+/* Inherit Obj:print, which will call Boolean:STRING */
 
 /* The Boolean Class (a singleton) */
 struct  class_struct  the_class_Boolean_struct = {
@@ -305,10 +395,10 @@ struct  class_struct  the_class_Boolean_struct = {
                    sizeof(struct obj_Boolean_struct) },
         .vtable =
                 {
-                 method_tbd_0, // constructor
-                 method_tbd_0, // STRING
-                 method_tbd_0, // PRINT
-                 method_tbd_1  // EQUALS
+                 method_Boolean_constructor, // constructor
+                 method_Boolean_string, // STRING
+                 method_Obj_print, // PRINT
+                 method_Obj_equals  // EQUALS
                 }
 };
 
@@ -412,7 +502,7 @@ vm_Word method_int_constructor[] = {
         {.intval = 0}
 };
 
-/* Int:STRING */
+/* Int:string */
 
 obj_ref native_Int_string(void ) {
     obj_ref this = vm_fp->obj;
@@ -433,7 +523,7 @@ vm_Word method_Int_string[] = {
 };
 
 
-/* Int:EQUALS */
+/* Int:equals FIXME */
 obj_ref Int_method_EQUALS(obj_Int this, obj_Obj other) {
     obj_Int other_int = (obj_Int) other;
     /* But is it? */
@@ -448,26 +538,7 @@ obj_ref Int_method_EQUALS(obj_Int this, obj_Obj other) {
 
 /* Inherit Obj:PRINT, which will call Int:STRING */
 
-/* STUB (fixme): special native for printing int. */
-
-obj_ref native_int_print(void ) {
-    obj_ref this = vm_fp->obj;
-    assert_is_type(this, the_class_Int);
-    obj_Int this_int = (obj_Int) this;
-    printf("Printing integer value: %d\n", this_int->value);
-    return nothing;
-}
-
-
-vm_Word OLD_method_int_print[] = {
-        {.instr = vm_op_enter},
-        {.instr = vm_op_call_native},
-        {.native = native_int_print},
-        {.instr = vm_op_return},
-        {.intval = 0}
-};
-
-/* LESS (new native_method) */
+/* less (new native_method)  FIXME */
 obj_ref Int_method_LESS(obj_Int this, obj_Int other) {
     if (this->value < other->value) {
         return lit_true;
@@ -476,8 +547,8 @@ obj_ref Int_method_LESS(obj_Int this, obj_Int other) {
 }
 
 
-/* PLUS (new native_method) */
-obj_ref native_int_plus(void ) {
+/* Int:plus (new native_method) */
+obj_ref native_Int_plus(void ) {
     obj_ref this = vm_fp->obj;
     assert_is_type(this, the_class_Int);
     obj_Int this_int = (obj_Int) this;
@@ -490,10 +561,10 @@ obj_ref native_int_plus(void ) {
     return sum;
 }
 
-vm_Word method_int_plus[] = {
+vm_Word method_Int_plus[] = {
         {.instr = vm_op_enter},
         {.instr = vm_op_call_native},
-        {.native = native_int_plus},
+        {.native = native_Int_plus},
         {.instr = vm_op_return},
         {.intval = 1}
 };
@@ -511,7 +582,7 @@ struct  class_struct  the_class_Int_struct = {
                 method_Obj_print, // PRINT
                 method_tbd_1,  // EQUALS
                 method_tbd_1, // LESS
-                method_int_plus
+                method_Int_plus
         }
  };
 

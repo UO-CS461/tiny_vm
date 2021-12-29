@@ -250,13 +250,14 @@ struct class_Int_struct {
 
 extern class_ref the_class_Int;
 
-/* Integer objects may be created by built-in methods,
- * and integer literals may be created by the loader.
+/* Integer and String objects may be created by built-in methods,
+ * and literals may be created by the loader.
  */
-extern int int_literal_const(char *n_lit);
-extern obj_ref new_int(int n);
+extern int int_literal_const(char *n_lit);  // Index to constants table
+extern obj_ref new_int(int n);  // An object reference, not a literal
 
-
+extern int str_literal_const(char *s_lit); // Index to constants table
+extern obj_ref new_string(char *s);  // An object reference, not a literal
 
 
 

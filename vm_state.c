@@ -76,11 +76,6 @@ obj_ref vm_eval_pop() {
     return w.obj;
 }
 
-// FIXME:  Add load/store relative to fp
-
-
-
-
 
 /* --------------------- Constant pool --------------- */
 

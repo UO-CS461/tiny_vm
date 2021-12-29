@@ -17,13 +17,14 @@ add_custom_command(
 
 add_executable(tiny_vm
         main.c
-        vm_state.c
+        vm_state.c vm_state.h
         vm_ops.c vm_ops.h
         vm_code_table.h
-        vm_code_table.c
-        vm_bytecodes.c vm_bytecodes.h
+        vm_code_table.c  # Generated
         builtins.c builtins.h
-        vm_core.h vm_loader.c vm_loader.h)
+        vm_core.h
+        vm_loader.c vm_loader.h
+        )
 
 target_include_directories(tiny_vm PRIVATE ${CJSON_INCLUDE_DIRS})
 target_link_libraries(tiny_vm PRIVATE cjson)

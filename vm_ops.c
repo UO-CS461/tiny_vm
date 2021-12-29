@@ -124,3 +124,38 @@ extern void vm_op_new(void) {
     vm_eval_push(new_thing);
     return;
 }
+
+/*
+ * Stack and local variable manipulation
+ */
+
+/* Discard top element
+ * [x] -> []
+ */
+extern void vm_op_pop(void) {
+    obj_ref trash = vm_frame_pop_word().obj;
+    return;
+}
+
+
+/* Push element loaded from local variable
+ * [] -> [x]
+ */
+extern void vm_op_load() {
+    int variable_frame_index = vm_fetch_next().intval;
+    obj_ref value = (vm_fp + variable_frame_index)->obj;
+    vm_eval_push(value);
+    return;
+}
+
+
+/* Pop top element and store into local variable
+ * [x] -> []
+ */
+extern void vm_op_store() {
+    int variable_frame_index = vm_fetch_next().intval;
+    obj_ref value = vm_eval_pop();
+    (vm_fp + variable_frame_index)->obj =  value;
+    return;
+}
+

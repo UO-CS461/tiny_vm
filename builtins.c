@@ -82,8 +82,10 @@ vm_Word method_tbd_2[] = {
         {.intval = 2}
 };
 
-/* Functions used from builtins */
-obj_ref new_int(int n);
+/* Built-in native methods may
+ * construct custom string representations.
+ */
+obj_ref new_string(char *s);
 
 /* ==============
  * Obj
@@ -96,12 +98,6 @@ obj_ref new_int(int n);
  *
  * ==============
  */
-static const int CONSTRUCTOR_METHOD = 0;
-static const int STRING_METHOD = 1;
-static const int PRINT_METHOD = 2;
-static const int EQUALS_METHOD = 3;
-
-// class_ref the_class_Obj;
 
 /* Constructor */
 obj_ref new_Obj(  ) {
@@ -118,20 +114,22 @@ obj_ref Obj_method_STRING(obj_ref this) {
     assert_is_type(this, the_class_Obj);  // Probably can't fail
     char *rep;
     asprintf(&rep, "<Object at 0x%ld>", (long) this);
-    obj_ref str = str_literal(rep);
+    obj_ref str = new_string(rep);
     return str;
 }
 
 
-///* Obj:PRINT */
-//obj_ref Obj_method_PRINT(obj_ref this) {
-//    assert_is_type(this, the_class_Obj);
-//    struct method_slot_struct* meth = &(this->header.clazz->vtable[STRING_METHOD]);
-//    // We might inherit the PRINT method but override the STR method, so we can't
-//    // count on this being a native method.
-//    fprintf(stdout, "%s", "FIXME: Obj method print needs to call str.print");
-//    return this;
-//}
+vm_Word method_Obj_print[] = {
+        {.instr = vm_op_enter},
+        {.instr = vm_op_load},
+        {.intval = 0},
+        {.instr = vm_op_methodcall},
+        {.intval = 1},  // string method
+        {.instr = vm_op_methodcall},
+        {.intval = 2},  // print method of class string
+        {.instr = vm_op_return},
+        {.intval = 0}
+};
 
 ///* Obj:EQUALS (Note we may want to replace this */
 //obj_ref Obj_method_EQUALS(obj_ref this) {
@@ -151,7 +149,7 @@ struct  class_struct  the_class_Obj_struct = {
         .vtable =
                 {method_tbd_0, // constructor
                  method_tbd_0, // STRING
-                 method_tbd_0, // PRINT
+                 method_Obj_print, // PRINT
                  method_tbd_1  // EQUALS
                 }
 };
@@ -164,23 +162,86 @@ const class_ref the_class_Obj = &the_class_Obj_struct;
  *    One hidden field, currently holding char*
  * Methods:
  *    Those of Obj, plus ordering, concatenation
+ *    Constructor  (called after allocation)
+ *    STRING
+ *    PRINT
+ *    EQUALS
  *    FIXME: (Incomplete for now.)
  * ==================
  */
 
-/* Constructor */
 
-/* String:STRING */
+/* Construct a string object containing
+ * a particular value  (aka "boxed",
+ * like Int in Java, not like int in Java).
+ * Used by built-in vm methods, not
+ * available directly to the interpreted program.
+ */
+obj_ref new_string(char *s) {
+    obj_String boxed = (obj_String) vm_new_obj(the_class_String);
+    boxed->text = s;
+    return (obj_ref) boxed;
+}
+
+/* String literals constructor,
+ * used by compiler and not otherwise available in
+ * Quack programs.
+ */
+int str_literal_const(char *s_lit) {
+    int const_index = lookup_const_index(s_lit);
+    if (const_index) {
+        return const_index;
+    }
+    obj_ref boxed = new_string(s_lit);
+    const_index = create_const_value(s_lit, boxed);
+    return const_index;
+}
+
+/* Constructor */
+obj_ref native_String_constructor(void ) {
+    obj_ref this = vm_fp->obj;
+    assert_is_type(this, the_class_String);
+    obj_String this_str = (obj_String) this;
+    this_str->text = "";
+    return this;
+}
+
+vm_Word method_String_constructor[] = {
+        {.instr = vm_op_enter},
+        {.instr = vm_op_call_native},
+        {.native = native_String_constructor},
+        {.instr = vm_op_return},
+        {.intval = 0}
+};
+
+/* String:STRING (returns itself) */
+vm_Word method_String_string[] = {
+        {.instr = vm_op_enter},
+        {.instr = vm_op_load},
+        {.intval = 0}, // The "this" object at fp
+        {.instr = vm_op_return},
+        {.intval = 0 }
+};
 
 /* String:PRINT */
-obj_ref String_method_PRINT(obj_ref this) {
+obj_ref native_String_print() {
+    obj_ref this = vm_fp->obj;
     /* Checked downcast */
     assert_is_type(this, the_class_String);
     struct obj_String_struct* this_string = (struct obj_String_struct*)  this;
     /* Then we can access fields */
-    fprintf(stdout, "%s", this_string->text);
-    return this;
+    fprintf(stdout, "PRINT |%s|\n", this_string->text); //FIXME
+    return nothing;
 }
+
+vm_Word method_String_print[] = {
+        {.instr = vm_op_enter},
+        {.instr = vm_op_call_native},
+        {.native = native_String_print },
+        {.instr = vm_op_return},
+        {.intval = 0 }
+};
+
 
 /* String:EQUALS (Note we may want to replace this */
 obj_ref String_method_EQUALS(obj_ref this) {
@@ -202,25 +263,14 @@ obj_ref String_method_EQUALS(obj_ref this) {
 struct  class_struct  the_class_String_struct = {
         .header = {.class_name="String",
                    .super=the_class_Obj},
-        method_tbd_1,     /* Constructor */
-        method_tbd_0,
-        method_tbd_0,
+        method_String_constructor,     /* Constructor */
+        method_String_string,
+        method_String_print,
         method_tbd_1
 };
 
 class_ref the_class_String = &the_class_String_struct;
 
-/*
- * Internal use function for creating String objects
- * from char*.  Use this to create string literals.
- */
-obj_ref str_literal(char *s) {
-    char *rep;
-    obj_String str = (obj_String) malloc(sizeof(struct obj_String_struct));
-    str->header.clazz = the_class_String;
-    str->text = s;
-    return (obj_ref) str;
-}
 
 /* ================
  * Boolean
@@ -234,11 +284,11 @@ obj_ref str_literal(char *s) {
 /* Boolean:STRING */
 obj_ref Boolean_method_STRING(obj_ref this) {
     if (this == lit_true) {
-        return str_literal("true");
+        return get_const_value(str_literal_const("true"));
     } else if (this == lit_false) {
-        return str_literal("false");
+        return get_const_value(str_literal_const("false"));
     } else {
-        return str_literal("!!!BOGUS BOOLEAN");
+        return get_const_value(str_literal_const("!!!BOGUS BOOLEAN"));
     }
 }
 
@@ -339,7 +389,49 @@ obj_ref nothing = (obj_ref) &nothing_struct;
 
 /* Constructor */
 
+/* If you create a new Int object, it is
+ * initialized to zero.  Note that the return value of the
+ * native function is pushed onto the stack to be returned
+ * from the interpreted constructor method.  We return "this"
+ * so that allocation and initialization leave the constructed
+ * object on the stack.
+ */
+obj_ref native_int_constructor(void ) {
+    obj_ref this = vm_fp->obj;
+    assert_is_type(this, the_class_Int);
+    obj_Int this_int = (obj_Int) this;
+    this_int->value = 0;
+    return this;
+}
+
+vm_Word method_int_constructor[] = {
+        {.instr = vm_op_enter},
+        {.instr = vm_op_call_native},
+        {.native = native_int_constructor},
+        {.instr = vm_op_return},
+        {.intval = 0}
+};
+
 /* Int:STRING */
+
+obj_ref native_Int_string(void ) {
+    obj_ref this = vm_fp->obj;
+    assert_is_type(this, the_class_Int);
+    obj_Int this_int = (obj_Int) this;
+    char *s;
+    asprintf(&s, "%d", this_int->value);
+    obj_ref string_rep = new_string(s);
+    return string_rep;
+}
+
+vm_Word method_Int_string[] = {
+        {.instr = vm_op_enter},
+        {.instr = vm_op_call_native},
+        {.native = native_Int_string},
+        {.instr = vm_op_return},
+        {.intval = 0}
+};
+
 
 /* Int:EQUALS */
 obj_ref Int_method_EQUALS(obj_Int this, obj_Obj other) {
@@ -366,7 +458,8 @@ obj_ref native_int_print(void ) {
     return nothing;
 }
 
-vm_Word method_int_print[] = {
+
+vm_Word OLD_method_int_print[] = {
         {.instr = vm_op_enter},
         {.instr = vm_op_call_native},
         {.native = native_int_print},
@@ -381,6 +474,7 @@ obj_ref Int_method_LESS(obj_Int this, obj_Int other) {
     }
     return lit_false;
 }
+
 
 /* PLUS (new native_method) */
 obj_ref native_int_plus(void ) {
@@ -412,16 +506,28 @@ struct  class_struct  the_class_Int_struct = {
                 .object_size = sizeof(struct obj_Int_struct),
         },
         .vtable = {
-                method_tbd_0, // constructor
-                method_tbd_0, // STRING
-                method_int_print, // PRINT
+                method_int_constructor,  // constructor
+                method_Int_string, // STRING
+                method_Obj_print, // PRINT
                 method_tbd_1,  // EQUALS
-                 method_tbd_1, // LESS
-                 method_int_plus
+                method_tbd_1, // LESS
+                method_int_plus
         }
  };
 
 class_ref the_class_Int = &the_class_Int_struct;
+
+/* Construct an integer object containing
+ * a particular value  (aka "boxed",
+ * like Int in Java, not like int in Java).
+ * Used by built-in vm methods like Int:add, not
+ * available directly to the interpreted program.
+ */
+obj_ref new_int(int n) {
+    obj_Int boxed = (obj_Int) vm_new_obj(the_class_Int);
+    boxed->value = n;
+    return (obj_ref) boxed;
+}
 
 /* Integer literals constructor,
  * used by compiler and not otherwise available in
@@ -430,12 +536,6 @@ class_ref the_class_Int = &the_class_Int_struct;
  * new_int may be called by other built-in methods,
  * e.g., Int.add.
  */
-obj_ref new_int(int n) {
-    obj_Int boxed = (obj_Int) vm_new_obj(the_class_Int);
-    boxed->value = n;
-    return (obj_ref) boxed;
-}
-
 int int_literal_const(char *n_lit) {
     int const_index = lookup_const_index(n_lit);
     if (const_index) {

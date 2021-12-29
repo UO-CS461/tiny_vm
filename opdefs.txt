@@ -11,3 +11,7 @@ call_native,vm_op_call_native,1 # Trampoline to native method
 enter,vm_op_enter,0     # Prologue of called method
 return,vm_op_return,1  # Return from method, reclaiming locals
 new,vm_op_new,1  # Allocate a new object instance
+pop,vm_op_pop,0  # Discard top of stack
+load,vm_op_load,1  # Load (push) a local variable onto stack
+store,vm_op_store,1  # Store (pop) top of stack to local variable
+

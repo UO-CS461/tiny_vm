@@ -141,6 +141,35 @@ These need revision to allow arguments on the stack.
 - `vm_run`  Place the virtual machine into running state and run until it is
   halted or crashes.
 
+# Tables
+
+The tiny virtual machine depends on several tables, some at load time (to
+translate the external format into the internal form) and some at run time (to
+execute instructions). Some tables entirely static, while others are built while
+a program is loaded.
+
+## `vm_ops`
+
+Maps the integer operation codes of the virtual machine to C function pointers
+for their implementation.
+
+This static table is available through `vm_ops.h`
+and is implemented in `vm_ops.c`.
+
+
+## `constants`
+
+A table of object constants, so that we can create them once and reuse them.
+These constants are literals (e.g., there may be an Int object wrapping the
+machine integer 42, created in response to the literal "42"), so the table is
+indexed by the string literal from which it was triggered. In the case of string
+constants, quotation marks are not part of the table index.
+
+This table is constructed and used at load time. It needn't be fast since the
+number of literals in a program is small, and since it is not accessed during vm
+program execution.
+
+
 # Calling conventions
 
 The tiny vm is a stack machine, simpler but in roughly the same style as the
@@ -163,43 +192,36 @@ Here's how Java does it:
 > the method. 
 
 The CPython method call conventions (two of them!) are much more involved
-and involve creating special purpose objects in which arguments are passed.  
+and involve creating special purpose objects in which arguments are passed. 
 
-# Tables
+## Interpreted methods
 
-The tiny virtual machine depends on several tables, some at load time (to
-translate the external format into the internal form) and some at run time (to
-execute instructions). Some tables entirely static, while others are built while
-a program is loaded.
+The `call` instruction, implemented by `vm_op_methodcall`, invokes an 
+interpreted method, which is a sequence of virtual machine instructions. 
+Here is an example of an interpreted, built-in method for addition of 
+two `Int` objects, 
+as represented internally: 
 
-## `vm_ops`
+```c
+vm_Word method_String_print[] = {
+        {.instr = vm_op_enter},
+        {.instr = vm_op_call_native},
+        {.native = native_String_print },
+        {.instr = vm_op_return},
+        {.intval = 0 }
+};
+```
+An interpreted method always begins with the `enter` instruction, and 
+always ends with a `return` instruction indicating the number of method
+arguments to be removed from the stack.
 
-Maps the integer operation codes of the virtual machine to C function pointers
-for their implementation.
+Some methods for built-in classes cannot be written entirely in vm instructions,
+typically because they access values that are not vm objects.  For example,
+`String` objects contain a hidden field of type `char *`, the native C 
+string representation.  The interpreted method must "trampoline" to a native
+method to print this hidden field. 
 
-This static table is available through `vm_ops.h`
-and is implemented in `vm_ops.c`.
-
-## `native_methods`
-
-Similar to `vm_ops`, but in this case the C functions act as implementations of
-methods in the object model. They "know about" objects, classes, fields, etc.
-Since each native method must be compiled by the C compiler, this is also a
-static table.
-
-## `constants`
-
-A table of object constants, so that we can create them once and reuse them.
-These constants are literals (e.g., there may be an Int object wrapping the
-machine integer 42, created in response to the literal "42"), so the table is
-indexed by the string literal from which it was triggered. In the case of string
-constants, quotation marks are not part of the table index.
-
-This table is constructed and used at load time. It needn't be fast since the
-number of literals in a program is small, and since it is not accessed during vm
-program execution.
-
-# Trampolines
+## Trampolines
 
 The term "trampoline" has several senses in programming, and even within
 compiler construction. All of them have to do with making some kind of jump (
@@ -218,6 +240,24 @@ is a
 `call_native` instruction for this purpose. The built-in methods are simple
 trampolines that just invoke invoke corresponding native code through function
 pointers.
+
+For example, here is the native print method that that the interpreted
+`print` method of class `String` trampolines to: 
+
+```c
+obj_ref native_String_print() {
+    obj_ref this = vm_fp->obj;
+    /* Checked downcast */
+    assert_is_type(this, the_class_String);
+    struct obj_String_struct* this_string = (struct obj_String_struct*)  this;
+    /* Then we can access fields */
+    fprintf(stdout, "PRINT |%s|\n", this_string->text); //FIXME
+    return nothing;
+}
+```
+
+(Currently this is a debugging version of the implementation, with
+some extraneous text to make it easy to identify program output.)
 
 # Object code and the loader
 

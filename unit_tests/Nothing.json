@@ -1,0 +1,9 @@
+{
+  "class_name": "Nothing",
+  "methods": [ "$constructor",
+    "string",
+    "print",
+    "equals"
+  ],
+  "fields": []
+}

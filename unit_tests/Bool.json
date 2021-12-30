@@ -1,0 +1,9 @@
+{
+  "class_name": "Bool",
+  "methods": [ "$constructor",
+    "string",
+    "print",
+    "equals"
+  ],
+  "fields": []
+}

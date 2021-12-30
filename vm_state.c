@@ -84,6 +84,15 @@ struct constant_pool_entry {
     obj_ref const_object;
 };
 
+/* There is a GLOBAL constant pool in the VM, shared by
+ * all loaded modules. Each module has its own LOCAL
+ * constants, because it doesn't know about the others.
+ * Local constants are consolidated into the global pool
+ * when a module is loaded into the VM, and constant
+ * indexes are remapped while the module is loaded.
+ */
+
+/* The global pool */
 static struct constant_pool_entry vm_constant_pool[CONST_POOL_CAPACITY];
 static int vm_next_const = 1; // Skip index 0 so that it can be failure signal
 

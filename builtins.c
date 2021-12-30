@@ -357,6 +357,7 @@ obj_ref native_Boolean_constructor() {
 vm_Word method_Boolean_constructor[] = {
         {.instr = vm_op_enter},
         {.instr = vm_op_call_native},
+        {.native = native_Boolean_constructor},
         {.instr = vm_op_return},
         {.intval = 0}
 };
@@ -411,11 +412,16 @@ class_ref the_class_Boolean = &the_class_Boolean_struct;
  */
 struct obj_Boolean_struct lit_false_struct =
         { .header.clazz = &the_class_Boolean_struct,
+          .header.tag = GOOD_OBJ_TAG,
           .value = 0 };
+
 obj_ref lit_false = (obj_ref) &lit_false_struct;
+
 struct obj_Boolean_struct lit_true_struct =
         { .header.clazz = &the_class_Boolean_struct,
+          .header.tag = GOOD_OBJ_TAG,
           .value =-1 };
+
 obj_ref lit_true = (obj_ref) &lit_true_struct;
 
 /* ==============
@@ -430,15 +436,40 @@ obj_ref lit_true = (obj_ref) &lit_true_struct;
  * ==============
  */
 /*  Constructor */
+obj_ref native_Nothing_constructor() {
+    // There can only be one nothing!
+    return nothing;
+}
 
-/* Boolean:STRING */
+vm_Word method_Nothing_constructor[] = {
+        {.instr = vm_op_enter},
+        {.instr = vm_op_call_native},
+        {.native = native_Nothing_constructor},
+        {.instr = vm_op_return},
+        {.intval = 0}
+};
+
+/* Nothing:string */
+
+obj_ref native_Nothing_string() {
+    obj_ref this = vm_fp->obj;
+    return get_const_value(str_literal_const("nothing"));
+}
+
+vm_Word method_Nothing_string[] = {
+        {.instr = vm_op_enter},
+        {.instr = vm_op_call_native},
+        {.native = native_Nothing_string},
+        {.instr = vm_op_return},
+        {.intval = 0 }
+};
 
 
-/* Inherit Obj:EQUAL, since we have only one
+/* Inherit Obj:equals, since we have only one
  * object of class None
  */
 
-/* Inherit Obj:PRINT, which will call Nothing:STRING */
+/* Inherit Obj:print, which will call Nothing:STRING */
 
 /* The Nothing Class (a singleton) */
 struct  class_struct  the_class_Nothing_struct = {
@@ -446,10 +477,10 @@ struct  class_struct  the_class_Nothing_struct = {
                    the_class_Obj,
                    sizeof(struct class_Nothing_struct) },
         .vtable =
-                {method_tbd_0, // constructor
-                 method_tbd_0, // STRING
-                 method_tbd_0, // PRINT
-                 method_tbd_1  // EQUALS
+                {method_Nothing_constructor, // constructor
+                 method_Nothing_string, // STRING
+                 method_Obj_print, // PRINT
+                 method_Obj_equals  // EQUALS
                 }
 };
 
@@ -523,28 +554,59 @@ vm_Word method_Int_string[] = {
 };
 
 
-/* Int:equals FIXME */
-obj_ref Int_method_EQUALS(obj_Int this, obj_Obj other) {
+/* Int:equals */
+
+obj_ref native_Int_equals(void ) {
+    obj_ref this = vm_fp->obj;
+    assert_is_type(this, the_class_Int);
+    obj_Int this_int = (obj_Int) this;
+    obj_ref other = (vm_fp - 1)->obj;
+    assert_is_type(other, the_class_Int);
     obj_Int other_int = (obj_Int) other;
-    /* But is it? */
-    if (other_int->header.clazz != this->header.clazz) {
+    printf("Comparing integer values for equality: %d == %d\n",
+           this_int->value, other_int->value);
+    if (this_int->value == other_int->value) {
+        return lit_true;
+    } else {
         return lit_false;
     }
-    if (this->value != other_int->value) {
-        return lit_false;
-    }
-    return lit_true;
 }
+
+vm_Word method_Int_equals[] = {
+        {.instr = vm_op_enter},
+        {.instr = vm_op_call_native},
+        {.native = native_Int_equals},
+        {.instr = vm_op_return},
+        {.intval = 1}
+};
+
 
 /* Inherit Obj:PRINT, which will call Int:STRING */
 
-/* less (new native_method)  FIXME */
-obj_ref Int_method_LESS(obj_Int this, obj_Int other) {
-    if (this->value < other->value) {
+/* less (new native_method)  */
+obj_ref native_Int_less(void ) {
+    obj_ref this = vm_fp->obj;
+    assert_is_type(this, the_class_Int);
+    obj_Int this_int = (obj_Int) this;
+    obj_ref other = (vm_fp - 1)->obj;
+    assert_is_type(other, the_class_Int);
+    obj_Int other_int = (obj_Int) other;
+    printf("Comparing integer values for order: %d < %d\n",
+           this_int->value, other_int->value);
+    if (this_int->value < other_int->value) {
         return lit_true;
+    } else {
+        return lit_false;
     }
-    return lit_false;
 }
+
+vm_Word method_Int_less[] = {
+        {.instr = vm_op_enter},
+        {.instr = vm_op_call_native},
+        {.native = native_Int_less},
+        {.instr = vm_op_return},
+        {.intval = 1}
+};
 
 
 /* Int:plus (new native_method) */
@@ -580,8 +642,8 @@ struct  class_struct  the_class_Int_struct = {
                 method_int_constructor,  // constructor
                 method_Int_string, // STRING
                 method_Obj_print, // PRINT
-                method_tbd_1,  // EQUALS
-                method_tbd_1, // LESS
+                method_Int_equals,  // EQUALS
+                method_Int_less, // LESS
                 method_Int_plus
         }
  };

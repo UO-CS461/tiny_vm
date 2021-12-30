@@ -62,8 +62,16 @@ static int load_json(char buf[]) {
         return 0;
     }
     int literal_count = 0;
-    cJSON_ArrayForEach(el, val) {
 
+    /* Some literal constants are always present.  These include
+     * "$false" and "$true", which represent the corresponding
+     * boolean constants.  The "$" is to make confusion with
+     * string literals less likely. (This should be improved to
+     * make collisions impossible --- FIXME.)
+     */
+
+
+    cJSON_ArrayForEach(el, val) {
         cJSON *kind_el = cJSON_GetObjectItemCaseSensitive(el, "kind");
         cJSON *value_el = cJSON_GetObjectItemCaseSensitive(el, "value");
         char *kind = kind_el->valuestring;

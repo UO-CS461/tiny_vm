@@ -1,16 +1,16 @@
 # Sample assembly code
 # (augment as the assember and loader are built out)
     const 1
-    call  Int:print
-    halt
-    const "Integers"
-    call  String:print
-    const   42   # Should also trigger a literal constant for 42
-    call    Int:print    # Method call
+    const 2
+    call Int:equals
+    call  Bool:print
+    call  Nothing:print
     pop
-    const  42
-    const 58
+    const 1
+    const 1
     call Int:plus
-    call Int:print
+    const 2
+    call Int:equals
+    call Bool:print
     pop
     halt

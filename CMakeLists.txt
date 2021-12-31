@@ -24,7 +24,7 @@ add_executable(tiny_vm
         builtins.c builtins.h
         vm_core.h
         vm_loader.c vm_loader.h
-        )
+        logger.c logger.h)
 
 target_include_directories(tiny_vm PRIVATE ${CJSON_INCLUDE_DIRS})
 target_link_libraries(tiny_vm PRIVATE cjson)

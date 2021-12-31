@@ -1,15 +1,17 @@
 #include <stdio.h>
 #include <assert.h>
 #include "vm_state.h"
-#include "vm_ops.h"
 #include "vm_loader.h"
-#include "builtins.h"
+#include "logger.h"
 
 int main() {
-    printf("Load from sample.json\n");
+    push_log_level(WARN);
+    log_info("Initiating loader");
+    vm_loader_init();
+    log_info("Load from sample.json");
     vm_load_from_path("sample.json");
-    printf("Code Loaded.\n");
+    log_info("Code Loaded.");
     vm_run();
-    printf("Ran\n");
+    log_info("Ran");
     return 0;
 }

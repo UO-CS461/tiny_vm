@@ -6,11 +6,49 @@
 #include "vm_code_table.h" // opcode -> instruction
 #include <cjson/cJSON.h>
 #include <stdio.h>
+#include <string.h>
 #include <assert.h>
+
 
 // Address to load to (pushed forward by each load)
 //
 int vm_load_address = 0;
+
+/* Table of already loaded classes */
+#define MAX_CLASSES 100   // And we will behave very badly if you have more
+static class_ref loaded_classes[MAX_CLASSES];
+static int n_classes_loaded;
+
+/* Add a class reference to the table of loaded classes. */
+static void set_loaded(class_ref c) {
+    int slot = n_classes_loaded++;
+    loaded_classes[slot] = c;
+    return;
+}
+
+/* Initialize loader (loads built-in classes)
+ */
+void vm_loader_init() {
+    set_loaded(the_class_Obj);
+    set_loaded(the_class_String);
+    set_loaded(the_class_Boolean);
+    set_loaded(the_class_Int);
+    set_loaded(the_class_Nothing);
+}
+
+
+/* Get loaded class reference by class name,
+ * or return 0 indicating class is not loaded.
+ */
+class_ref find_loaded(char *name) {
+    for (int i=0; i < n_classes_loaded; ++i) {
+        if (strcmp(loaded_classes[i]->header.class_name, name) == 0) {
+            return loaded_classes[i];
+        }
+    }
+    return 0;
+}
+
 
 // Capacity limit:  For simplicity we read into a fixed
 // buffer of 20k bytes.
@@ -122,6 +160,13 @@ static int load_json(char buf[]) {
     }
     return 1;
 }
+
+
+
+/* Load an "object" file (json format) from
+ * a class name.
+ */
+extern int vm_load_class(char *classname);
 
 /* Load an "object" file, which should be in JSON format.
  * Return 1 = success, 0 = failure.

@@ -24,7 +24,7 @@ char *guess_description(vm_Word w);
  */
 vm_Word vm_fetch_next(void) {
     vm_Word cur = (*vm_pc);
-    log_debug("Fetched %p (%s)\n", cur.native, guess_description(cur));
+    log_debug("Fetched %p (%s)", cur.native, guess_description(cur));
     vm_pc ++;
     return cur;
 }
@@ -194,7 +194,7 @@ char *guess_description(vm_Word w) {
 void stack_dump(int n_words) {
     const char* fp_ind = "-fp->";
     const char* not_fp = "     ";
-    log_debug("===\n");
+    log_debug("===");
     vm_addr top = vm_sp;
     int depth = top - vm_frame_stack;
     /* Start up to n_words below the top */
@@ -212,18 +212,18 @@ void stack_dump(int n_words) {
             indic = not_fp;
         }
         int frame_num = cur_cell - vm_frame_stack;
-        log_debug("%s %d : %s\n", indic, frame_num,
+        log_debug("%s %d : %s", indic, frame_num,
                guess_description(*cur_cell));
         cur_cell += 1;
     }
-    log_debug("===\n");
+    log_debug("===");
 }
 
 /* One execution step, at current PC */
 void vm_step() {
     vm_Instr instr = vm_fetch_next().instr;
     char *name = guess_description((vm_Word) instr);
-    log_debug("Step:  %s\n",name );
+    log_debug("Step:  %s",name );
     (*instr)();
     stack_dump(3);
 }

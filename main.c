@@ -5,7 +5,7 @@
 #include "logger.h"
 
 int main() {
-    push_log_level(WARN);
+    push_log_level(DEBUG);
     log_info("Initiating loader");
     vm_loader_init();
     log_info("Load from sample.json");

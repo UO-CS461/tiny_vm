@@ -240,7 +240,8 @@ class ObjectCode:
                 kind = "i"
             elif re.match('["][^"]*["]', operand):
                 kind = "s"
-                operand = operand.strip("\"")
+                operand = operand.strip("\"").\
+                    encode("utf-8").decode("unicode_escape")
             else:
                 log.error(f"Could not type operand '{operand}'")
             self.constants.append({"kind": kind, "value": operand})
@@ -278,7 +279,17 @@ INSTR_PAT = re.compile(r"""
     ((?P<label> \w+):)?   # Optional label
     \s*
     (?P<opname> \w+)      # Operation name is required
-    (\s+ (?P<operand> (\w|[:"])+))?
+    (\s+ (?P<operand>     # Operands are integers, quoted strings, or names
+         [0-9]+           # Integers are strings of digits
+       |
+         ["](             # String begins and ends with quote 
+           ([\\].)  |           # Anything escaped
+           [^"\\]               # Anything but a quote or escape
+         )*["]
+       |
+         (\w|[:])+         # name, which may be part:part
+         ))?               # Operand is optional
+   \s*
     """, re.VERBOSE)
 
 

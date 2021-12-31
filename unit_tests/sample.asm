@@ -13,7 +13,7 @@
      call Int:equals
      call Bool:print
     pop
-    const "oops"
+    const "oops\n\"I did it again\"\n"
     call String:print
     pop
     halt

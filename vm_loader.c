@@ -4,6 +4,7 @@
 #include "vm_state.h"
 #include "builtins.h" // For constants
 #include "vm_code_table.h" // opcode -> instruction
+#include "logger.h"
 #include <cjson/cJSON.h>
 #include <stdio.h>
 #include <string.h>
@@ -123,7 +124,7 @@ static int load_json(char buf[]) {
             perror("Constant of unknown type");
         }
         constant_renumber_map[literal_count] = internal;
-        printf("Literal %s internal %d remapped to %d\n",
+        log_debug("Literal %s internal %d remapped to %d\n",
                literal, literal_count, internal);
         ++literal_count;
     }
@@ -138,7 +139,7 @@ static int load_json(char buf[]) {
     while (el) {
         assert(cJSON_IsNumber(el));
         int opcode = el->valueint;
-        printf("Op: %d (%s)\n",
+        log_debug("Op: %d (%s)\n",
                opcode, vm_op_bytecodes[opcode].name);
         vm_code_block[vm_load_address++] = (vm_Word)
                 {.instr = vm_op_bytecodes[opcode].instr};

@@ -11,11 +11,17 @@
 #include "vm_core.h"
 #include "vm_state.h"
 #include "vm_ops.h"
+#include "logger.h"
+
 #include <assert.h>
 
 /* Dynamic type check (isinstance).
  * Like an assertion:  Either passes and does nothing,
  * or halts execution with an error.
+ *
+ * These print to stderr rather than using the logger, so they are not
+ * under control of the logging level and they are not prefixed with
+ * logging labels.
  */
 void assert_is_type(obj_ref thing, class_ref expected) {
     if (thing->header.tag != GOOD_OBJ_TAG) {
@@ -85,7 +91,7 @@ vm_Word method_tbd_2[] = {
 /* Built-in native methods may
  * construct custom string representations.
  */
-obj_ref new_string(char *s);
+// obj_ref new_string(char *s);
 
 /* ==============
  * Obj
@@ -262,7 +268,8 @@ obj_ref native_String_print() {
     assert_is_type(this, the_class_String);
     struct obj_String_struct* this_string = (struct obj_String_struct*)  this;
     /* Then we can access fields */
-    fprintf(stdout, "**** PRINT |%s| ****\n", this_string->text); //FIXME
+    log_debug( "**** PRINT |%s| ****\n", this_string->text);
+    printf("%s", this_string->text);
     return nothing;
 }
 
@@ -275,24 +282,7 @@ vm_Word method_String_print[] = {
 };
 
 
-/* String:EQUALS (Note we may want to replace this */
-obj_ref String_method_EQUALS(obj_ref this) {
-    obj_ref other = vm_eval_pop();
-    /* But is it really? */
-    if (other->header.clazz != the_class_String) {
-        return lit_false;
-    }
-    obj_String this_str = (obj_String) this;
-    obj_String other_str = (obj_String) other;
-    if (strcmp(this_str->text,other_str->text) == 0) {
-        return lit_true;
-    } else {
-        return lit_false;
-    }
-}
-
 /* String:equals  */
-
 obj_ref native_String_equals(void ) {
     obj_ref this = vm_fp->obj;
     assert_is_type(this, the_class_String);
@@ -452,7 +442,6 @@ vm_Word method_Nothing_constructor[] = {
 /* Nothing:string */
 
 obj_ref native_Nothing_string() {
-    obj_ref this = vm_fp->obj;
     return get_const_value(str_literal_const("nothing"));
 }
 
@@ -563,7 +552,7 @@ obj_ref native_Int_equals(void ) {
     obj_ref other = (vm_fp - 1)->obj;
     assert_is_type(other, the_class_Int);
     obj_Int other_int = (obj_Int) other;
-    printf("Comparing integer values for equality: %d == %d\n",
+    log_debug("Comparing integer values for equality: %d == %d\n",
            this_int->value, other_int->value);
     if (this_int->value == other_int->value) {
         return lit_true;
@@ -591,7 +580,7 @@ obj_ref native_Int_less(void ) {
     obj_ref other = (vm_fp - 1)->obj;
     assert_is_type(other, the_class_Int);
     obj_Int other_int = (obj_Int) other;
-    printf("Comparing integer values for order: %d < %d\n",
+    log_debug("Comparing integer values for order: %d < %d\n",
            this_int->value, other_int->value);
     if (this_int->value < other_int->value) {
         return lit_true;
@@ -617,7 +606,7 @@ obj_ref native_Int_plus(void ) {
     obj_ref other = (vm_fp - 1)->obj;
     assert_is_type(other, the_class_Int);
     obj_Int other_int = (obj_Int) other;
-    printf("Adding integer values: %d + %d\n",
+    log_debug("Adding integer values: %d + %d\n",
            this_int->value, other_int->value);
     obj_ref sum = new_int(this_int->value + other_int->value);
     return sum;

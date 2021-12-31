@@ -4,6 +4,7 @@
  */
 #include "vm_ops.h"
 #include "vm_state.h"
+#include "logger.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
@@ -63,11 +64,11 @@ extern void vm_op_methodcall(void) {
  * vm_op_call_native(native_function): [] -> [result]
 */
 extern void vm_op_call_native(void) {
-    printf("Making native call\n");
+    log_debug("Making native call\n");
     vm_Native m = vm_fetch_next().native;
     obj_ref result = m(*vm_fp);
     assert(result->header.tag == GOOD_OBJ_TAG);
-    printf("Native method returned %s\n",
+    log_debug("Native method returned %s\n",
            result->header.clazz->header.class_name);
     vm_Word word = {.obj = result};
     vm_frame_push_word(word);
@@ -76,7 +77,7 @@ extern void vm_op_call_native(void) {
 
 extern void vm_op_enter() {
     // Currently does nothing
-    printf("Function entered\n");
+    log_debug("Function entered\n");
     stack_dump(10);
 }
 
@@ -111,7 +112,7 @@ extern void vm_op_return() {
  *
  */
 extern obj_ref vm_new_obj(class_ref clazz) {
-    printf("Allocating a new object of type %s\n", clazz->header.class_name);
+    log_debug("Allocating a new object of type %s\n", clazz->header.class_name);
     obj_ref new_thing = (obj_ref) malloc(clazz->header.object_size);
     new_thing->header.clazz = clazz;
     new_thing->header.tag = GOOD_OBJ_TAG;

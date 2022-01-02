@@ -15,14 +15,20 @@
 //
 int vm_load_address = 0;
 
-/* Table of already loaded classes */
+/* Table of already loaded classes.
+ * Note that since each class header contains its name, a simple
+ * list of classes references will do; we can look them up by checking
+ * the ref->header.name
+ */
 #define MAX_CLASSES 100   // And we will behave very badly if you have more
-static class_ref loaded_classes[MAX_CLASSES];
+class_ref loaded_classes[MAX_CLASSES];
 static int n_classes_loaded;
 
-/* Add a class reference to the table of loaded classes. */
+/* Add a class reference to the table of loaded classes.
+ */
 static void set_loaded(class_ref c) {
     int slot = n_classes_loaded++;
+    assert(n_classes_loaded < MAX_CLASSES);
     loaded_classes[slot] = c;
     return;
 }

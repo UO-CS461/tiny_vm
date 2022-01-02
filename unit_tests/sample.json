@@ -1,9 +1,0 @@
-{
-  "const_ints": ["42", "58"],
-  "const_strings": ["goofy", "example"],
-  "instructions": [
-    1, 0,
-    2, 2,
-    0
-  ]
-}

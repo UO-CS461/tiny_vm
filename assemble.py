@@ -16,12 +16,25 @@ import sys
 import json
 from pathlib import Path
 import argparse
+import configparser
 from typing import Dict, List,  Optional, Tuple
 
 import logging
 logging.basicConfig()
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
+
+class Configuration:
+    def __init__(self):
+        config = configparser.ConfigParser()
+        try:
+            config.read("asm.conf")
+            self.tvmlib = Path(config["DEFAULT"]["TVMLIB"])
+        except FileExistsError:
+            # If no configuration file is present, we will look in ./OBJ
+            self.tvmlib = Path("./OBJ")
+
+CONFIG = Configuration()  # Visible from any code
 
 
 def cli() -> object:
@@ -61,11 +74,10 @@ class ImportedModule:
     def field_slot(self, name: str) -> int:
         return self.fields[name]
 
-IMPORT_PATH = Path("unit_tests")  # FIXME: Temporary hack
 IMPORTS: Dict[str, ImportedModule] = {}
 def import_module(module: str) -> ImportedModule:
     if module not in IMPORTS:
-        path = IMPORT_PATH.joinpath(module).with_suffix(".json")
+        path = CONFIG.tvmlib.joinpath(module).with_suffix(".json")
         IMPORTS[module] = ImportedModule(path)
     return IMPORTS[module]
 
@@ -181,6 +193,7 @@ class Instruction:
 #
 class ObjectCode:
     def __init__(self):
+        self.class_name: str = ""
         # Constant pool
         self.constants: List[Tuple[str, int]] = []
         # Method code (instructions)
@@ -193,6 +206,9 @@ class ObjectCode:
         # address -> unresolved label
         self.label_patch: Dict[int, str] = {}
         # Later: method slots, class references
+
+    def set_class_name(self, name: str):
+        self.class_name = name
 
     def resolve(self):
         """Patch up references to code labels"""
@@ -254,6 +270,7 @@ class ObjectCode:
 
     def json(self) -> str:
         struct = {
+            "class_name": self.class_name,
             "constants": self.constants,
             "instructions": self.code
         }
@@ -292,12 +309,23 @@ INSTR_PAT = re.compile(r"""
    \s*
     """, re.VERBOSE)
 
+# Directive:  Name this class
+CLASS_DECL_PAT = re.compile(r"""
+[.]class \s+ 
+(?P<class_name> \w+ )
+\s*
+""", re.VERBOSE)
+
 
 def translate(lines: List[str]) -> ObjectCode:
     code = ObjectCode()
     for line in lines:
         line = strip_comments(line)
         if not line:
+            continue
+        match = CLASS_DECL_PAT.match(line)
+        if match:
+            code.set_class_name(match.groupdict()["class_name"])
             continue
         match = INSTR_PAT.match(line)
         if not match:

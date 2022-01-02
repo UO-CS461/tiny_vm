@@ -57,17 +57,16 @@ class_ref find_loaded(char *name) {
 }
 
 
-// Capacity limit:  For simplicity we read into a fixed
+// Capacity limit:  For simplicity we read into a
 // buffer of 20k bytes.
 //
 #define FILE_BUFFER_CAPACITY (1024 * 100 * sizeof(char))
-char file_buffer[FILE_BUFFER_CAPACITY];
 
 
 /* read_file_fd
  * returns 0 (failure) or 1 (success)
  */
-int read_file_fd(FILE *fd) {
+int read_file_fd(FILE *fd, char *file_buffer) {
     int pos = 0;
     char ch;
     /* Simple, not efficient. */
@@ -90,10 +89,10 @@ static int load_json(char buf[]) {
     cJSON *tree = NULL; // Tree as a whole
     cJSON *val = NULL;  // Named value in tree
     cJSON *el = NULL;   // Element of value
-    tree = cJSON_Parse(buf);
+    tree = cJSON_Parse(buf);  // Must free at end
     if (tree == NULL) {
-        perror("Failed to parse buffer");
-        return 0;
+        perror("load_json in vm_loader.c: Failed to parse buffer. ");
+        assert(tree);  // Will definitely abort
     }
     // Constants in user code are numbered from 0
     // in the order they appear, but may have different
@@ -130,7 +129,7 @@ static int load_json(char buf[]) {
             perror("Constant of unknown type");
         }
         constant_renumber_map[literal_count] = internal;
-        log_debug("Literal %s internal %d remapped to %d\n",
+        log_debug("Literal %s internal %d remapped to %d",
                literal, literal_count, internal);
         ++literal_count;
     }
@@ -145,7 +144,7 @@ static int load_json(char buf[]) {
     while (el) {
         assert(cJSON_IsNumber(el));
         int opcode = el->valueint;
-        log_debug("Op: %d (%s)\n",
+        log_debug("Op: %d (%s)",
                opcode, vm_op_bytecodes[opcode].name);
         vm_code_block[vm_load_address++] = (vm_Word)
                 {.instr = vm_op_bytecodes[opcode].instr};
@@ -165,6 +164,7 @@ static int load_json(char buf[]) {
         }
         el = el->next;
     }
+    cJSON_Delete(tree);
     return 1;
 }
 
@@ -175,29 +175,22 @@ static int load_json(char buf[]) {
  */
 extern int vm_load_class(char *classname);
 
-/* Load an "object" file, which should be in JSON format.
- * Return 1 = success, 0 = failure.
- */
-int vm_load_from_file(FILE *fd) {
-    int ok;
-    ok = read_file_fd(fd);
-    if (ok) {
-        cJSON *jobj = cJSON_Parse(file_buffer);
-        ok = (jobj != NULL);
-    }
-    return ok;
-}
-
 
 int vm_load_from_path(char *path) {
+    char file_buffer[FILE_BUFFER_CAPACITY];
     FILE *fd = fopen(path, "r");
     if (! fd) {
         perror("Failed to open file");
         return 0;
     }
-    int status = vm_load_from_file(fd);
-    assert(status);
-    status = load_json(file_buffer);
+    int ok;
+    ok = read_file_fd(fd, file_buffer);
+    if (ok) {
+        cJSON *jobj = cJSON_Parse(file_buffer);
+        ok = (jobj != NULL);
+    }
+    assert(ok);
+    ok = load_json(file_buffer);
     fclose(fd);
-    return status;
+    return ok;
 }

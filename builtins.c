@@ -552,7 +552,7 @@ obj_ref native_Int_equals(void ) {
     obj_ref other = (vm_fp - 1)->obj;
     assert_is_type(other, the_class_Int);
     obj_Int other_int = (obj_Int) other;
-    log_debug("Comparing integer values for equality: %d == %d\n",
+    log_debug("Comparing integer values for equality: %d == %d",
            this_int->value, other_int->value);
     if (this_int->value == other_int->value) {
         return lit_true;
@@ -580,7 +580,7 @@ obj_ref native_Int_less(void ) {
     obj_ref other = (vm_fp - 1)->obj;
     assert_is_type(other, the_class_Int);
     obj_Int other_int = (obj_Int) other;
-    log_debug("Comparing integer values for order: %d < %d\n",
+    log_debug("Comparing integer values for order: %d < %d",
            this_int->value, other_int->value);
     if (this_int->value < other_int->value) {
         return lit_true;
@@ -606,7 +606,7 @@ obj_ref native_Int_plus(void ) {
     obj_ref other = (vm_fp - 1)->obj;
     assert_is_type(other, the_class_Int);
     obj_Int other_int = (obj_Int) other;
-    log_debug("Adding integer values: %d + %d\n",
+    log_debug("Adding integer values: %d + %d",
            this_int->value, other_int->value);
     obj_ref sum = new_int(this_int->value + other_int->value);
     return sum;

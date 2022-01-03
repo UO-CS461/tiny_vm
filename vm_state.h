@@ -70,6 +70,7 @@ extern vm_Word vm_frame_top_word();  // Without popping
 
 /* Debugging */
 void stack_dump(int n_words);
+extern void dump_constants(void);
 
 /* ---------------- Constant Pool --------------------- */
 /* We keep a table of constants corresponding to

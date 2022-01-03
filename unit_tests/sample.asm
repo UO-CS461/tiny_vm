@@ -1,6 +1,11 @@
 # Sample assembly code
 # (augment as the assember and loader are built out)
-.class Sample
+.class Sample:Obj
+
+.method $constructor
+    const "A string\n"
+    call  String:print
+    pop
      const 1
      const 2
     call Int:plus
@@ -15,3 +20,8 @@
     call String:print
     pop
     halt
+
+.method added
+    const "I added a method!\n"
+    return 0
+

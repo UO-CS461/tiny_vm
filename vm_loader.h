@@ -6,13 +6,18 @@
 #include "vm_core.h"
 
 /* Loading normally starts at address 0,
- * but may be controlled through vm_load_address.
+ * but may be controlled through vm_code_index.
  */
-extern int vm_load_address;
+extern int vm_code_index;
 
 /* Initialize loader (loads built-in classes)
  */
 extern void vm_loader_init();
+
+/* When everything is loaded, we can patch in a call to the
+ * constructor of the main class.
+ */
+void vm_loader_set_main(char *main_class_name);
 
 /* Get loaded class reference by class name,
  * or return 0 indicating class is not loaded.

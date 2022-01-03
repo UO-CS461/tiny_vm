@@ -130,6 +130,7 @@ obj_ref native_Obj_string() {
     return string_rep;
 }
 
+
 vm_Word method_Obj_string[] = {
         {.instr = vm_op_enter},
         {.instr = vm_op_call_native},
@@ -181,7 +182,7 @@ vm_Word method_Obj_equals[] = {
 
 /* The Obj Class (a singleton) */
 struct  class_struct  the_class_Obj_struct = {
-        .header = {"object",
+        .header = {"Obj",
                    0,
                    sizeof(struct obj_Obj_struct) },
         .vtable =

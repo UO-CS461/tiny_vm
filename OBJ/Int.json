@@ -1,5 +1,6 @@
 {
   "class_name": "Int",
+  "super":    "Obj",
   "methods": [ "$constructor",
                "string",
                "print",

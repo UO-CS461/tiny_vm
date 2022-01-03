@@ -6,6 +6,7 @@
 #include "vm_state.h"
 #include "vm_code_table.h"
 #include "logger.h"
+#include "builtins.h"  // For debugging only
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
@@ -24,7 +25,15 @@ char *guess_description(vm_Word w);
  */
 vm_Word vm_fetch_next(void) {
     vm_Word cur = (*vm_pc);
-    log_debug("Fetched %p (%s)", cur.native, guess_description(cur));
+    if (vm_pc >= vm_code_block && vm_pc < vm_code_block + CODE_CAPACITY) {
+        // Looks like we are executing an instruction in the main
+        // code memory
+        int word_number = vm_pc - vm_code_block;
+        log_debug("Fetched [%d] (%p : %s)", word_number, cur.native,
+                  guess_description(cur));
+    } else {
+        log_debug("Fetched %p (%s)", cur.native, guess_description(cur));
+    }
     vm_pc ++;
     return cur;
 }
@@ -130,6 +139,30 @@ extern obj_ref get_const_value(int index) {
     return vm_constant_pool[index].const_object;
 }
 
+/* Debugging support */
+extern void dump_constants(void) {
+    for (int i=1; i < vm_next_const; ++i) {
+        obj_ref thing = vm_constant_pool[i].const_object;
+        class_ref clazz = thing->header.clazz;
+        log_debug("Constant %d: %s", i,
+                  clazz->header.class_name);
+        if (clazz == the_class_String) {
+            struct obj_String_struct *s = (struct obj_String_struct *) thing;
+            log_debug("Value: |%s|", s->text);
+        } else if (clazz == the_class_Int) {
+            struct obj_Int_struct *v = (struct obj_Int_struct *) thing;
+            log_debug("Value: %d", v->value);
+        }  else if (thing == lit_true) {
+            log_debug("the literal true");
+        }  else if (thing == lit_false) {
+            log_debug("the literal false");
+        } else if (thing == nothing) {
+            log_debug("the value nothing");
+        } else {
+            log_debug("Maybe a user-defined value");
+        }
+    }
+}
 
 /* Does execution belong here?
  * Maybe for now.

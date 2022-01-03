@@ -61,18 +61,22 @@ class ImportedModule:
     def __init__(self, path: Path):
         with open(path, "r") as source:
             self.json = json.load(source)
-        self.methods: Dict[str, int] = {}
-        for slot, name in enumerate(self.json["methods"]):
-            self.methods[name] = slot
-        self.fields: Dict[str, int] = {}
-        for slot, name in enumerate(self.json["fields"]):
-            self.fields[name] = slot
+        # Dict from name to position would be faster, but
+        # number of lookups is very small
+        self.methods: List[str] = self.json["methods"]
+        self.fields:  List[str] = self.json["fields"]
 
     def method_slot(self, name: str) -> int:
-        return self.methods[name]
+        return self.methods.index(name)
+
+    def n_methods(self) -> int:
+        return len(self.methods)
 
     def field_slot(self, name: str) -> int:
-        return self.fields[name]
+        return self.fields.index(name)
+
+
+
 
 IMPORTS: Dict[str, ImportedModule] = {}
 def import_module(module: str) -> ImportedModule:
@@ -193,11 +197,19 @@ class Instruction:
 #
 class ObjectCode:
     def __init__(self):
+        # The following are initialized in declare_class
         self.class_name: str = ""
+        self.super_name: str = ""
+        self.method_list: List[str] = []
+        self.field_list: List[str] = []
         # Constant pool
         self.constants: List[Tuple[str, int]] = []
         # Method code (instructions)
         self.code = []  # Will expand to code per method
+        # For each method defined here, we want its
+        # name, its slot# (position in vtable), and
+        # its code.
+        self.method_code: List[dict] = []
         # Things to be resolved
         # Labels resolve to addresses within the code
         # of a method.
@@ -207,8 +219,25 @@ class ObjectCode:
         self.label_patch: Dict[int, str] = {}
         # Later: method slots, class references
 
-    def set_class_name(self, name: str):
+    def declare_class(self, name: str, super_name: str):
         self.class_name = name
+        self.super_name = super_name
+        super_module = import_module(super_name)
+        # Methods and field list are initially those
+        # we inherit, but may be extended elsewhere
+        # in the assembly code
+        self.method_list = super_module.methods
+        self.n_inherited = len(super_module.methods)
+        self.field_list = super_module.fields
+
+    def begin_method(self, method_name: str):
+        if method_name not in self.method_list:
+            self.method_list.append(method_name)
+        method_slot = self.method_list.index(method_name)
+        # Initialize code block
+        self.code = []  # We will append instructions to this list
+        self.method_code.append({"name": method_name, "slot": method_slot,
+                                 "code": self.code })
 
     def resolve(self):
         """Patch up references to code labels"""
@@ -265,14 +294,27 @@ class ObjectCode:
         if op == "call":
             slot = resolve_call(operand)
             return slot
+        if op in ["return", "load", "store"]:
+            # These operations have integer operands that should be
+            # resolved by the compiler
+            return int(operand)
         # Match should be exhaustive
         log.error(f"Unhandled operand type for {instr}")
 
     def json(self) -> str:
         struct = {
             "class_name": self.class_name,
+            "super": self.super_name,
+            "methods": self.method_list,
+            "fields": self.field_list,
+            # It's just simpler to count fields and methods
+            # in the assembler than in the loader, so we'll add
+            # some redundant information here.
+            "n_fields": len(self.field_list),
+            "n_methods": len(self.method_list),
+            "n_inherited": self.n_inherited,
             "constants": self.constants,
-            "instructions": self.code
+            "code": self.method_code
         }
         return json.dumps(struct, indent=4)
 
@@ -312,7 +354,15 @@ INSTR_PAT = re.compile(r"""
 # Directive:  Name this class
 CLASS_DECL_PAT = re.compile(r"""
 [.]class \s+ 
-(?P<class_name> \w+ )
+(?P<class_name> \w+ )[:](?P<super_name> \w+)
+\s*
+""", re.VERBOSE)
+
+# Directive: Name this method
+#   (Starts a new method entry in the code object)
+METHOD_DECL_PAT = re.compile(r"""
+[.]method \s+
+(?P<method_name> [$]?\w+ )
 \s*
 """, re.VERBOSE)
 
@@ -325,11 +375,18 @@ def translate(lines: List[str]) -> ObjectCode:
             continue
         match = CLASS_DECL_PAT.match(line)
         if match:
-            code.set_class_name(match.groupdict()["class_name"])
+            class_name = match.groupdict()["class_name"]
+            superclass_name = match.groupdict()["super_name"]
+            code.declare_class(class_name, superclass_name)
+            continue
+        match = METHOD_DECL_PAT.match(line)
+        if match:
+            method_name = match.groupdict()["method_name"]
+            code.begin_method(method_name)
             continue
         match = INSTR_PAT.match(line)
         if not match:
-            log.error(f"NO MATCH on '{line}'", file=sys.stderr)
+            log.error(f"NO MATCH on '{line}'")
             continue
         parts = match.groupdict()
         label = parts["label"]
@@ -345,7 +402,7 @@ def main():
     args = cli()
     instructions = InstructionSet("opdefs.txt")
     source = [line for line in args.source]
-    # lines = read_source("unit_tests/sample.asm")
+    # lines = read_source("unit_tests/sample_2.asm")
     objcode = translate(source)
     print(objcode.json(), file=args.target)
 

@@ -3,23 +3,21 @@
 .class Sample:Obj
 
 .method $constructor
-    const "A string\n"
+    const "Scrabble: The game\n"
     call  String:print
     pop
-     const 1
-     const 2
+     const 418
+     const 383
     call Int:plus
-     const 3
-     call Int:equals
-     call Bool:print
-    pop
+     call Int:print
+     pop
     const "\n"
     call  String:print
     pop
-    const "oops\n\"I did it again\"\n"
+    const "That was our best game ever\n"
     call String:print
     pop
-    halt
+    return 0
 
 .method added
     const "I added a method!\n"

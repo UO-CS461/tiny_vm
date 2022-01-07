@@ -163,7 +163,7 @@ static int load_json(char buf[]) {
     }
 
     // Create and initialize a class object
-    push_log_level(DEBUG);
+    // push_log_level(DEBUG);
     char *class_name = cJSON_GetStringValue(
             cJSON_GetObjectItemCaseSensitive(tree, "class_name"));
     char *super_name = cJSON_GetStringValue(
@@ -193,11 +193,11 @@ static int load_json(char buf[]) {
     for (int i = 0; i < n_inherited; ++i) {
         the_class->vtable[i] = the_super->vtable[i];
     }
+    //pop_log_level();
+
     set_loaded(the_class);
     // We want the class in the "loaded classes" table before loading
     // methods, because the methods might have references to the current class.
-
-    pop_log_level();
 
     cJSON *code_table = cJSON_GetObjectItemCaseSensitive(tree, "code");
     assert(code_table);  // Abort if it wasn't present

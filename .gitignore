@@ -1,3 +1,6 @@
+# MacOS cruft
+.DS_Store
+
 # Prerequisites
 *.d
 

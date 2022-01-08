@@ -356,6 +356,7 @@ class ObjectCode:
         struct = {
             "class_name": self.class_name,
             "super": self.super_name,
+            "imports": list(IMPORTS.keys()),
             "methods": self.method_list,
             "fields": self.field_list,
             # It's just simpler to count fields and methods

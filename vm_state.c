@@ -263,7 +263,9 @@ void vm_step() {
 
 void vm_run() {
     vm_run_state = VM_RUNNING;
+    push_log_level(DEBUG);
     while (vm_run_state == VM_RUNNING) {
         vm_step();
     }
+    pop_log_level();
 }

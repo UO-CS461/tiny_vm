@@ -75,12 +75,18 @@ extern void vm_op_enter();  // Currently a no-op
 extern void vm_op_return(); // Expects arity next in code, to pop args
 
 /*
- * Stack and local variable manipulation
+ * Stack  manipulation
  */
-
 extern void vm_op_pop();    // Discard top of operand stack
+extern void vm_op_alloc();  // Allocate empty stack space for local variables
+
+/* Local variables */
 extern void vm_op_store();  // Store into local variable at fp+n
 extern void vm_op_load();   // Load from local variable at fp+n
+
+/* Fields of objects */
+extern void vm_op_load_field();  // Load from field of object
+extern void vm_op_store_field(); // Store into field of object
 
 
 #endif //TINY_VM_VM_OPS_H

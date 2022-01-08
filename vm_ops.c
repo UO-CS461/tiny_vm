@@ -4,6 +4,7 @@
  */
 #include "vm_ops.h"
 #include "vm_state.h"
+#include "builtins.h"  // For literals lit_true, lit_false, nothing
 #include "logger.h"
 #include <stdlib.h>
 #include <stdio.h>
@@ -160,3 +161,40 @@ extern void vm_op_store() {
     return;
 }
 
+/* Allocate stack space for local variables.
+ * [] -> [ n, n, ... ]   (As many nothing objects as allocated)
+ */
+extern void vm_op_alloc() {
+    int alloc_how_much = vm_fetch_next().intval;
+    for (int i=0; i < alloc_how_much; ++i) {
+        vm_frame_push_word((vm_Word) {.obj = nothing});
+    }
+}
+
+/* Load/store to fields of an object.
+ */
+
+/* For load, object should be at top of stack.
+ * [obj] -> [field]
+ * */
+extern void vm_op_load_field() {
+    int field_slot = vm_fetch_next().intval;
+    obj_ref the_obj = vm_frame_pop_word().obj;
+    obj_ref val = the_obj->fields[field_slot];
+    vm_frame_push_word((vm_Word) {.obj=val});
+}
+
+/* For store, push object to be stored into first,
+ * then calculate value to store into it.
+ * The vm_op_store_field operation consumes both the value
+ * and the object, which can be inefficient if we want to
+ * store into several fields of the same object, but it's
+ * the simplest and most consistent approach for code generation.
+ * [val obj] -> []
+ */
+extern void vm_op_store_field()  {
+   int field_slot = vm_fetch_next().intval;
+   obj_ref value = vm_frame_pop_word().obj;
+   obj_ref target_obj = vm_frame_pop_word().obj;
+   target_obj->fields[field_slot] = value;
+}

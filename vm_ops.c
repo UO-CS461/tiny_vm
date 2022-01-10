@@ -18,6 +18,7 @@
 void vm_op_const(void) {
     int inline_const_index = vm_fetch_next().intval;
     obj_ref the_constant = get_const_value(inline_const_index);
+    check_health_object(the_constant);
     vm_eval_push(the_constant);
     return;
 }
@@ -45,7 +46,10 @@ extern void vm_op_methodcall(void) {
     vm_fp = new_fp;
     // Address of code for called method, found in the
     // class vtable.
-    struct class_struct *clazz = (*vm_fp).obj->header.clazz;
+    obj_ref receiver = (*vm_fp).obj;
+    check_health_object(receiver);
+    class_ref clazz = receiver->header.clazz;
+    check_health_class(clazz);
     vm_addr method_addr = clazz->vtable[method_index];
     vm_pc = method_addr;
     return;
@@ -68,6 +72,7 @@ extern void vm_op_call_native(void) {
     log_debug("Making native call\n");
     vm_Native m = vm_fetch_next().native;
     obj_ref result = m(*vm_fp);
+    check_health_object(result);
     assert(result->header.tag == GOOD_OBJ_TAG);
     log_debug("Native method returned %s\n",
            result->header.clazz->header.class_name);
@@ -90,6 +95,7 @@ extern void vm_op_return() {
     assert(0 <= arity);   // Sanity check -- arity is non-negative
     assert(10 >= arity);  // Sanity check --- arity at most 10
     vm_Word return_value = vm_frame_pop_word();
+    check_health_object(return_value.obj);
     vm_sp = vm_fp + 2;
     vm_fp = vm_frame_pop_word().frame_addr;
     vm_pc = vm_frame_pop_word().code_addr;
@@ -113,6 +119,7 @@ extern void vm_op_return() {
  *
  */
 extern obj_ref vm_new_obj(class_ref clazz) {
+    check_health_class(clazz);
     log_debug("Allocating a new object of type %s\n", clazz->header.class_name);
     obj_ref new_thing = (obj_ref) malloc(clazz->header.object_size);
     new_thing->header.clazz = clazz;
@@ -122,7 +129,9 @@ extern obj_ref vm_new_obj(class_ref clazz) {
 
 extern void vm_op_new(void) {
     class_ref clazz = vm_fetch_next().clazz;
+    check_health_class(clazz);
     obj_ref new_thing = vm_new_obj(clazz);
+    check_health_object(new_thing);
     vm_eval_push(new_thing);
     return;
 }
@@ -146,6 +155,7 @@ extern void vm_op_pop(void) {
 extern void vm_op_load() {
     int variable_frame_index = vm_fetch_next().intval;
     obj_ref value = (vm_fp + variable_frame_index)->obj;
+    check_health_object(value);
     vm_eval_push(value);
     return;
 }
@@ -157,6 +167,7 @@ extern void vm_op_load() {
 extern void vm_op_store() {
     int variable_frame_index = vm_fetch_next().intval;
     obj_ref value = vm_eval_pop();
+    check_health_object(value);
     (vm_fp + variable_frame_index)->obj =  value;
     return;
 }
@@ -180,7 +191,9 @@ extern void vm_op_alloc() {
 extern void vm_op_load_field() {
     int field_slot = vm_fetch_next().intval;
     obj_ref the_obj = vm_frame_pop_word().obj;
+    check_health_object(the_obj);
     obj_ref val = the_obj->fields[field_slot];
+    check_health_object(val);
     vm_frame_push_word((vm_Word) {.obj=val});
 }
 
@@ -192,9 +205,17 @@ extern void vm_op_load_field() {
  * the simplest and most consistent approach for code generation.
  * [val obj] -> []
  */
-extern void vm_op_store_field()  {
-   int field_slot = vm_fetch_next().intval;
-   obj_ref value = vm_frame_pop_word().obj;
-   obj_ref target_obj = vm_frame_pop_word().obj;
-   target_obj->fields[field_slot] = value;
+extern void vm_op_store_field() {
+    push_log_level(DEBUG);
+    int field_slot = vm_fetch_next().intval;
+    obj_ref value = vm_frame_pop_word().obj;
+    check_health_object(value);
+    obj_ref target_obj = vm_frame_pop_word().obj;
+    check_health_object(target_obj);
+    log_debug("Storing value of class %s into field %d of type %s",
+              value->header.clazz->header.class_name,
+              field_slot,
+              target_obj->header.clazz->header.class_name);
+    target_obj->fields[field_slot] = value;
+    pop_log_level();
 }

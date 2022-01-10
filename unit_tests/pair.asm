@@ -6,13 +6,30 @@
 .field y
 
 .method $constructor
-    load 0  # The "this" object
+    enter
+    load $  # The "this" object
     const 2
     store_field $:x
-    load 0
+    load $
     const 4
     store_field $:y
-    load 0
+    load $
     load_field $:x
+    call Int:print
+    return 0
+
+# It would be better to inherit "print" and redefine "string",
+# but string doesn't have concatenation yet.
+.method print
+    enter
+    load $
+    load_field $:x
+    call Int:print
+    pop
+    const ", "
+    call String:print
+    pop
+    load $
+    load_field $:y
     call Int:print
     return 0

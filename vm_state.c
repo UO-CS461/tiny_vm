@@ -258,7 +258,8 @@ void vm_step() {
     char *name = guess_description((vm_Word) instr);
     log_debug("Step:  %s",name );
     (*instr)();
-    stack_dump(3);
+    health_check_builtins();
+    stack_dump(8);
 }
 
 void vm_run() {

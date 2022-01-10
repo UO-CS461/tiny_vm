@@ -147,9 +147,10 @@ class InstructionSet:
 # FIXME: Operands to be resolved
 # First just for constants; then add
 #   - Labels
-#   - Classes
+#   - Locals (in progress)
+#   - Classes   (Done)
 #   - Class.method   (Done)
-#   - Class.field  (In progress)
+#   - Class.field  (Done)
 # with all the class things depending on reading
 # OTHER json files.  (So we get separate compilation
 # after all).  Create stub symbol files for built-ins.
@@ -201,9 +202,10 @@ class ObjectCode:
         # Method code (instructions)
         self.code = []  # Will expand to code per method
         # For each method defined here, we want its
-        # name, its slot# (position in vtable), and
-        # its code.
+        # name, its slot# (position in vtable), its
+        # local variable names, and its code.
         self.method_code: List[dict] = []
+        self.method_locals: List[str] = []
         # Things to be resolved
         # Labels resolve to addresses within the code
         # of a method.
@@ -249,9 +251,32 @@ class ObjectCode:
             self.method_list.append(method_name)
         method_slot = self.method_list.index(method_name)
         # Initialize code block
+        self.method_locals = []
         self.code = []  # We will append instructions to this list
         self.method_code.append({"name": method_name, "slot": method_slot,
                                  "code": self.code })
+
+    def declare_locals(self, locals: List[str]):
+        """Map local variable names to position in activation record"""
+        self.method_locals = locals
+
+    def resolve_local(self, var: str) -> int:
+        """Map local variable to position in activation record.
+        At entry, fp+0 is receiver object,
+        fp+1 is return address
+        fp+2 is saved frame pointer;
+        local variables start at fp+3
+        FIXME:  Need to add method arguments, which have negative offsets
+        """
+        if var=="$":
+            # Special case for the "this" variable
+            return 0
+        try:
+            local_num = self.method_locals.index(var)
+            return 3 + local_num
+        except LookupError:
+            log.error(f"Local variable {var} not declared in this method")
+            return 88   # Just a placeholder; this code should not be used!
 
     def resolve_call(self, full_name: str) -> int:
         """Resolve "Class:method" to slot number"""
@@ -284,6 +309,11 @@ class ObjectCode:
             log.error(f"No such field '{full_name}'")
             field_slot = 0xBAD  # 2989 decimal
         return field_slot
+
+    def resolve_class(self, class_name: str) -> int:
+        import_module(class_name)  # In case we need to
+        index = list(IMPORTS).index(class_name)
+        return index
 
 
     def resolve(self):
@@ -345,7 +375,13 @@ class ObjectCode:
             # These operations use indexes into the fields of an object
             slot = self.resolve_field(operand)
             return slot
-        if op in ["return", "load", "store", "alloc"]:
+        if op == "new":
+            # We use an index into the list of modules
+            slot = self.resolve_class(operand)
+            return slot
+        if op in ["load", "store"]:
+            return self.resolve_local(operand)
+        if op in ["return",  "alloc"]:
             # These operations have integer operands that should be
             # resolved by the compiler
             return int(operand)
@@ -356,7 +392,7 @@ class ObjectCode:
         struct = {
             "class_name": self.class_name,
             "super": self.super_name,
-            "imports": list(IMPORTS.keys()),
+            "imports": list(IMPORTS),
             "methods": self.method_list,
             "fields": self.field_list,
             # It's just simpler to count fields and methods
@@ -436,6 +472,14 @@ FIELD_DECL_PAT = re.compile(r"""
 \s*
 """, re.VERBOSE)
 
+# Local variable:  The assembler emits an "alloc" instruction
+#   and records the positions of local variables so that they
+#   can be used within method code.
+LOCALS_DECL_PAT = re.compile(r"""
+[.]local \s+
+(?P<local_var_name> (\w+)(,\w+)*)
+\s*
+""", re.VERBOSE)
 
 def translate(lines: List[str]) -> ObjectCode:
     code = ObjectCode()
@@ -473,6 +517,22 @@ def translate(lines: List[str]) -> ObjectCode:
             field_name = match.groupdict()["field_name"]
             code.declare_field(field_name)
             continue
+
+        # Local variable declaration, ".local name,name,name"
+        match = LOCALS_DECL_PAT.match(line)
+        if match:
+            locals_name_list = match.groupdict()["local_var_name"]
+            locals = locals_name_list.split(",")
+            n_locals = len(locals)
+            # Allocate space on stack for local variables
+            code.add_instruction(Instruction(
+                    label=None,
+                    operation=INSTRS["alloc"],
+                    operand=n_locals))
+            # Now set up locals symbol table information
+            code.declare_locals(locals)
+            continue
+
 
         # An operation (label: operation operand)
         match = INSTR_PAT.match(line)

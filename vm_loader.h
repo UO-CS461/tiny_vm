@@ -12,7 +12,7 @@ extern int vm_code_index;
 
 /* Initialize loader (loads built-in classes)
  */
-extern void vm_loader_init();
+extern void vm_loader_init(char *load_path_prefix);
 
 /* When everything is loaded, we can patch in a call to the
  * constructor of the main class.

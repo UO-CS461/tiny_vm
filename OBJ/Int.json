@@ -7,7 +7,9 @@
                 "equals",
                 "less",
                 "plus",
-                "mult"
+                "mult",
+                "sub",
+                "div"
   ],
   "fields": []
 }

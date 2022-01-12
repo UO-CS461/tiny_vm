@@ -13,7 +13,7 @@
     enter
     load $  # this
     new Pair
-    store pair1  # Is this the right place?
+    store pair1
     load pair1
     const 3
     store_field Pair:x
@@ -36,4 +36,18 @@
     pop
     load pair2
     call Pair:print
+    pop
+    const "\n"
+    call String:print
+    pop
+    const 20
+    load pair2
+    call  Pair:bumpy
+    pop
+    load pair2
+    call Pair:print
+    pop
+    const "\n"
+    call String:print
+    pop
     return 0

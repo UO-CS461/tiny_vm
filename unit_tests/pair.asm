@@ -33,3 +33,14 @@
     load_field $:y
     call Int:print
     return 0
+
+.method bumpy   # Add an Int to the y field
+.args    increment
+    load increment
+    load $
+    load_field    $:y
+    call Int:plus
+    load $
+    store_field  $:y
+    const 0
+    return 1

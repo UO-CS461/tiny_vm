@@ -294,6 +294,9 @@ vm_Word *translate_method_code(cJSON *ops, int const_map[], class_ref class_map[
             // Max is 1 operand!
             el = el->next;
             int operand = el->valueint;
+            log_debug("[%d] Operand: %d",
+                      vm_current_address() - vm_code_block,
+                      operand);
             if (vm_op_bytecodes[opcode].instr == vm_op_const) {
                 vm_code_block[vm_code_index++] = (vm_Word)
                         {.intval=  const_map[operand]};

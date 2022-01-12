@@ -148,9 +148,21 @@ extern void vm_op_pop(void) {
     return;
 }
 
+/* Roll the stack:
+ * roll 2: [ob x y] -> [x y ob]
+ * roll 1: [ob x] -> [x ob]
+ * (used to put the receiver object at the
+ * stack pointer in preparation for method call)
+ */
+void vm_op_roll(void) {
+    int k = vm_fetch_next().intval;
+    vm_roll(k);
+}
+
 
 /* Push element loaded from local variable
  * [] -> [x]
+ * FIXME: Refactor stack access into vm_state ?
  */
 extern void vm_op_load() {
     int variable_frame_index = vm_fetch_next().intval;

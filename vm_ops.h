@@ -79,6 +79,7 @@ extern void vm_op_return(); // Expects arity next in code, to pop args
  */
 extern void vm_op_pop();    // Discard top of operand stack
 extern void vm_op_alloc();  // Allocate empty stack space for local variables
+extern void vm_op_roll();  // Roll suffix of stack
 
 /* Local variables */
 extern void vm_op_store();  // Store into local variable at fp+n

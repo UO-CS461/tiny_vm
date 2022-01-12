@@ -67,7 +67,10 @@ class ImportedModule:
         self.fields:  List[str] = self.json["fields"]
 
     def method_slot(self, name: str) -> int:
-        return self.methods.index(name)
+        if name in self.methods:
+            return self.methods.index(name)
+        log.error(f"Method {name} not defined")
+        return 0
 
     def n_methods(self) -> int:
         return len(self.methods)
@@ -144,10 +147,10 @@ class InstructionSet:
         return self.ops[name]
 
 
-# FIXME: Operands to be resolved
 # First just for constants; then add
 #   - Labels
-#   - Locals (in progress)
+#   - Locals (Done)
+#   - Method arguments (in progress)
 #   - Classes   (Done)
 #   - Class.method   (Done)
 #   - Class.field  (Done)
@@ -206,6 +209,7 @@ class ObjectCode:
         # local variable names, and its code.
         self.method_code: List[dict] = []
         self.method_locals: List[str] = []
+        self.method_args: List[str] = []
         # Things to be resolved
         # Labels resolve to addresses within the code
         # of a method.
@@ -260,23 +264,29 @@ class ObjectCode:
         """Map local variable names to position in activation record"""
         self.method_locals = locals
 
+    def declare_args(self, args: List[str]):
+        """Map argument names to offsets *before* the frame pointer"""
+        self.method_args = args
+
     def resolve_local(self, var: str) -> int:
         """Map local variable to position in activation record.
         At entry, fp+0 is receiver object,
         fp+1 is return address
         fp+2 is saved frame pointer;
         local variables start at fp+3
-        FIXME:  Need to add method arguments, which have negative offsets
+        arguments start at fp-1
         """
         if var=="$":
             # Special case for the "this" variable
             return 0
-        try:
+        if var in self.method_args:
+            arg_num = self.method_args.index(var)
+            return arg_num - len(self.method_args)
+        if var in self.method_locals:
             local_num = self.method_locals.index(var)
             return 3 + local_num
-        except LookupError:
-            log.error(f"Local variable {var} not declared in this method")
-            return 88   # Just a placeholder; this code should not be used!
+        log.error(f"Local variable {var} not declared in this method")
+        return 88   # Just a placeholder; this code should not be used!
 
     def resolve_call(self, full_name: str) -> int:
         """Resolve "Class:method" to slot number"""
@@ -381,7 +391,7 @@ class ObjectCode:
             return slot
         if op in ["load", "store"]:
             return self.resolve_local(operand)
-        if op in ["return",  "alloc"]:
+        if op in ["return",  "alloc", "roll"]:
             # These operations have integer operands that should be
             # resolved by the compiler
             return int(operand)
@@ -481,6 +491,15 @@ LOCALS_DECL_PAT = re.compile(r"""
 \s*
 """, re.VERBOSE)
 
+# Method argument:
+#    These will have addresses that are at a negative
+#    offset from the frame pointer
+ARGS_DECL_PAT = re.compile(r"""
+[.]args \s+
+(?P<arg_var_name> (\w+)(,\w+)*)
+\s*
+""", re.VERBOSE)
+
 def translate(lines: List[str]) -> ObjectCode:
     code = ObjectCode()
     for line in lines:
@@ -533,6 +552,17 @@ def translate(lines: List[str]) -> ObjectCode:
             code.declare_locals(locals)
             continue
 
+        # Local variable declaration, ".local name,name,name"
+        match = ARGS_DECL_PAT.match(line)
+        if match:
+            locals_name_list = match.groupdict()["arg_var_name"]
+            args = locals_name_list.split(",")
+            # No space allocation needed, unlike local variables,
+            # because these are *before* (at negative offsets from)
+            # the frame pointer.
+            # Set up locals symbol table information
+            code.declare_args(args)
+            continue
 
         # An operation (label: operation operand)
         match = INSTR_PAT.match(line)

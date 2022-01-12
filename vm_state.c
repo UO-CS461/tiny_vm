@@ -86,6 +86,20 @@ obj_ref vm_eval_pop() {
     return w.obj;
 }
 
+/* Roll the stack:
+ * roll 2: [ob x y] -> [x y ob]
+ * roll 1: [ob x] -> [x ob]
+ * (used to put the receiver object at the
+ * stack pointer in preparation for method call)
+ */
+void vm_roll(int n) {
+    vm_Word ob = *(vm_sp - n);
+    for (int i=n; i > 0; --i) {
+        *(vm_sp - i) = *(vm_sp + 1 - i);
+    }
+    *(vm_sp) = ob;
+}
+
 
 /* --------------------- Constant pool --------------- */
 
@@ -238,7 +252,7 @@ void stack_dump(int n_words) {
         cur_cell = vm_frame_stack;
     }
     while (cur_cell <= top) {
-        char *indic;
+        const char *indic;
         if (vm_fp == cur_cell) {
             indic = fp_ind;
         } else {

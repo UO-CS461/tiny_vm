@@ -65,6 +65,8 @@ extern vm_addr vm_fp;   // Frame pointer  (locals and return address are relativ
 extern void vm_frame_push_word(vm_Word val);
 extern vm_Word vm_frame_pop_word();
 extern vm_Word vm_frame_top_word();  // Without popping
+/*  roll 2: [ob x y] -> [x y ob] */
+extern void vm_roll(int n);
 
 /* FIXME:  Add functions for fetch/store relative to frame pointer */
 

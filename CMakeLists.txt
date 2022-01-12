@@ -3,7 +3,7 @@ project(tiny_vm C)
 set(CMAKE_C_STANDARD 11)
 
 # Very simple JSON library for loader
-find_package(cjson CONFIG REQUIRED)
+find_package(cJSON CONFIG REQUIRED)
 
 add_custom_command(
         OUTPUT  ${CMAKE_SOURCE_DIR}/vm_code_table.c

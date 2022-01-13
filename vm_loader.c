@@ -187,7 +187,7 @@ static int map_classes(class_ref class_map[], cJSON *tree, int capacity) {
         class_ref clazz = find_loaded(class_name);
         if (! clazz) {
             /* We must load it first; recursive call of loader */
-            log_info("Requires loading %s\n", class_name);
+            log_info("Requires loading %s", class_name);
             vm_load_class(class_name);
             clazz = find_loaded(class_name);
             assert(clazz);
@@ -336,7 +336,7 @@ extern int vm_load_class(char *classname) {
     strlcat(load_path, "/", PATHBUFSIZE);
     strlcat(load_path, classname, PATHBUFSIZE);
     strlcat(load_path, ".json", PATHBUFSIZE);
-    log_info("Loading %s\n", load_path);
+    log_info("Loading %s", load_path);
     return vm_load_from_path(load_path);
 }
 

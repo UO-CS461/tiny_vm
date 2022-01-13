@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
-#include <getopt.h>
+#include <unistd.h>
 #include "vm_state.h"
 #include "vm_loader.h"
 #include "logger.h"
@@ -9,21 +9,23 @@
 #define PATHBUFSIZE 1000
 int main(int argc, char *argv[]) {
     set_log_level(INFO);
+    log_info("This is the tiny VM\n");
     int opt;
     char *main_class = "";
     char load_path[PATHBUFSIZE];
     int ok = 1;
     char *load_library = "./OBJ";
-    while (opt == getopt(argc, argv, ":L:")) {
+    while ((opt = getopt(argc, argv, ":DL:")) != -1) {
         switch (opt) {
             case 'L':
                 load_library = optarg;
                 fprintf(stderr, "Look in '%s' for object modules\n", optarg);
-                ok = 0;
                 break;
             case 'D':
+                fprintf(stderr, "Noisy debugging selected with -%c\n", opt);
                 set_log_level(DEBUG);
                 vm_logging = DEBUG;
+                break;
             case ':':
                 fprintf(stderr, "Option %s requires a value\n", optarg);
                 ok = 0;

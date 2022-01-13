@@ -237,15 +237,23 @@ static int load_json(char buf[]) {
     size_t class_obj_size =
             sizeof(struct class_header_struct)
             + n_methods * sizeof(vm_Word);
+    size_t obj_size = sizeof(struct obj_header_struct) + n_fields * sizeof(vm_Word);
     class_ref the_super = find_loaded(super_name);
     assert(the_super); // Error if we can't find the superclass
     class_ref the_class = (class_ref) malloc(class_obj_size);
     the_class->header = (struct class_header_struct) {
             .class_name = strdup(class_name),
             .healthy_class_tag = HEALTHY,
-            .object_size = sizeof(struct obj_header_struct) +   n_fields * sizeof(vm_Word),
+            .n_fields = n_fields,
+            .object_size = obj_size,
             .super = the_super
     };
+    log_debug("Class %s class object size %d with %d methods",
+             class_name, class_obj_size, n_methods);
+    log_debug("Objects of %s size %d with %d fields",
+            class_name,  obj_size, n_fields);
+    log_debug("Size of object header alone is %d bytes\n",
+             sizeof(struct obj_header_struct));
     // Copy inherited method pointers into vtable
     int n_inherited = (int) cJSON_GetNumberValue(
             cJSON_GetObjectItemCaseSensitive(tree, "n_inherited"));

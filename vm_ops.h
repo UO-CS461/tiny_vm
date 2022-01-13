@@ -87,6 +87,7 @@ extern void vm_op_load();   // Load from local variable at fp+n
 
 /* Fields of objects */
 extern void vm_op_load_field();  // Load from field of object
+// store_field n: [value target] -> [], target.fields[n] = value
 extern void vm_op_store_field(); // Store into field of object
 
 

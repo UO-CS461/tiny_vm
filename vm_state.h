@@ -21,6 +21,7 @@
  * builtins.h
  */
 #include "vm_core.h"
+#include "logger.h"
 
 /* Code block, a sequence of pointers to functions
  * that implement virtual machine instructions.
@@ -40,6 +41,7 @@ extern vm_Word vm_fetch_next(void);
 #define VM_HALTED 0
 #define VM_SINGLE_STEP 2
 extern int vm_run_state;
+extern  enum LOG_LEVEL vm_logging;
 
 /* Evaluation stack, separate from activation record
  * stack.  For now we just keep integers as values.
@@ -68,11 +70,10 @@ extern vm_Word vm_frame_top_word();  // Without popping
 /*  roll 2: [ob x y] -> [x y ob] */
 extern void vm_roll(int n);
 
-/* FIXME:  Add functions for fetch/store relative to frame pointer */
-
 /* Debugging */
 void stack_dump(int n_words);
 extern void dump_constants(void);
+extern char *guess_description(vm_Word w);
 
 /* ---------------- Constant Pool --------------------- */
 /* We keep a table of constants corresponding to

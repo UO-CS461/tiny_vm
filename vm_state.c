@@ -16,6 +16,7 @@
 vm_Word vm_code_block[CODE_CAPACITY];
 vm_addr vm_pc =   &vm_code_block[0];
 int vm_run_state = VM_RUNNING;
+enum LOG_LEVEL vm_logging = INFO;
 
 char *guess_description(vm_Word w);
 
@@ -207,12 +208,14 @@ char *guess_description(vm_Word w) {
         }
     }
     /*  A small integer constant? */
-    if (w.intval >= 0 && w.intval <= 1000) {
+    if (w.intval >= -10 && w.intval <= 1000) {
         sprintf(buff, "(int) %d", w.intval);
         return buff;
     }
     /* The remaining checks all assume it is
      * a valid (readable) memory address.
+     * I really need exception handling for the
+     * cases when it is not.
      */
 
     /* An object? */
@@ -278,9 +281,9 @@ void vm_step() {
 
 void vm_run() {
     vm_run_state = VM_RUNNING;
-    push_log_level(DEBUG);
+    // push_log_level(DEBUG);
     while (vm_run_state == VM_RUNNING) {
         vm_step();
     }
-    pop_log_level();
+    // pop_log_level();
 }

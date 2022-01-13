@@ -124,6 +124,9 @@ extern obj_ref vm_new_obj(class_ref clazz) {
     obj_ref new_thing = (obj_ref) malloc(clazz->header.object_size);
     new_thing->header.clazz = clazz;
     new_thing->header.tag = GOOD_OBJ_TAG;
+    for (int i=0; i < clazz->header.n_fields; ++i) {
+        new_thing->fields[i] = nothing;
+    }
     return new_thing;
 }
 
@@ -204,6 +207,8 @@ extern void vm_op_load_field() {
     int field_slot = vm_fetch_next().intval;
     obj_ref the_obj = vm_frame_pop_word().obj;
     check_health_object(the_obj);
+    log_debug("Loading field %d from %s object\n", field_slot,
+              the_obj->header.clazz->header.class_name);
     obj_ref val = the_obj->fields[field_slot];
     check_health_object(val);
     vm_frame_push_word((vm_Word) {.obj=val});
@@ -218,16 +223,19 @@ extern void vm_op_load_field() {
  * [val obj] -> []
  */
 extern void vm_op_store_field() {
-    push_log_level(DEBUG);
+    // push_log_level(DEBUG);
     int field_slot = vm_fetch_next().intval;
-    obj_ref value = vm_frame_pop_word().obj;
-    check_health_object(value);
     obj_ref target_obj = vm_frame_pop_word().obj;
     check_health_object(target_obj);
+    obj_ref value = vm_frame_pop_word().obj;
+    check_health_object(value);
+    assert(target_obj->header.clazz->header.n_fields > field_slot);
+    // If you crash on the assertion above, consider whether target
+    // and value are in the right order on the stack.
     log_debug("Storing value of class %s into field %d of type %s",
               value->header.clazz->header.class_name,
               field_slot,
               target_obj->header.clazz->header.class_name);
     target_obj->fields[field_slot] = value;
-    pop_log_level();
+    // pop_log_level();
 }

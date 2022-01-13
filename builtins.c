@@ -187,6 +187,7 @@ struct  class_struct  the_class_Obj_struct = {
         .header = {.class_name ="Obj",
                    .healthy_class_tag = HEALTHY,
                    .super = 0,
+                   .n_fields = 0,
                    .object_size = sizeof(struct obj_Obj_struct) },
         .vtable =
                 {method_Obj_constructor, // constructor
@@ -318,6 +319,7 @@ vm_Word method_String_equals[] = {
 struct  class_struct  the_class_String_struct = {
         .header = {.class_name="String",
                    .healthy_class_tag = HEALTHY,
+                   .n_fields = 0,
                    .object_size = sizeof(struct obj_String_struct),
                    .super=the_class_Obj},
         method_String_constructor,     /* Constructor */
@@ -389,7 +391,8 @@ struct  class_struct  the_class_Boolean_struct = {
         .header = {.class_name = "Boolean",
                    .healthy_class_tag = HEALTHY,
                    .super = the_class_Obj,
-                    .object_size = sizeof (struct obj_Boolean_struct) },
+                   .n_fields = 0,
+                   .object_size = sizeof (struct obj_Boolean_struct) },
         .vtable =
                 {
                  method_Boolean_constructor, // constructor
@@ -472,6 +475,7 @@ struct  class_struct  the_class_Nothing_struct = {
                 .class_name = "Nothing",
                 .healthy_class_tag = HEALTHY,
                 .super = the_class_Obj,
+                .n_fields = 0,
                 .object_size = sizeof (struct class_Nothing_struct) },
         .vtable =
                 {method_Nothing_constructor, // constructor
@@ -634,6 +638,7 @@ struct  class_struct  the_class_Int_struct = {
                 .class_name = "Int",
                 .healthy_class_tag = HEALTHY,
                 .super = the_class_Obj,
+                .n_fields = 0,
                 .object_size = sizeof(struct obj_Int_struct),
         },
         .vtable = {

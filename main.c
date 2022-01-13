@@ -8,7 +8,7 @@
 
 #define PATHBUFSIZE 1000
 int main(int argc, char *argv[]) {
-    set_log_level(DEBUG);
+    set_log_level(INFO);
     int opt;
     char *main_class = "";
     char load_path[PATHBUFSIZE];
@@ -21,6 +21,9 @@ int main(int argc, char *argv[]) {
                 fprintf(stderr, "Look in '%s' for object modules\n", optarg);
                 ok = 0;
                 break;
+            case 'D':
+                set_log_level(DEBUG);
+                vm_logging = DEBUG;
             case ':':
                 fprintf(stderr, "Option %s requires a value\n", optarg);
                 ok = 0;

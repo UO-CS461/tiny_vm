@@ -43,6 +43,7 @@ struct class_header_struct {
     char *class_name;
     int healthy_class_tag;
     class_ref super;  // Needed for typecase
+    int n_fields;     // Redundant but convenient for debugging
     int object_size;  // Malloc this much before calling constructor
 };
 

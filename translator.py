@@ -57,13 +57,16 @@ def main():
     args = cli_parser()
     output = []
     for line in args.source:
-        try:
-            tree = calc(line.strip())
-        except lark.exceptions.UnexpectedToken:
-            print('Invalid line: "%s"' % line)
+        line = line.strip()
+        if not line:
             continue
-        post = postorder(tree)
-        print(' '.join(post), file=args.target)
+        try:
+            tree = calc(line)
+        except lark.exceptions.LarkError:
+            print('Invalid line: "%s"' % line)
+        else:
+            post = postorder(tree)
+            print(' '.join(post), file=args.target)
 
 if __name__ == '__main__' and not sys.flags.interactive:
     main()

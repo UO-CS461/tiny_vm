@@ -27,21 +27,20 @@ calc_grammar = """
 
 @lark.v_args(inline=True)
 class CalculateTree(lark.Transformer):
+    def __init__(self, target):
+        self.target = target
     def number(self, token):
-        print('\tconst %s' % token)
+        print('\tconst %s' % token, file=self.target)
     def add(self, a, b):
-        print('\tcall Int:plus')
+        print('\tcall Int:plus', file=self.target)
     def sub(self, a, b):
-        print('\tcall Int:sub')
+        print('\tcall Int:sub', file=self.target)
     def mul(self, a, b):
-        print('\tcall Int:mult')
+        print('\tcall Int:mult', file=self.target)
     def div(self, a, b):
-        print('\tcall Int:div')
+        print('\tcall Int:div', file=self.target)
     def neg(self, a):
-        print('\tcall Int:neg')
-
-calc_parser = lark.Lark(calc_grammar, parser='lalr', transformer=CalculateTree())
-calc = calc_parser.parse
+        print('\tcall Int:neg', file=self.target)
 
 def cli_parser():
     parser = argparse.ArgumentParser(prog='translate')
@@ -50,23 +49,37 @@ def cli_parser():
                         type=argparse.FileType('w'), default=sys.stdout)
     return parser.parse_args()
 
-def read_file(filename):
-    with open(filename, 'r') as f:
-        return f.read().splitlines()
+assembly_header = """\
+.class Sample:Obj
+
+.method $constructor\
+"""
 
 def main():
     args = cli_parser()
-    output = []
+    parser = lark.Lark(calc_grammar, parser='lalr',
+                       transformer=CalculateTree(args.target))
+    def gen(s):
+        print(s, file=args.target)
+    gen(assembly_header)
     for line in args.source:
         line = line.strip()
         if not line:
             continue
+        gen('\tconst "%s = "' % line)
+        gen('\tcall String:print')
+        gen('\tpop')
         try:
-            tree = calc(line)
+            tree = parser.parse(line)
         except lark.exceptions.LarkError:
-            print('Invalid line: "%s"' % line)
+            print('Invalid line: "%s"' % line, file=sys.stderr)
         else:
-            pass
+            gen('\tcall Int:print')
+            gen('\tpop')
+            gen('\tconst "\\n"')
+            gen('\tcall String:print')
+            gen('\tpop')
+    gen('\treturn 0')
 
 if __name__ == '__main__' and not sys.flags.interactive:
     main()

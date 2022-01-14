@@ -16,6 +16,7 @@
 vm_Word vm_code_block[CODE_CAPACITY];
 vm_addr vm_pc =   &vm_code_block[0];
 int vm_run_state = VM_RUNNING;
+enum LOG_LEVEL vm_logging = INFO;
 
 char *guess_description(vm_Word w);
 
@@ -84,6 +85,20 @@ obj_ref vm_eval_pop() {
     vm_Word w = vm_frame_pop_word();
     assert(w.obj->header.tag == GOOD_OBJ_TAG);
     return w.obj;
+}
+
+/* Roll the stack:
+ * roll 2: [ob x y] -> [x y ob]
+ * roll 1: [ob x] -> [x ob]
+ * (used to put the receiver object at the
+ * stack pointer in preparation for method call)
+ */
+void vm_roll(int n) {
+    vm_Word ob = *(vm_sp - n);
+    for (int i=n; i > 0; --i) {
+        *(vm_sp - i) = *(vm_sp + 1 - i);
+    }
+    *(vm_sp) = ob;
 }
 
 
@@ -193,12 +208,14 @@ char *guess_description(vm_Word w) {
         }
     }
     /*  A small integer constant? */
-    if (w.intval >= 0 && w.intval <= 1000) {
+    if (w.intval >= -10 && w.intval <= 1000) {
         sprintf(buff, "(int) %d", w.intval);
         return buff;
     }
     /* The remaining checks all assume it is
      * a valid (readable) memory address.
+     * I really need exception handling for the
+     * cases when it is not.
      */
 
     /* An object? */
@@ -238,7 +255,7 @@ void stack_dump(int n_words) {
         cur_cell = vm_frame_stack;
     }
     while (cur_cell <= top) {
-        char *indic;
+        const char *indic;
         if (vm_fp == cur_cell) {
             indic = fp_ind;
         } else {
@@ -258,12 +275,15 @@ void vm_step() {
     char *name = guess_description((vm_Word) instr);
     log_debug("Step:  %s",name );
     (*instr)();
-    stack_dump(3);
+    health_check_builtins();
+    stack_dump(8);
 }
 
 void vm_run() {
     vm_run_state = VM_RUNNING;
+    // push_log_level(DEBUG);
     while (vm_run_state == VM_RUNNING) {
         vm_step();
     }
+    // pop_log_level();
 }

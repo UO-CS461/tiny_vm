@@ -27,12 +27,6 @@ struct obj_header_struct {
     // To do:  garbage collector metadata would go here.
 };
 
-/* A validation tag is an arbitrary number,
- * but should be unlikely to appear by chance.
- * I failed to make this a constant variable!
- */
-#define GOOD_OBJ_TAG 0xceed
-  // == 52973 decimal
 
 struct obj_struct {
     struct obj_header_struct header;
@@ -47,7 +41,9 @@ struct obj_struct {
  */
 struct class_header_struct {
     char *class_name;
+    int healthy_class_tag;
     class_ref super;  // Needed for typecase
+    int n_fields;     // Redundant but convenient for debugging
     int object_size;  // Malloc this much before calling constructor
 };
 
@@ -90,6 +86,20 @@ struct class_struct {
      */
     vm_Word* vtable[];
 };
+
+/* Self-check debugging support */
+/* A validation tag is an arbitrary number,
+ * but should be unlikely to appear by chance.
+ * The health checking functions just crash the
+ * interpreter if given an unhealthy value. They
+ * could be redefined as macros if we wanted to
+ * eliminate the run-time cost.
+ */
+#define HEALTHY 1234
+extern void check_health_class(class_ref c);
+#define GOOD_OBJ_TAG 0xceed
+// == 52973 decimal
+extern void check_health_object(obj_ref v);
 
 
 #endif //TINY_VM_VM_CORE_H

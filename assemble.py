@@ -67,7 +67,10 @@ class ImportedModule:
         self.fields:  List[str] = self.json["fields"]
 
     def method_slot(self, name: str) -> int:
-        return self.methods.index(name)
+        if name in self.methods:
+            return self.methods.index(name)
+        log.error(f"Method {name} not defined")
+        return 0
 
     def n_methods(self) -> int:
         return len(self.methods)
@@ -85,12 +88,17 @@ def import_module(module: str) -> ImportedModule:
         IMPORTS[module] = ImportedModule(path)
     return IMPORTS[module]
 
-def resolve_call(full_name: str) -> int:
-    """Resolve "Class:method" to slot number"""
-    class_name, method_name = full_name.split(":")
-    module_record = import_module(class_name)
-    method_slot = module_record.method_slot(method_name)
-    return method_slot
+# The named literals MUST match the definitions
+# in vm_loader.h for CODE_NOTHING, etc
+#define CODE_NOTHING  (-1)
+#define CODE_FALSE (-2)
+#define CODE_TRUE (-3)
+NAMED_LITERALS = {
+    "nothing": -1,
+    "false": -2,
+    "true": -3
+}
+
 
 # ----------------
 #  The instruction set of the machine and the numeric
@@ -150,12 +158,13 @@ class InstructionSet:
         return self.ops[name]
 
 
-# FIXME: Operands to be resolved
 # First just for constants; then add
 #   - Labels
-#   - Classes
+#   - Locals (Done)
+#   - Method arguments (in progress)
+#   - Classes   (Done)
 #   - Class.method   (Done)
-#   - Class.field
+#   - Class.field  (Done)
 # with all the class things depending on reading
 # OTHER json files.  (So we get separate compilation
 # after all).  Create stub symbol files for built-ins.
@@ -207,9 +216,11 @@ class ObjectCode:
         # Method code (instructions)
         self.code = []  # Will expand to code per method
         # For each method defined here, we want its
-        # name, its slot# (position in vtable), and
-        # its code.
+        # name, its slot# (position in vtable), its
+        # local variable names, and its code.
         self.method_code: List[dict] = []
+        self.method_locals: List[str] = []
+        self.method_args: List[str] = []
         # Things to be resolved
         # Labels resolve to addresses within the code
         # of a method.
@@ -230,14 +241,101 @@ class ObjectCode:
         self.n_inherited = len(super_module.methods)
         self.field_list = super_module.fields
 
+    def declare_field(self, name: str):
+        """Add a field to objects of this class;
+        do this before methods.
+        """
+        assert name not in self.field_list, "Field already exists"
+        self.field_list.append(name)
+
+    def declare_method(self, method_name: str):
+        """If we need calls to a method before we
+        define the method, we can declare it at the
+        beginning of the class.  Optional for methods
+        we define before (or without) calling from within
+        the same class.
+        """
+        if method_name not in self.method_list:
+            self.method_list.append(method_name)
+        # That's all!  We're just reserving a spot
+        # in the vtable.  Bad things will happen if
+        # it's not filled in later in the code.
+
     def begin_method(self, method_name: str):
         if method_name not in self.method_list:
             self.method_list.append(method_name)
         method_slot = self.method_list.index(method_name)
         # Initialize code block
+        self.method_locals = []
         self.code = []  # We will append instructions to this list
         self.method_code.append({"name": method_name, "slot": method_slot,
                                  "code": self.code })
+
+    def declare_locals(self, locals: List[str]):
+        """Map local variable names to position in activation record"""
+        self.method_locals = locals
+
+    def declare_args(self, args: List[str]):
+        """Map argument names to offsets *before* the frame pointer"""
+        self.method_args = args
+
+    def resolve_local(self, var: str) -> int:
+        """Map local variable to position in activation record.
+        At entry, fp+0 is receiver object,
+        fp+1 is return address
+        fp+2 is saved frame pointer;
+        local variables start at fp+3
+        arguments start at fp-1
+        """
+        if var=="$":
+            # Special case for the "this" variable
+            return 0
+        if var in self.method_args:
+            arg_num = self.method_args.index(var)
+            return arg_num - len(self.method_args)
+        if var in self.method_locals:
+            local_num = self.method_locals.index(var)
+            return 3 + local_num
+        log.error(f"Local variable {var} not declared in this method")
+        return 88   # Just a placeholder; this code should not be used!
+
+    def resolve_call(self, full_name: str) -> int:
+        """Resolve "Class:method" to slot number"""
+        class_name, method_name = full_name.split(":")
+        try:
+            if class_name == "$":
+                # This class
+                method_slot = self.method_list.index(method_name)
+            else:
+                # Imported class
+                module_record = import_module(class_name)
+                method_slot = module_record.method_slot(method_name)
+        except LookupError as e:
+            log.error(f"No such method '{full_name}'")
+            method_slot = 0xBAD  # 2989 decimal
+        return method_slot
+
+    def resolve_field(self, full_name:str) -> int:
+        """Resolve Class:field to slot number"""
+        class_name, field_name = full_name.split(":")
+        try:
+            if class_name == "$":
+                # This class
+                field_slot = self.field_list.index(field_name)
+            else:
+                # Imported class (is that legal in Quack?)
+                module_record = import_module(class_name)
+                field_slot = module_record.field_slot(field_name)
+        except LookupError as e:
+            log.error(f"No such field '{full_name}'")
+            field_slot = 0xBAD  # 2989 decimal
+        return field_slot
+
+    def resolve_class(self, class_name: str) -> int:
+        import_module(class_name)  # In case we need to
+        index = list(IMPORTS).index(class_name)
+        return index
+
 
     def resolve(self):
         """Patch up references to code labels"""
@@ -281,6 +379,8 @@ class ObjectCode:
             # keep them together in one list to give them
             # consistent internal numbers that can be remapped
             # in the loader.
+            if operand in NAMED_LITERALS:
+                return NAMED_LITERALS[operand]
             if re.match("[0-9]+", operand):
                 kind = "i"
             elif re.match('["][^"]*["]', operand):
@@ -292,9 +392,19 @@ class ObjectCode:
             self.constants.append({"kind": kind, "value": operand})
             return len(self.constants) - 1
         if op == "call":
-            slot = resolve_call(operand)
+            slot = self.resolve_call(operand)
             return slot
-        if op in ["return", "load", "store"]:
+        if op in ["load_field", "store_field"]:
+            # These operations use indexes into the fields of an object
+            slot = self.resolve_field(operand)
+            return slot
+        if op == "new":
+            # We use an index into the list of modules
+            slot = self.resolve_class(operand)
+            return slot
+        if op in ["load", "store"]:
+            return self.resolve_local(operand)
+        if op in ["return",  "alloc", "roll"]:
             # These operations have integer operands that should be
             # resolved by the compiler
             return int(operand)
@@ -305,6 +415,7 @@ class ObjectCode:
         struct = {
             "class_name": self.class_name,
             "super": self.super_name,
+            "imports": list(IMPORTS),
             "methods": self.method_list,
             "fields": self.field_list,
             # It's just simpler to count fields and methods
@@ -346,8 +457,8 @@ INSTR_PAT = re.compile(r"""
            [^"\\]               # Anything but a quote or escape
          )*["]
        |
-         (\w|[:])+         # name, which may be part:part
-         ))?               # Operand is optional
+         (\w|[:$])+         # name, which may be part:part or $:part
+         ))?                # Operand is optional
    \s*
     """, re.VERBOSE)
 
@@ -360,12 +471,47 @@ CLASS_DECL_PAT = re.compile(r"""
 
 # Directive: Name this method
 #   (Starts a new method entry in the code object)
-METHOD_DECL_PAT = re.compile(r"""
+METHOD_DEF_PAT = re.compile(r"""
 [.]method \s+
 (?P<method_name> [$]?\w+ )
 \s*
 """, re.VERBOSE)
 
+# Directive:  Declare a method to be defined
+# later in this class, so we can call it before
+# we define it.
+METHOD_DECL_PAT = re.compile(r"""
+[.]method \s+ 
+(?P<method_name> [$]?\w+ )
+\s+ forward
+\s*
+""", re.VERBOSE)
+
+
+# Directive: Add a field to the objects of this class
+FIELD_DECL_PAT = re.compile(r"""
+[.]field \s+
+(?P<field_name> \w+ )
+\s*
+""", re.VERBOSE)
+
+# Local variable:  The assembler emits an "alloc" instruction
+#   and records the positions of local variables so that they
+#   can be used within method code.
+LOCALS_DECL_PAT = re.compile(r"""
+[.]local \s+
+(?P<local_var_name> (\w+)(,\w+)*)
+\s*
+""", re.VERBOSE)
+
+# Method argument:
+#    These will have addresses that are at a negative
+#    offset from the frame pointer
+ARGS_DECL_PAT = re.compile(r"""
+[.]args \s+
+(?P<arg_var_name> (\w+)(,\w+)*)
+\s*
+""", re.VERBOSE)
 
 def translate(lines: List[str]) -> ObjectCode:
     code = ObjectCode()
@@ -373,17 +519,65 @@ def translate(lines: List[str]) -> ObjectCode:
         line = strip_comments(line)
         if not line:
             continue
+
+        # Kinds of assembly language line:
+        # Class declaration (.class)
         match = CLASS_DECL_PAT.match(line)
         if match:
             class_name = match.groupdict()["class_name"]
             superclass_name = match.groupdict()["super_name"]
             code.declare_class(class_name, superclass_name)
             continue
+
+        # Method (.method f forward) to be filled in later
         match = METHOD_DECL_PAT.match(line)
+        if match:
+            method_name = match.groupdict()["method_name"]
+            code.declare_method(method_name)
+            continue
+
+        # Method (.method) followed immediately by body
+        match = METHOD_DEF_PAT.match(line)
         if match:
             method_name = match.groupdict()["method_name"]
             code.begin_method(method_name)
             continue
+
+        # Field declaration, ".field name"
+        match = FIELD_DECL_PAT.match(line)
+        if match:
+            field_name = match.groupdict()["field_name"]
+            code.declare_field(field_name)
+            continue
+
+        # Local variable declaration, ".local name,name,name"
+        match = LOCALS_DECL_PAT.match(line)
+        if match:
+            locals_name_list = match.groupdict()["local_var_name"]
+            locals = locals_name_list.split(",")
+            n_locals = len(locals)
+            # Allocate space on stack for local variables
+            code.add_instruction(Instruction(
+                    label=None,
+                    operation=INSTRS["alloc"],
+                    operand=n_locals))
+            # Now set up locals symbol table information
+            code.declare_locals(locals)
+            continue
+
+        # Local variable declaration, ".local name,name,name"
+        match = ARGS_DECL_PAT.match(line)
+        if match:
+            locals_name_list = match.groupdict()["arg_var_name"]
+            args = locals_name_list.split(",")
+            # No space allocation needed, unlike local variables,
+            # because these are *before* (at negative offsets from)
+            # the frame pointer.
+            # Set up locals symbol table information
+            code.declare_args(args)
+            continue
+
+        # An operation (label: operation operand)
         match = INSTR_PAT.match(line)
         if not match:
             log.error(f"NO MATCH on '{line}'")

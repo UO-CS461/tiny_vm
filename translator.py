@@ -1,6 +1,5 @@
 #!/usr/bin/python3
 
-from lark import Lark
 import lark
 import argparse
 import sys
@@ -26,21 +25,23 @@ calc_grammar = """
     %ignore WS_INLINE
 """
 
-calc_parser = Lark(calc_grammar, parser='lalr')
+@lark.v_args(inline=True)
+class CalculateTree(lark.Transformer):
+    def number(self, token):
+        print('\tconst %s' % token)
+    def add(self, a, b):
+        print('\tcall Int:plus')
+    def sub(self, a, b):
+        print('\tcall Int:sub')
+    def mul(self, a, b):
+        print('\tcall Int:mult')
+    def div(self, a, b):
+        print('\tcall Int:div')
+    def neg(self, a):
+        print('\tcall Int:neg')
+
+calc_parser = lark.Lark(calc_grammar, parser='lalr', transformer=CalculateTree())
 calc = calc_parser.parse
-
-def postorder(tree):
-    tokens = []
-    _postorder(tree, tokens)
-    return tokens
-
-def _postorder(tree, tokens):
-    if tree.data in ('add', 'sub', 'mul', 'div', 'neg'):
-        for child in tree.children:
-            _postorder(child, tokens)
-        tokens.append(tree.data)
-    elif tree.data == 'number':
-        tokens.append(str(tree.children[0]))
 
 def cli_parser():
     parser = argparse.ArgumentParser(prog='translate')
@@ -65,8 +66,7 @@ def main():
         except lark.exceptions.LarkError:
             print('Invalid line: "%s"' % line)
         else:
-            post = postorder(tree)
-            print(' '.join(post), file=args.target)
+            pass
 
 if __name__ == '__main__' and not sys.flags.interactive:
     main()

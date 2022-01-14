@@ -88,6 +88,17 @@ def import_module(module: str) -> ImportedModule:
         IMPORTS[module] = ImportedModule(path)
     return IMPORTS[module]
 
+# The named literals MUST match the definitions
+# in vm_loader.h for CODE_NOTHING, etc
+#define CODE_NOTHING  (-1)
+#define CODE_FALSE (-2)
+#define CODE_TRUE (-3)
+NAMED_LITERALS = {
+    "nothing": -1,
+    "false": -2,
+    "true": -3
+}
+
 
 # ----------------
 #  The instruction set of the machine and the numeric
@@ -368,6 +379,8 @@ class ObjectCode:
             # keep them together in one list to give them
             # consistent internal numbers that can be remapped
             # in the loader.
+            if operand in NAMED_LITERALS:
+                return NAMED_LITERALS[operand]
             if re.match("[0-9]+", operand):
                 kind = "i"
             elif re.match('["][^"]*["]', operand):

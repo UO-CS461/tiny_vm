@@ -34,4 +34,16 @@ extern int vm_load_class(char *classname);
  */
 extern int vm_load_from_path(char *path);
 
+/* Constants in method bytecode will be small non-negative
+ * integers corresponding to the "constants" list in the
+ * object code json, or chosen from this fixed set of
+ * negative integers, each denoting a named literal.
+ *
+ * NOTE:  These constants MUST be consistent between
+ * the loader (here) and the assembler (assemble.py).
+ */
+#define CODE_NOTHING  (-1)
+#define CODE_FALSE (-2)
+#define CODE_TRUE (-3)
+
 #endif //TINY_VM_VM_LOADER_H

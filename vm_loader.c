@@ -45,7 +45,9 @@ static void set_loaded(class_ref c) {
     return;
 }
 
-/* Initialize loader (loads built-in classes)
+/* Initialize loader
+ * (loads built-in classes, dummy main program,
+ * special named constants)
  */
 void vm_loader_init(char *load_path_prefix) {
     // Where we will look for object modules in .json format
@@ -67,6 +69,11 @@ void vm_loader_init(char *load_path_prefix) {
     vm_code_block[2] = (vm_Word) {.instr = vm_op_methodcall};
     vm_code_block[3] = (vm_Word) {.intval = 2}; // "print" method
     vm_code_block[4] = (vm_Word) {.instr = vm_op_halt};
+    //
+    // The named constant literals
+    create_const_value("$nothing", nothing);
+    create_const_value("$true", lit_true);
+    create_const_value("$false", lit_false);
 }
 
 /* When everything is loaded, we can patch in a call to the
@@ -129,8 +136,11 @@ int read_file_fd(FILE *fd, char *file_buffer) {
 vm_Word *translate_method_code(cJSON *ops, int const_map[], class_ref class_map[]);
 
 /*
- * Constants in a class file (.json) are referenced as small integer indexes
- * in a per-class "constant pool".  Adding them to the constant pool for the
+ * Constants in a class file (.json) are referenced as small
+ * (non-negative) integer indexes
+ * in a per-class "constant pool", or a fixed set of
+ * negative integers (-1 .. -3 currently) for named literals.
+ * Adding them to the constant pool for the
  * whole program requires remapping them to different indexes.
  * (Java, in contrast, maintains a separate constant pool for each
  * class at run-time.)
@@ -306,8 +316,21 @@ vm_Word *translate_method_code(cJSON *ops, int const_map[], class_ref class_map[
                       vm_current_address() - vm_code_block,
                       operand);
             if (vm_op_bytecodes[opcode].instr == vm_op_const) {
+                int const_index;
+                if (operand == CODE_FALSE) {
+                    const_index = lookup_const_index("$false");
+                } else if (operand == CODE_TRUE) {
+                    const_index = lookup_const_index("$true");
+                } else if (operand == CODE_NOTHING) {
+                    const_index = lookup_const_index("$nothing");
+                } else {
+                    assert(operand >= 0);
+                    const_index = const_map[operand];
+                }
+                assert(const_index);
+                check_health_object(get_const_value(const_index));
                 vm_code_block[vm_code_index++] = (vm_Word)
-                        {.intval=  const_map[operand]};
+                        {.intval=  const_index};
             } else if(vm_op_bytecodes[opcode].instr == vm_op_new) {
                 class_ref clazz = class_map[operand];
                 log_debug("Translating allocation of new '%s'",

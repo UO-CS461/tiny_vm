@@ -42,5 +42,5 @@
     call Int:plus
     load $
     store_field  $:y
-    const 0
+    const nothing
     return 1

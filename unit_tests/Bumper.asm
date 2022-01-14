@@ -30,4 +30,5 @@
     load pair
     call Pair:print
     pop
+    const nothing
     return 0

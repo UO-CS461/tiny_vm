@@ -53,3 +53,17 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+
+# Cmake and Ninja Files
+.cmake/
+CMakeFiles/
+CMakeCache.txt
+*.cmake
+*.ninja
+.ninja_deps
+.ninja_log
+
+# VM generated files
+tiny_vm
+vm_code_table.c

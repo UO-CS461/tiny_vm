@@ -1,9 +1,25 @@
-# tiny_vm
-A tiny virtual machine interpreter for Quack programs
+# tiny_calculator
+Thomas Renn
 
-## Work in progress
+# How to run
+```
+$ python3 translator.py <soruce-file> > sample.asm
+```
+The source-file is a file containing arithmetic expressions.
+There is an example file unit_tests/exps_hard.txt that contains some
+difficult expressions. The program translator prints to standard
+input, so the output needs to be redirected to a file to run with
+the assembler.
 
-This is intended to become the core of an interpreter for the Winter 2022
-offering of CIS 461/561 compiler construction course at University of Oregon, 
-if I can ready it in time. 
 
+```
+$ python3 assembler.py sample.asm sample.json
+```
+
+Once the tiny_vm executable has been built, it can be run
+and outputs the answer to the expressions specified in the 
+source-file.
+
+```
+$ ./tiny_vm
+```

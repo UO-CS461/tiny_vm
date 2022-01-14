@@ -494,6 +494,7 @@ obj_ref nothing = (obj_ref) &nothing_struct;
  *    Those of Obj
  *    PLUS
  *    LESS
+ *    MULT
  *    (add more later)
  * =================
  */
@@ -621,6 +622,94 @@ vm_Word method_Int_plus[] = {
         {.intval = 1}
 };
 
+
+/* Int:sub (new native_method) */
+obj_ref native_Int_sub(void ) {
+    obj_ref this = vm_fp->obj;
+    assert_is_type(this, the_class_Int);
+    obj_Int this_int = (obj_Int) this;
+    obj_ref other = (vm_fp - 1)->obj;
+    assert_is_type(other, the_class_Int);
+    obj_Int other_int = (obj_Int) other;
+    log_debug("Subtracting integer values: %d - %d",
+              this_int->value, other_int->value);
+    obj_ref sub = new_int(this_int->value - other_int->value);
+    return sub;
+}
+
+vm_Word method_Int_sub[] = {
+        {.instr = vm_op_enter},
+        {.instr = vm_op_call_native},
+        {.native = native_Int_sub},
+        {.instr = vm_op_return},
+        {.intval = 1}
+};
+
+/* Int:mult (new native_method) */
+obj_ref native_Int_mult(void ) {
+    obj_ref this = vm_fp->obj;
+    assert_is_type(this, the_class_Int);
+    obj_Int this_int = (obj_Int) this;
+    obj_ref other = (vm_fp - 1)->obj;
+    assert_is_type(other, the_class_Int);
+    obj_Int other_int = (obj_Int) other;
+    log_debug("Multiplying integer values: %d * %d",
+              this_int->value, other_int->value);
+    obj_ref mult = new_int(this_int->value * other_int->value);
+    return mult;
+}
+
+vm_Word method_Int_mult[] = {
+        {.instr = vm_op_enter},
+        {.instr = vm_op_call_native},
+        {.native = native_Int_mult},
+        {.instr = vm_op_return},
+        {.intval = 1}
+};
+
+/* Int:div (new native_method) */
+obj_ref native_Int_div(void ) {
+    obj_ref this = vm_fp->obj;
+    assert_is_type(this, the_class_Int);
+    obj_Int this_int = (obj_Int) this;
+    obj_ref other = (vm_fp - 1)->obj;
+    assert_is_type(other, the_class_Int);
+    obj_Int other_int = (obj_Int) other;
+    log_debug("Dividing integer values: %d / %d",
+              this_int->value, other_int->value);
+    obj_ref div = new_int(this_int->value / other_int->value);
+    return div;
+}
+
+vm_Word method_Int_div[] = {
+        {.instr = vm_op_enter},
+        {.instr = vm_op_call_native},
+        {.native = native_Int_div},
+        {.instr = vm_op_return},
+        {.intval = 1}
+};
+
+
+/* Int:neg (new native_method) */
+obj_ref native_Int_neg(void ) {
+    obj_ref this = vm_fp->obj;
+    assert_is_type(this, the_class_Int);
+    obj_Int this_int = (obj_Int) this;
+    log_debug("Negating integer value: %d",
+              this_int->value);
+    obj_ref neg = new_int(this_int->value * -1);
+    return neg;
+}
+
+vm_Word method_Int_neg[] = {
+        {.instr = vm_op_enter},
+        {.instr = vm_op_call_native},
+        {.native = native_Int_neg},
+        {.instr = vm_op_return},
+        {.intval = 0}
+};
+
+
 /* The Int Class (a singleton) */
 struct  class_struct  the_class_Int_struct = {
         .header = {
@@ -634,7 +723,11 @@ struct  class_struct  the_class_Int_struct = {
                 method_Obj_print, // PRINT
                 method_Int_equals,  // EQUALS
                 method_Int_less, // LESS
-                method_Int_plus
+                method_Int_plus,
+                method_Int_sub,
+                method_Int_mult,
+                method_Int_div,
+                method_Int_neg
         }
  };
 

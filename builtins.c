@@ -621,6 +621,87 @@ vm_Word method_Int_plus[] = {
         {.intval = 1}
 };
 
+obj_ref native_Int_sub(void ) {
+    obj_ref this = vm_fp->obj;
+    assert_is_type(this, the_class_Int);
+    obj_Int this_int = (obj_Int) this;
+    obj_ref other = (vm_fp - 1)->obj;
+    assert_is_type(other, the_class_Int);
+    obj_Int other_int = (obj_Int) other;
+    log_debug("Subtracting integer values: %d - %d",
+              other_int->value, this_int->value);
+    obj_ref difference = new_int(other_int->value - this_int->value);
+    return difference;
+}
+
+vm_Word method_Int_sub[] = {
+        {.instr = vm_op_enter},
+        {.instr = vm_op_call_native},
+        {.native = native_Int_sub},
+        {.instr = vm_op_return},
+        {.intval = 1}
+};
+
+obj_ref native_Int_neg(void ) {
+    obj_ref this = vm_fp->obj;
+    assert_is_type(this, the_class_Int);
+    obj_Int this_int = (obj_Int) this;
+    log_debug("Negating integer value: -%d ",this_int->value);
+    obj_ref negative = new_int(-(this_int->value));
+    return negative;
+}
+
+vm_Word method_Int_neg[] = {
+        {.instr = vm_op_enter},
+        {.instr = vm_op_call_native},
+        {.native = native_Int_neg},
+        {.instr = vm_op_return},
+        {.intval = 0}
+};
+
+
+obj_ref native_Int_mul(void ) {
+    obj_ref this = vm_fp->obj;
+    assert_is_type(this, the_class_Int);
+    obj_Int this_int = (obj_Int) this;
+    obj_ref other = (vm_fp - 1)->obj;
+    assert_is_type(other, the_class_Int);
+    obj_Int other_int = (obj_Int) other;
+    log_debug("Multiplying integer values: %d * %d",
+              other_int->value, this_int->value);
+    obj_ref product = new_int(other_int->value * this_int->value);
+    return product;
+}
+
+vm_Word method_Int_mul[] = {
+        {.instr = vm_op_enter},
+        {.instr = vm_op_call_native},
+        {.native = native_Int_mul},
+        {.instr = vm_op_return},
+        {.intval = 1}
+};
+
+obj_ref native_Int_div(void ) {
+    obj_ref this = vm_fp->obj;
+    assert_is_type(this, the_class_Int);
+    obj_Int this_int = (obj_Int) this;
+    obj_ref other = (vm_fp - 1)->obj;
+    assert_is_type(other, the_class_Int);
+    obj_Int other_int = (obj_Int) other;
+    log_debug("Dividing integer values: %d / %d",
+              other_int->value, this_int->value);
+    obj_ref quotient = new_int(other_int->value / this_int->value);
+    return quotient;
+}
+
+vm_Word method_Int_div[] = {
+        {.instr = vm_op_enter},
+        {.instr = vm_op_call_native},
+        {.native = native_Int_div},
+        {.instr = vm_op_return},
+        {.intval = 1}
+};
+
 /* The Int Class (a singleton) */
 struct  class_struct  the_class_Int_struct = {
         .header = {
@@ -634,7 +715,12 @@ struct  class_struct  the_class_Int_struct = {
                 method_Obj_print, // PRINT
                 method_Int_equals,  // EQUALS
                 method_Int_less, // LESS
-                method_Int_plus
+                method_Int_plus,
+                method_Int_sub,
+                method_Int_neg,
+                method_Int_mul,
+                method_Int_div
+                
         }
  };
 

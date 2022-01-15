@@ -1,0 +1,37 @@
+[
+{
+  "directory": "/home/meghanto/Documents/tiny_vm/build",
+  "command": "/bin/x86_64-linux-gnu-gcc-9 -g -std=gnu11 -o CMakeFiles/tiny_vm.dir/main.c.o -c /home/meghanto/Documents/tiny_vm/main.c",
+  "file": "/home/meghanto/Documents/tiny_vm/main.c"
+},
+{
+  "directory": "/home/meghanto/Documents/tiny_vm/build",
+  "command": "/bin/x86_64-linux-gnu-gcc-9 -g -std=gnu11 -o CMakeFiles/tiny_vm.dir/vm_state.c.o -c /home/meghanto/Documents/tiny_vm/vm_state.c",
+  "file": "/home/meghanto/Documents/tiny_vm/vm_state.c"
+},
+{
+  "directory": "/home/meghanto/Documents/tiny_vm/build",
+  "command": "/bin/x86_64-linux-gnu-gcc-9 -g -std=gnu11 -o CMakeFiles/tiny_vm.dir/vm_ops.c.o -c /home/meghanto/Documents/tiny_vm/vm_ops.c",
+  "file": "/home/meghanto/Documents/tiny_vm/vm_ops.c"
+},
+{
+  "directory": "/home/meghanto/Documents/tiny_vm/build",
+  "command": "/bin/x86_64-linux-gnu-gcc-9 -g -std=gnu11 -o CMakeFiles/tiny_vm.dir/vm_code_table.c.o -c /home/meghanto/Documents/tiny_vm/vm_code_table.c",
+  "file": "/home/meghanto/Documents/tiny_vm/vm_code_table.c"
+},
+{
+  "directory": "/home/meghanto/Documents/tiny_vm/build",
+  "command": "/bin/x86_64-linux-gnu-gcc-9 -g -std=gnu11 -o CMakeFiles/tiny_vm.dir/builtins.c.o -c /home/meghanto/Documents/tiny_vm/builtins.c",
+  "file": "/home/meghanto/Documents/tiny_vm/builtins.c"
+},
+{
+  "directory": "/home/meghanto/Documents/tiny_vm/build",
+  "command": "/bin/x86_64-linux-gnu-gcc-9 -g -std=gnu11 -o CMakeFiles/tiny_vm.dir/vm_loader.c.o -c /home/meghanto/Documents/tiny_vm/vm_loader.c",
+  "file": "/home/meghanto/Documents/tiny_vm/vm_loader.c"
+},
+{
+  "directory": "/home/meghanto/Documents/tiny_vm/build",
+  "command": "/bin/x86_64-linux-gnu-gcc-9 -g -std=gnu11 -o CMakeFiles/tiny_vm.dir/logger.c.o -c /home/meghanto/Documents/tiny_vm/logger.c",
+  "file": "/home/meghanto/Documents/tiny_vm/logger.c"
+}
+]

@@ -246,6 +246,10 @@ struct class_Int_struct {
     /* Added methods */
     vm_addr m_less;
     vm_addr m_plus;
+    vm_addr m_sub;
+    vm_addr m_neg;
+    vm_addr m_mul;
+    vm_addr m_div;
 };
 
 extern class_ref the_class_Int;

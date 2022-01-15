@@ -13,8 +13,8 @@ int main() {
     log_info("Code Loaded.");
     vm_loader_set_main("Sample");
     log_debug("Patched in call to constructor of 'Sample'");
-    // log_debug("Dumping constants");
-    // dump_constants();
+    //log_debug("Dumping constants");
+    //dump_constants();
     vm_run();
     log_info("Ran");
     return 0;

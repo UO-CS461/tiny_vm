@@ -693,6 +693,7 @@ vm_Word method_Int_div[] = {
 };
 
 
+//Negates the integer on the top of the stack
 obj_ref native_Int_neg(void) {
     obj_ref this = vm_fp->obj;
     assert_is_type(this, the_class_Int);

@@ -28,6 +28,7 @@ void assert_is_type(obj_ref thing, class_ref expected) {
         fprintf(stderr, "Type check failure: %p is Not on object!\n", thing);
         assert(0);
     }
+    assert(expected->header.healthy_class_tag == HEALTHY);
     class_ref thing_class = thing->header.clazz;
     class_ref clazz = thing_class;
     while (clazz) {
@@ -38,6 +39,7 @@ void assert_is_type(obj_ref thing, class_ref expected) {
             break;
          }
         clazz = clazz->header.super;
+        assert(clazz->header.healthy_class_tag == HEALTHY);
     }
     fprintf(stderr,
             "Type check failure:%s is not subclass of %s\n",
@@ -182,9 +184,11 @@ vm_Word method_Obj_equals[] = {
 
 /* The Obj Class (a singleton) */
 struct  class_struct  the_class_Obj_struct = {
-        .header = {"Obj",
-                   0,
-                   sizeof(struct obj_Obj_struct) },
+        .header = {.class_name ="Obj",
+                   .healthy_class_tag = HEALTHY,
+                   .super = 0,
+                   .n_fields = 0,
+                   .object_size = sizeof(struct obj_Obj_struct) },
         .vtable =
                 {method_Obj_constructor, // constructor
                  method_Obj_string, // STRING
@@ -314,6 +318,8 @@ vm_Word method_String_equals[] = {
 /* The String Class (a singleton) */
 struct  class_struct  the_class_String_struct = {
         .header = {.class_name="String",
+                   .healthy_class_tag = HEALTHY,
+                   .n_fields = 0,
                    .object_size = sizeof(struct obj_String_struct),
                    .super=the_class_Obj},
         method_String_constructor,     /* Constructor */
@@ -382,9 +388,11 @@ vm_Word method_Boolean_string[] = {
 
 /* The Boolean Class (a singleton) */
 struct  class_struct  the_class_Boolean_struct = {
-        .header = {"Boolean",
-                   the_class_Obj,
-                   sizeof(struct obj_Boolean_struct) },
+        .header = {.class_name = "Boolean",
+                   .healthy_class_tag = HEALTHY,
+                   .super = the_class_Obj,
+                   .n_fields = 0,
+                   .object_size = sizeof (struct obj_Boolean_struct) },
         .vtable =
                 {
                  method_Boolean_constructor, // constructor
@@ -463,9 +471,12 @@ vm_Word method_Nothing_string[] = {
 
 /* The Nothing Class (a singleton) */
 struct  class_struct  the_class_Nothing_struct = {
-        .header = {"Nothing",
-                   the_class_Obj,
-                   sizeof(struct class_Nothing_struct) },
+        .header = {
+                .class_name = "Nothing",
+                .healthy_class_tag = HEALTHY,
+                .super = the_class_Obj,
+                .n_fields = 0,
+                .object_size = sizeof (struct class_Nothing_struct) },
         .vtable =
                 {method_Nothing_constructor, // constructor
                  method_Nothing_string, // STRING
@@ -706,7 +717,9 @@ vm_Word method_Int_div[] = {
 struct  class_struct  the_class_Int_struct = {
         .header = {
                 .class_name = "Int",
+                .healthy_class_tag = HEALTHY,
                 .super = the_class_Obj,
+                .n_fields = 0,
                 .object_size = sizeof(struct obj_Int_struct),
         },
         .vtable = {
@@ -756,3 +769,15 @@ int int_literal_const(char *n_lit) {
     return const_index;
 }
 
+void class_health_check(class_ref clazz) {
+    assert(clazz->header.healthy_class_tag == HEALTHY);
+}
+
+/* Purely debugging ... stop when we corrupt a built-in class structure */
+void health_check_builtins() {
+    class_health_check(the_class_Int);
+    class_health_check(the_class_Obj);
+    class_health_check(the_class_String);
+    class_health_check(the_class_Boolean);
+    class_health_check(the_class_Nothing);
+}

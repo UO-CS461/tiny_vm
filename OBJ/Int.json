@@ -9,7 +9,8 @@
                 "plus",
                 "mult",
                 "sub",
-                "div"
+                "div",
+                "neg"
   ],
   "fields": []
 }

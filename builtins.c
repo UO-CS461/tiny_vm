@@ -645,7 +645,7 @@ vm_Word method_Int_mult[] = {
 };
 
 
-/* Int:mult (new native_method) */
+/* Int:sub (new native_method) */
 obj_ref native_Int_sub(void ) {
     obj_ref this = vm_fp->obj;
     assert_is_type(this, the_class_Int);
@@ -668,7 +668,7 @@ vm_Word method_Int_sub[] = {
 };
 
 
-/* Int:mult (new native_method) */
+/* Int:div (new native_method) */
 obj_ref native_Int_div(void ) {
     obj_ref this = vm_fp->obj;
     assert_is_type(this, the_class_Int);
@@ -690,6 +690,23 @@ vm_Word method_Int_div[] = {
         {.intval = 1}
 };
 
+
+obj_ref native_Int_neg(void) {
+    obj_ref this = vm_fp->obj;
+    assert_is_type(this, the_class_Int);
+    obj_Int this_int = (obj_Int) this;
+    obj_ref neg = new_int(-this_int->value);
+    return neg;
+}
+
+vm_Word method_Int_neg[] = {
+    {.instr = vm_op_enter},
+    {.instr = vm_op_call_native},
+    {.native = native_Int_neg},
+    {.instr = vm_op_return},
+    {.intval = 0}
+};
+
 /* The Int Class (a singleton) */
 struct  class_struct  the_class_Int_struct = {
         .header = {
@@ -706,7 +723,8 @@ struct  class_struct  the_class_Int_struct = {
                 method_Int_plus,
                 method_Int_mult,
                 method_Int_sub,
-                method_Int_div
+                method_Int_div,
+                method_Int_neg
         }
  };
 

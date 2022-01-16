@@ -3,6 +3,7 @@
 .class Sample:Obj
 .field x   # This is in addition to inherited fields
 .field y
+.method added forward
 
 .method $constructor
     enter

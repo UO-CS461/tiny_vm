@@ -7,15 +7,26 @@
 
 .method $constructor
     enter
-    load $  # The "this" object
     const 2
+    load $  # The "this" object
     store_field $:x
-    load $
     const 4
+    load $
     store_field $:y
+    const "Next line should be 2, the 'x' field of (2, 4)\n"
+    call String:print
+    pop
     load $
     load_field $:x
     call Int:print
+    const "\n Next line should be 2, 4\n"
+    call String:print
+    pop
+    load $
+    call $:print
+    pop
+    const "\n"
+    call String:print
     return 0
 
 # It would be better to inherit "print" and redefine "string",

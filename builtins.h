@@ -67,6 +67,7 @@ extern obj_ref int_literal(char *n);      // token: [0-9]+, e.g., 17
  * similar to Python's isinstance.
  */
 
+extern void assert_is_type(obj_ref thing, class_ref expected);
 
 /* ==============
  * Obj

@@ -12,6 +12,9 @@ enter,vm_op_enter,0     # Prologue of called method
 return,vm_op_return,1  # Return from method, reclaiming locals
 new,vm_op_new,1  # Allocate a new object instance
 pop,vm_op_pop,0  # Discard top of stack
+alloc,vm_op_alloc,1  # Allocate stack space for locals
 load,vm_op_load,1  # Load (push) a local variable onto stack
 store,vm_op_store,1  # Store (pop) top of stack to local variable
-
+load_field,vm_op_load_field,1  # Load from object field
+store_field,vm_op_store_field,1 # Store to object field
+roll,vm_op_roll,1  # [obj arg1 ... argn] -> [arg1 ... argn obj]

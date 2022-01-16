@@ -22,11 +22,26 @@ add_executable(tiny_vm
         vm_code_table.h
         vm_code_table.c  # Generated
         builtins.c builtins.h
-        vm_core.h
+        vm_core.h vm_core.c
         vm_loader.c vm_loader.h
         logger.c logger.h)
 
 target_include_directories(tiny_vm PRIVATE ${CJSON_INCLUDE_DIRS})
 target_link_libraries(tiny_vm PRIVATE cjson)
 
+# Unit tests as C code
+add_executable(test_roll
+        unit_tests/test_roll.c
+        vm_core.c vm_core.h
+        vm_state.c vm_state.h
+        builtins.c builtins.h
+        vm_ops.c vm_ops.h
+        logger.c logger.h
+        vm_code_table.c vm_code_table.h
+        )
 
+target_include_directories(test_roll
+        PRIVATE ${CJSON_INCLUDE_DIRS},
+        ${CMAKE_SOURCE_DIR}
+        )
+target_link_libraries(test_roll PRIVATE cjson)

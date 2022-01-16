@@ -29,11 +29,25 @@
  * rather than an index so that we can create blocks code
  * outside the vm_code_block, which is convenient for
  * creating native methods with trampolines.
+ * Program counter always points at next instruction
+ * word (not currently executing word).
  */
 extern vm_Word vm_code_block[];
 extern vm_addr vm_pc;
 
+/* Fetch word at program counter, and advance
+ * pc to point to next instruction.
+ */
 extern vm_Word vm_fetch_next(void);
+
+
+/* A jump is an adjustment (+/- n instruction words)
+ * to program counter.  A jump of 0 would continue
+ * to next instruction. A jump of -2 would repeat
+ * the jump instruction.
+ */
+extern void vm_relative_jump(int n);
+
 
 /* Execution run state - running or halted
  */

@@ -58,6 +58,20 @@ extern void vm_op_call_native(void);
   */
  extern obj_ref vm_new_obj(class_ref clazz);
 
+ /*  Control flow:
+  * conditional and unconditional jumps
+  * (always relative to program counter)
+  *
+  * Note: Relative jumps must consider that
+  * program counter has already advanced past
+  * end of instruction.  For example, relative jump
+  * of -2 is jump to same jump instruction.
+  *
+  */
+ extern void vm_op_jump();          // unconditional jump
+ extern void vm_op_jump_if();       // conditional jump
+ extern void vm_op_jump_ifnot();    // conditional jump
+
 /*
  * The vm calling convention pushes and
  * pops whole activation records.

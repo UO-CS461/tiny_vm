@@ -93,6 +93,17 @@ The `push_constant` instruction is summarized as
 
 Operations:
 
+- `vm_op_roll n` (roll element n onto the top of the stack).
+   This operation helps us put the *receiver* object in
+   proper position for a method call.  Consider a that 
+   we have an expression `o.f(x, y)`.  We want the values of 
+   `x` and `y` on the stack just above `o`, but `o` might
+    be an expression that should be evaluated before `x`
+    and `y`.  So we reach a state with stack `[o x y]` and 
+    we want to *roll* those three frames to be `[x y o]`
+    with `roll 2`.  *(Hat tip to Troy for pointing out this 
+    issue in the calculator.)*
+
 - `vm_op_add`  (add top two eval stack elements)  
   ![add op](img/vm_op_add.png)
 - `vm_op_const` (next word is constant to be pushed to eval stack)  

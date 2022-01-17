@@ -1,0 +1,48 @@
+
+Head of loop
+Body of loop
+1
+Counter value just above
+
+Head of loop
+Body of loop
+2
+Counter value just above
+
+Head of loop
+Body of loop
+3
+Counter value just above
+
+Head of loop
+Body of loop
+4
+Counter value just above
+
+Head of loop
+Body of loop
+5
+Counter value just above
+
+Head of loop
+Body of loop
+6
+Counter value just above
+
+Head of loop
+Body of loop
+7
+Counter value just above
+
+Head of loop
+Body of loop
+8
+Counter value just above
+
+Head of loop
+Body of loop
+9
+Counter value just above
+
+Head of loop
+Exit loop

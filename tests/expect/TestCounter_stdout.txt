@@ -1,0 +1,5 @@
+Expecting '5' on next line
+5
+Expecting '6' on next line
+6
+End of test

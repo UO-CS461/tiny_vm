@@ -1,0 +1,23 @@
+#
+#  List of operations, used to translate assembly code to
+#  bytecode, and (after translation by build_bytecode_table.py)
+#  used to translate bytecode to the internal form of instructions.
+#
+#
+halt,vm_op_halt,0       # Stops the processor.
+const,vm_op_const,1     # Push constant; constant value follows
+call,vm_op_methodcall,1 # Call an interpreted method
+call_native,vm_op_call_native,1 # Trampoline to native method
+enter,vm_op_enter,0     # Prologue of called method
+return,vm_op_return,1  # Return from method, reclaiming locals
+new,vm_op_new,1  # Allocate a new object instance
+pop,vm_op_pop,0  # Discard top of stack
+alloc,vm_op_alloc,1  # Allocate stack space for locals
+load,vm_op_load,1  # Load (push) a local variable onto stack
+store,vm_op_store,1  # Store (pop) top of stack to local variable
+load_field,vm_op_load_field,1  # Load from object field
+store_field,vm_op_store_field,1 # Store to object field
+roll,vm_op_roll,1  # [obj arg1 ... argn] -> [arg1 ... argn obj]
+jump,vm_op_jump,1  # Unconditional relative jump
+jump_if,vm_op_jump_if,1  # Conditional relative jump, if true
+jump_ifnot,vm_op_jump_ifnot,1  # Conditional relative jump, if false

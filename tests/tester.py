@@ -24,7 +24,7 @@ VM = "../cmake-build-debug/tiny_vm"
 BUILTINS = ["Bool.json", "Int.json", "Nothing.json", "Obj.json", "String.json"]
 ASMREQS = ["asm.conf", "opdefs.txt"]
 
-def setup():
+def install_prereqs():
     """Copy pre-requisite files.
     It would be cleaner to do this in Cmake, probably.
     """
@@ -87,7 +87,7 @@ def test_class(class_name: str) -> bool:
 
 def main():
     """Stub"""
-    setup()
+    install_prereqs()
     with open("src/TESTS.csv") as cases:
         case_reader = csv.DictReader(cases)
         for case in case_reader:

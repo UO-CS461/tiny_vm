@@ -18,3 +18,6 @@ store,vm_op_store,1  # Store (pop) top of stack to local variable
 load_field,vm_op_load_field,1  # Load from object field
 store_field,vm_op_store_field,1 # Store to object field
 roll,vm_op_roll,1  # [obj arg1 ... argn] -> [arg1 ... argn obj]
+jump,vm_op_jump,1  # Unconditional relative jump
+jump_if,vm_op_jump_if,1  # Conditional relative jump, if true
+jump_ifnot,vm_op_jump_ifnot,1  # Conditional relative jump, if false

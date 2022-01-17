@@ -39,6 +39,17 @@ vm_Word vm_fetch_next(void) {
     return cur;
 }
 
+/* A jump is an adjustment (+/- n instruction words)
+ * to program counter.  A jump of 0 would continue
+ * to next instruction. A jump of -2 would repeat
+ * the jump instruction.
+ */
+extern void vm_relative_jump(int n) {
+    log_debug("vm_state, Jumping (adjusted) %d from %p", n, vm_pc);
+    vm_pc += n;
+    log_debug("New program counter is %p", vm_pc);
+}
+
 
 /* ----------Activation records (frames) -----------
  *
@@ -208,7 +219,7 @@ char *guess_description(vm_Word w) {
         }
     }
     /*  A small integer constant? */
-    if (w.intval >= -10 && w.intval <= 1000) {
+    if (w.intval >= -1000 && w.intval <= 1000) {
         sprintf(buff, "(int) %d", w.intval);
         return buff;
     }
@@ -278,6 +289,7 @@ void vm_step() {
     health_check_builtins();
     stack_dump(8);
 }
+
 
 void vm_run() {
     vm_run_state = VM_RUNNING;

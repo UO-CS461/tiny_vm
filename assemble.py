@@ -24,6 +24,7 @@ logging.basicConfig()
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 
+
 class Configuration:
     def __init__(self):
         config = configparser.ConfigParser()
@@ -33,6 +34,7 @@ class Configuration:
         except FileExistsError:
             # If no configuration file is present, we will look in ./OBJ
             self.tvmlib = Path("./OBJ")
+
 
 CONFIG = Configuration()  # Visible from any code
 
@@ -47,13 +49,13 @@ def cli() -> object:
                         nargs="?", default=sys.stdout)
     return parser.parse_args()
 
+
 # ----------------
 #  Imported modules:  What we need to know is
 #    - Slot numbers for methods, e.g., "print" is
 #      the second slot.
 #    - Field numbers for load and store operations
 #
-
 class ImportedModule:
     """Imported module uses information from
     json file
@@ -79,26 +81,27 @@ class ImportedModule:
         return self.fields.index(name)
 
 
-
-
 IMPORTS: Dict[str, ImportedModule] = {}
+
+
 def import_module(module: str) -> ImportedModule:
     if module not in IMPORTS:
         path = CONFIG.tvmlib.joinpath(module).with_suffix(".json")
         IMPORTS[module] = ImportedModule(path)
     return IMPORTS[module]
 
+
 # The named literals MUST match the definitions
 # in vm_loader.h for CODE_NOTHING, etc
-#define CODE_NOTHING  (-1)
-#define CODE_FALSE (-2)
-#define CODE_TRUE (-3)
+# #define CODE_NOTHING  (-1)
+# #define CODE_FALSE (-2)
+# #define CODE_TRUE (-3)
+#
 NAMED_LITERALS = {
     "nothing": -1,
     "false": -2,
     "true": -3
 }
-
 
 # ----------------
 #  The instruction set of the machine and the numeric
@@ -204,6 +207,9 @@ class Instruction:
 # constants, code, and other information.  We'll build
 # it up in an object and then dump it all at once.
 #
+UNRESOLVED_ADDRESS = -42  # Just an easily recognized value
+
+
 class ObjectCode:
     def __init__(self):
         # The following are initialized in declare_class
@@ -228,7 +234,6 @@ class ObjectCode:
         self.labels: Dict[str, int] = {}
         # address -> unresolved label
         self.label_patch: Dict[int, str] = {}
-        # Later: method slots, class references
 
     def declare_class(self, name: str, super_name: str):
         self.class_name = name
@@ -269,11 +274,11 @@ class ObjectCode:
         self.method_locals = []
         self.code = []  # We will append instructions to this list
         self.method_code.append({"name": method_name, "slot": method_slot,
-                                 "code": self.code })
+                                 "code": self.code})
 
-    def declare_locals(self, locals: List[str]):
+    def declare_locals(self, method_locals: List[str]):
         """Map local variable names to position in activation record"""
-        self.method_locals = locals
+        self.method_locals = method_locals
 
     def declare_args(self, args: List[str]):
         """Map argument names to offsets *before* the frame pointer"""
@@ -287,7 +292,7 @@ class ObjectCode:
         local variables start at fp+3
         arguments start at fp-1
         """
-        if var=="$":
+        if var == "$":
             # Special case for the "this" variable
             return 0
         if var in self.method_args:
@@ -310,12 +315,12 @@ class ObjectCode:
                 # Imported class
                 module_record = import_module(class_name)
                 method_slot = module_record.method_slot(method_name)
-        except LookupError as e:
+        except LookupError:
             log.error(f"No such method '{full_name}'")
             method_slot = 0xBAD  # 2989 decimal
         return method_slot
 
-    def resolve_field(self, full_name:str) -> int:
+    def resolve_field(self, full_name: str) -> int:
         """Resolve Class:field to slot number"""
         class_name, field_name = full_name.split(":")
         try:
@@ -326,7 +331,7 @@ class ObjectCode:
                 # Imported class (is that legal in Quack?)
                 module_record = import_module(class_name)
                 field_slot = module_record.field_slot(field_name)
-        except LookupError as e:
+        except LookupError:
             log.error(f"No such field '{full_name}'")
             field_slot = 0xBAD  # 2989 decimal
         return field_slot
@@ -336,15 +341,19 @@ class ObjectCode:
         index = list(IMPORTS).index(class_name)
         return index
 
-
-    def resolve(self):
+    def resolve_jumps(self):
         """Patch up references to code labels"""
         for (patch_loc, patch_label) in self.label_patch.items():
+            assert self.code[patch_loc] == UNRESOLVED_ADDRESS
             try:
-                self.code[patch_loc] = self.labels[patch_label]
+                label_loc =  self.labels[patch_label]
+                # PC will be patch loc + 1
+                jump_span = label_loc - (patch_loc + 1)
+                self.code[patch_loc] = jump_span
+                log.debug(f"Jump from loc {patch_loc} to {patch_label} "
+                          f"({label_loc}) is {jump_span} words")
             except IndexError:
                 log.error(f"Unresolved label '{patch_label}'")
-
 
     def add_int_constant(self, literal: str) -> int:
         literal_index = len(self.int_constants)
@@ -389,6 +398,7 @@ class ObjectCode:
                     encode("utf-8").decode("unicode_escape")
             else:
                 log.error(f"Could not type operand '{operand}'")
+                kind = "BOGUS CONSTANT"
             self.constants.append({"kind": kind, "value": operand})
             return len(self.constants) - 1
         if op == "call":
@@ -408,6 +418,11 @@ class ObjectCode:
             # These operations have integer operands that should be
             # resolved by the compiler
             return int(operand)
+        if op in ["jump", "jump_if", "jump_ifnot"]:
+            # Operand is a label, which we may not have seen yet.
+            # Leave it to be patched in the final label resolution step
+            self.label_patch[len(self.code)] = operand
+            return UNRESOLVED_ADDRESS
         # Match should be exhaustive
         log.error(f"Unhandled operand type for {instr}")
 
@@ -432,6 +447,7 @@ class ObjectCode:
     def __str__(self) -> str:
         return self.json()
 
+
 # ----------------
 #  Assembly code is line-oriented and can be parsed
 #  with regular expressions.  We strip away comments
@@ -448,7 +464,7 @@ def strip_comments(line: str) -> str:
 INSTR_PAT = re.compile(r"""
     ((?P<label> \w+):)?   # Optional label
     \s*
-    (?P<opname> \w+)      # Operation name is required
+    (?P<opname> [a-zA-Z]\w*)      # Operation name is required
     (\s+ (?P<operand>     # Operands are integers, quoted strings, or names
          [0-9]+           # Integers are strings of digits
        |
@@ -513,6 +529,7 @@ ARGS_DECL_PAT = re.compile(r"""
 \s*
 """, re.VERBOSE)
 
+
 def translate(lines: List[str]) -> ObjectCode:
     code = ObjectCode()
     for line in lines:
@@ -554,15 +571,15 @@ def translate(lines: List[str]) -> ObjectCode:
         match = LOCALS_DECL_PAT.match(line)
         if match:
             locals_name_list = match.groupdict()["local_var_name"]
-            locals = locals_name_list.split(",")
-            n_locals = len(locals)
+            method_locals = locals_name_list.split(",")
+            n_locals = len(method_locals)
             # Allocate space on stack for local variables
             code.add_instruction(Instruction(
-                    label=None,
-                    operation=INSTRS["alloc"],
-                    operand=n_locals))
+                label=None,
+                operation=INSTRS["alloc"],
+                operand=n_locals))
             # Now set up locals symbol table information
-            code.declare_locals(locals)
+            code.declare_locals(method_locals)
             continue
 
         # Local variable declaration, ".local name,name,name"
@@ -588,15 +605,15 @@ def translate(lines: List[str]) -> ObjectCode:
         operand = parts["operand"]
         instruction = Instruction(label, INSTRS[opname], operand)
         code.add_instruction(instruction)
-    code.resolve()
+
+    code.resolve_jumps()
     return code
+
 
 def main():
     """Assemble one file into object code in json format"""
     args = cli()
-    instructions = InstructionSet("opdefs.txt")
     source = [line for line in args.source]
-    # lines = read_source("unit_tests/sample_2.asm")
     objcode = translate(source)
     print(objcode.json(), file=args.target)
 

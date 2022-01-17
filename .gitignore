@@ -1,6 +1,25 @@
 # MacOS cruft
 .DS_Store
 
+# Cmake products
+cmake-build-debug
+
+# Project generated object files,
+#   but keeping the hand-written ones
+OBJ/*.json
+!OBJ/Bool.json
+!OBJ/Int.json
+!OBJ/Nothing.json
+!OBJ/Obj.json
+!OBJ/String.json
+!OBJ/README.md
+
+# Other generated files
+vm_code_table.c
+
+# Experimental
+experiments
+
 # Prerequisites
 *.d
 

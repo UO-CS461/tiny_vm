@@ -103,7 +103,6 @@ NAMED_LITERALS = {
     "true": -3
 }
 
-
 # ----------------
 #  The instruction set of the machine and the numeric
 #  encoding of instructions must be consistent between

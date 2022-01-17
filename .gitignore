@@ -14,6 +14,12 @@ OBJ/*.json
 !OBJ/String.json
 !OBJ/README.md
 
+tests/out/*.txt
+tests/OBJ/*.json
+# No need to keep built-in classes here;
+# we copy them in from the OBJ directory above
+
+
 # Other generated files
 vm_code_table.c
 

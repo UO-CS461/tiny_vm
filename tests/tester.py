@@ -19,8 +19,9 @@ log.setLevel(logging.INFO)
 # The following might differ from system to system,
 # and should be configurable
 PY = "python3"
-ASM = "../assemble.py"
-VM = "../cmake-build-debug/tiny_vm"
+ROOT = ".."
+ASM = f"{ROOT}/assemble.py"
+VM = f"{ROOT}/bin/tiny_vm"
 BUILTINS = ["Bool.json", "Int.json", "Nothing.json", "Obj.json", "String.json"]
 ASMREQS = ["asm.conf", "opdefs.txt"]
 

@@ -28,6 +28,39 @@ void vm_op_halt(void) {
     vm_run_state = VM_HALTED;
 }
 
+/* =======  Control Flow  =========== */
+
+/* Control flow is always relative to the
+ * program counter.
+ */
+
+/* Jump always */
+extern void vm_op_jump() {
+    int span = vm_fetch_next().intval;
+    log_debug("Unconditional jump %d", span);
+    vm_relative_jump(span);
+}
+
+/* Jump if true */
+extern void vm_op_jump_if() {
+    int span = vm_fetch_next().intval;
+    obj_ref cond = vm_frame_pop_word().obj;
+    assert_is_type(cond, the_class_Boolean);
+    if (cond == lit_true) {
+        vm_relative_jump(span);
+    }
+};
+
+/* Jump if false */
+extern void vm_op_jump_ifnot() {
+    int span = vm_fetch_next().intval;
+    obj_ref cond = vm_frame_pop_word().obj;
+    assert_is_type(cond, the_class_Boolean);
+    if (cond == lit_false) {
+        vm_relative_jump(span);
+    }
+}
+
 /* ========  Linkage instructions =========== */
 
 /* Call a method on an object; the object

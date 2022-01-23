@@ -27,6 +27,56 @@ calc_grammar = """
     %ignore WS_INLINE
 """
 
+quack_grammar = """
+    ?start: program
+
+    ?program: statement
+            | program statement
+
+    ?statement: r_exp ";"
+              | assignment ";"
+
+    ?assignment: l_exp ":" type "=" r_exp
+
+    ?type: NAME
+
+    ?l_exp: NAME
+
+    ?r_exp: sum
+
+    ?sum: product
+        | sum "+" product   -> add
+        | sum "-" product   -> sub
+
+    ?product: atom
+        | product "*" atom  -> mul
+        | product "/" atom  -> div
+
+    ?atom: NUMBER           -> number
+         | "-" atom         -> neg
+         | l_exp            -> var
+         | "(" sum ")"
+
+    %import common.NUMBER
+    %import common.CNAME -> NAME
+    %import common.WS_INLINE
+    %import common.WS
+
+    %ignore WS_INLINE
+    %ignore WS
+"""
+
+def quack_main():
+    parser = argparse.ArgumentParser(prog='translate')
+    parser.add_argument('source', type=argparse.FileType('r'))
+    parser.add_argument('target', nargs='?',
+                        type=argparse.FileType('w'), default=sys.stdout)
+    args = parser.parse_args()
+    quack_parser = lark.Lark(quack_grammar, parser='lalr')
+    code = args.source.read()
+    tree = quack_parser.parse(code)
+    print(tree.pretty())
+
 #operates on the tree as it is created
 @lark.v_args(inline=True)
 class CalculateTree(lark.Transformer):
@@ -101,4 +151,5 @@ def main():
     gen('\treturn 0')
 
 if __name__ == '__main__' and not sys.flags.interactive:
-    main()
+    #main()
+    quack_main()

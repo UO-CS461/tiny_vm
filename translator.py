@@ -14,7 +14,7 @@ quack_grammar = """
     ?statement: r_exp ";"
               | assignment ";"
 
-    ?assignment: l_exp ":" type "=" r_exp
+    ?assignment: l_exp ":" type "=" r_exp -> assign
 
     ?type: NAME
 
@@ -47,27 +47,30 @@ quack_grammar = """
 #operates on the tree as it is created
 @lark.v_args(inline=True)
 class Transformer(lark.Transformer):
-    def __init__(self, target):
-        #store the target file/stdout where commands are printed
-        self.target = target
+    def __init__(self, output):
+        self.variables = set()
+        self.output = output
     def number(self, token):
         #if a number is found, output a "push constant" command
-        print('\tconst %s' % token, file=self.target)
+        self.output.append('\tconst %s' % token)
     def add(self, a, b):
         #output a call to the builtin addition function
-        print('\tcall Int:plus', file=self.target)
+        self.output.append('\tcall Int:plus')
     def sub(self, a, b):
         #output a call to the builtin subtraction function
-        print('\tcall Int:sub', file=self.target)
+        self.output.append('\tcall Int:sub')
     def mul(self, a, b):
         #output a call to the builtin multiplication function
-        print('\tcall Int:mult', file=self.target)
+        self.output.append('\tcall Int:mult')
     def div(self, a, b):
         #output a call to the builtin division function
-        print('\tcall Int:div', file=self.target)
+        self.output.append('\tcall Int:div')
     def neg(self, a): #
         #output a call to the builtin negation function
-        print('\tcall Int:neg', file=self.target)
+        self.output.append('\tcall Int:neg')
+    def assign(self, name, type, value):
+        self.variables.add((name, type))
+        self.output.append('\t#%s: %s = %s' % (name, type, value))
 
 #read an input and output file from the command line arguments
 def cli_parser():
@@ -86,13 +89,14 @@ assembly_header = """\
 
 def main():
     args = cli_parser()
+    output = []
+    transformer = Transformer(output)
     parser = lark.Lark(
         quack_grammar,
         parser='lalr',
-        transformer=Transformer(args.target)
+        transformer=transformer
     )
-    def gen(s): #convenience method for printing to target file
-        print(s, file=args.target)
+    gen = output.append
     
     gen(assembly_header % args.name) #output header of assembly file
     #iterate through arithmetic expressions
@@ -122,6 +126,9 @@ def main():
     
     #end of method
     gen('\treturn 0')
+
+    for line in output:
+        print(line, file=args.target)
 
 if __name__ == '__main__' and not sys.flags.interactive:
     main()

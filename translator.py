@@ -4,29 +4,7 @@ import lark
 import argparse
 import sys
 
-#this grammar is taken from the example in Lark's documentation,
-#with some removals to fit the spec of the current compiler
-calc_grammar = """
-    ?start: sum
-
-    ?sum: product
-        | sum "+" product   -> add
-        | sum "-" product   -> sub
-
-    ?product: atom
-        | product "*" atom  -> mul
-        | product "/" atom  -> div
-
-    ?atom: NUMBER           -> number
-         | "-" atom         -> neg
-         | "(" sum ")"
-
-    %import common.NUMBER
-    %import common.WS_INLINE
-
-    %ignore WS_INLINE
-"""
-
+#this grammar was created during office hours on 1/19/22
 quack_grammar = """
     ?start: program
 
@@ -49,8 +27,8 @@ quack_grammar = """
         | sum "-" product   -> sub
 
     ?product: atom
-        | product "*" atom  -> mul
-        | product "/" atom  -> div
+            | product "*" atom  -> mul
+            | product "/" atom  -> div
 
     ?atom: NUMBER           -> number
          | "-" atom         -> neg
@@ -66,20 +44,9 @@ quack_grammar = """
     %ignore WS
 """
 
-def quack_main():
-    parser = argparse.ArgumentParser(prog='translate')
-    parser.add_argument('source', type=argparse.FileType('r'))
-    parser.add_argument('target', nargs='?',
-                        type=argparse.FileType('w'), default=sys.stdout)
-    args = parser.parse_args()
-    quack_parser = lark.Lark(quack_grammar, parser='lalr')
-    code = args.source.read()
-    tree = quack_parser.parse(code)
-    print(tree.pretty())
-
 #operates on the tree as it is created
 @lark.v_args(inline=True)
-class CalculateTree(lark.Transformer):
+class Transformer(lark.Transformer):
     def __init__(self, target):
         #store the target file/stdout where commands are printed
         self.target = target
@@ -108,22 +75,26 @@ def cli_parser():
     parser.add_argument('source', type=argparse.FileType('r'))
     parser.add_argument('target', nargs='?',
                         type=argparse.FileType('w'), default=sys.stdout)
+    parser.add_argument('--name', nargs='?', default='Main')
     return parser.parse_args()
 
-#same for all programs - Sample is hardcoded in the tiny_vm
 assembly_header = """\
-.class Sample:Obj
+.class %s:Obj
 
 .method $constructor\
 """
 
 def main():
     args = cli_parser()
-    parser = lark.Lark(calc_grammar, parser='lalr',
-                       transformer=CalculateTree(args.target))
+    parser = lark.Lark(
+        quack_grammar,
+        parser='lalr',
+        transformer=Transformer(args.target)
+    )
     def gen(s): #convenience method for printing to target file
         print(s, file=args.target)
-    gen(assembly_header) #output header of assembly file
+    
+    gen(assembly_header % args.name) #output header of assembly file
     #iterate through arithmetic expressions
     for line in args.source:
         line = line.strip() #remove extraneous whitespace
@@ -133,6 +104,7 @@ def main():
         gen('\tconst "%s = "' % line)
         gen('\tcall String:print')
         gen('\tpop')
+
         try:
             #attempt to parse expression
             tree = parser.parse(line)
@@ -147,9 +119,9 @@ def main():
             gen('\tconst "\\n"')
             gen('\tcall String:print')
             gen('\tpop')
+    
     #end of method
     gen('\treturn 0')
 
 if __name__ == '__main__' and not sys.flags.interactive:
-    #main()
-    quack_main()
+    main()

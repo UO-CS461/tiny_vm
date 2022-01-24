@@ -69,8 +69,10 @@ class Transformer(lark.Transformer):
         #output a call to the builtin negation function
         self.output.append('\tcall Int:neg')
     def assign(self, name, type, value):
-        self.variables.add((name, type))
-        self.output.append('\t#%s: %s = %s' % (name, type, value))
+        self.variables.add((str(name), str(type)))
+        self.output.append('\tstore %s' % name)
+    def var(self, name):
+        self.output.append('\tload %s' % name)
 
 #read an input and output file from the command line arguments
 def cli_parser():
@@ -99,13 +101,14 @@ def main():
     gen = output.append
     
     gen(assembly_header % args.name) #output header of assembly file
+    gen('')
     #iterate through arithmetic expressions
     for line in args.source:
         line = line.strip() #remove extraneous whitespace
         if not line: #ignore blank lines
             continue
         #output command to print raw expression
-        gen('\tconst "%s = "' % line)
+        gen('\tconst "%s\\n"' % line)
         gen('\tcall String:print')
         gen('\tpop')
 
@@ -117,18 +120,35 @@ def main():
             print('Invalid line: "%s"' % line, file=sys.stderr)
         else:
             #if no exception was found, output command to print result
-            gen('\tcall Int:print')
-            gen('\tpop')
+            #gen('\tcall Obj:print')
+            #gen('\tpop')
             #print newline after each expression
-            gen('\tconst "\\n"')
-            gen('\tcall String:print')
-            gen('\tpop')
+            #gen('\tconst "\\n"')
+            #gen('\tcall String:print')
+            #gen('\tpop')
+            pass
+
+    variables = transformer.variables
+    for variable, type in variables:
+        gen('\tconst "%s = "' % variable)
+        gen('\tcall String:print')
+        gen('\tpop')
+        gen('\tload %s' % variable)
+        gen('\tcall Obj:print')
+        gen('\tpop')
+        gen('\tconst "\\n"')
+        gen('\tcall String:print')
+        gen('\tpop')
     
     #end of method
     gen('\treturn 0')
 
+    if variables:
+        output[1] = '.local %s' % ','.join(i for (i, j) in variables)
+
     for line in output:
-        print(line, file=args.target)
+        if line:
+            print(line, file=args.target)
 
 if __name__ == '__main__' and not sys.flags.interactive:
     main()

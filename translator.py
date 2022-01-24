@@ -34,8 +34,19 @@ quack_grammar = """
          | "-" atom         -> neg
          | l_exp            -> var
          | "(" sum ")"
+         | boolean
+         | nothing
+         | string
+
+    ?boolean: "true"        -> lit_true
+            | "false"       -> lit_false
+    
+    ?nothing: "none"     -> lit_nothing
+    
+    ?string: ESCAPED_STRING
 
     %import common.NUMBER
+    %import common.ESCAPED_STRING
     %import common.CNAME -> NAME
     %import common.WS_INLINE
     %import common.WS
@@ -48,11 +59,17 @@ quack_grammar = """
 @lark.v_args(inline=True)
 class Transformer(lark.Transformer):
     def __init__(self, output):
-        self.variables = set()
+        self.variables = dict()
         self.output = output
     def number(self, token):
         #if a number is found, output a "push constant" command
         self.output.append('\tconst %s' % token)
+    def lit_true(self):
+        self.output.append('\tconst true')
+    def lit_false(self):
+        self.output.append('\tconst false')
+    def lit_nothing(self):
+        self.output.append('\tconst nothing')
     def add(self, a, b):
         #output a call to the builtin addition function
         self.output.append('\tcall Int:plus')
@@ -69,7 +86,7 @@ class Transformer(lark.Transformer):
         #output a call to the builtin negation function
         self.output.append('\tcall Int:neg')
     def assign(self, name, type, value):
-        self.variables.add((str(name), str(type)))
+        self.variables[str(name)] = str(type)
         self.output.append('\tstore %s' % name)
     def var(self, name):
         self.output.append('\tload %s' % name)
@@ -128,8 +145,12 @@ def main():
             #gen('\tpop')
             pass
 
+    gen('\tconst "---------------\\n"')
+    gen('\tcall String:print')
+    gen('\tpop')
+
     variables = transformer.variables
-    for variable, type in variables:
+    for variable in variables:
         gen('\tconst "%s = "' % variable)
         gen('\tcall String:print')
         gen('\tpop')
@@ -144,7 +165,7 @@ def main():
     gen('\treturn 0')
 
     if variables:
-        output[1] = '.local %s' % ','.join(i for (i, j) in variables)
+        output[1] = '.local %s' % ','.join(i for i in variables)
 
     for line in output:
         if line:

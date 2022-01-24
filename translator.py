@@ -41,9 +41,9 @@ quack_grammar = """
     ?boolean: "true"        -> lit_true
             | "false"       -> lit_false
     
-    ?nothing: "none"     -> lit_nothing
+    ?nothing: "none"        -> lit_nothing
     
-    ?string: ESCAPED_STRING
+    ?string: ESCAPED_STRING -> string
 
     %import common.NUMBER
     %import common.ESCAPED_STRING
@@ -70,6 +70,8 @@ class Transformer(lark.Transformer):
         self.output.append('\tconst false')
     def lit_nothing(self):
         self.output.append('\tconst nothing')
+    def string(self, token):
+        self.output.append('\tconst %s' % token)
     def add(self, a, b):
         #output a call to the builtin addition function
         self.output.append('\tcall Int:plus')

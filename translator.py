@@ -19,8 +19,10 @@ quack_grammar = """
     ?type: NAME
 
     ?l_exp: NAME
+          | l_exp "." NAME                -> field
 
     ?r_exp: sum
+          | l_exp "." NAME "()"           -> call
 
     ?sum: product
         | sum "+" product   -> add
@@ -92,6 +94,10 @@ class Transformer(lark.Transformer):
         self.output.append('\tstore %s' % name)
     def var(self, name):
         self.output.append('\tload %s' % name)
+    def field(*args):
+        print(args)
+    def call(*args):
+        print(args)
 
 #read an input and output file from the command line arguments
 def cli_parser():
@@ -100,6 +106,7 @@ def cli_parser():
     parser.add_argument('target', nargs='?',
                         type=argparse.FileType('w'), default=sys.stdout)
     parser.add_argument('--name', nargs='?', default='Main')
+    parser.add_argument('--tree', '-t', action='store_true')
     return parser.parse_args()
 
 assembly_header = """\
@@ -112,6 +119,8 @@ def main():
     args = cli_parser()
     output = []
     transformer = Transformer(output)
+    if args.tree:
+        transformer = None
     parser = lark.Lark(
         quack_grammar,
         parser='lalr',
@@ -127,25 +136,21 @@ def main():
         if not line: #ignore blank lines
             continue
         #output command to print raw expression
-        gen('\tconst "%s\\n"' % line)
+        gen('\tconst "%s\\n"' % line.replace('"', "'"))
         gen('\tcall String:print')
         gen('\tpop')
 
         try:
             #attempt to parse expression
             tree = parser.parse(line)
+            if args.tree:
+                print(tree.pretty())
         except lark.exceptions.LarkError:
             #output to stderr on failed parse
             print('Invalid line: "%s"' % line, file=sys.stderr)
-        else:
-            #if no exception was found, output command to print result
-            #gen('\tcall Obj:print')
-            #gen('\tpop')
-            #print newline after each expression
-            #gen('\tconst "\\n"')
-            #gen('\tcall String:print')
-            #gen('\tpop')
-            pass
+    
+    if args.tree:
+        return
 
     gen('\tconst "---------------\\n"')
     gen('\tcall String:print')

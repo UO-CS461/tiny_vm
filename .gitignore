@@ -1,8 +1,19 @@
 # MacOS cruft
 .DS_Store
 
+# IDE cruft
+.idea
+
+
 # Cmake products
 cmake-build-debug
+CMakeFiles
+CMakeCache.txt
+Makefile
+bin/test_roll
+bin/tiny_vm
+cmake_install.cmake
+
 
 # Project generated object files,
 #   but keeping the hand-written ones

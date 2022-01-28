@@ -1,3 +1,0 @@
-/home/meghanto/Documents/tiny_vm/CMakeFiles/tiny_vm.dir
-/home/meghanto/Documents/tiny_vm/CMakeFiles/edit_cache.dir
-/home/meghanto/Documents/tiny_vm/CMakeFiles/rebuild_cache.dir

@@ -1,2 +1,0 @@
-# Hashes of file build rules.
-f1a0dc370cb58a25c92b3a8fc358338a vm_code_table.c

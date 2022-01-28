@@ -92,3 +92,6 @@ CMakeCache.txt
 # VM generated files
 tiny_vm
 vm_code_table.c
+
+# Ignored files
+calc_translator.py

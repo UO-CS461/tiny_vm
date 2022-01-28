@@ -1,0 +1,15 @@
+y: Int = 5;
+y.print();
+"\n".print();
+x: Int = y + 6;
+x.print();
+"\n".print();
+(x + y).print();
+"\n".print();
+cat: String = "Nora";
+cat.print();
+other: String = " can solve puzzles";
+"\n".print();
+(other + "\n").print();
+(cat + other).print();
+"\n".print();

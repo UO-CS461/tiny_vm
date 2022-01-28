@@ -1,0 +1,4 @@
+Next line should be 2, the 'x' field of (2, 4)
+2
+ Next line should be 2, 4
+2, 4

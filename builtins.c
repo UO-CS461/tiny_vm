@@ -313,7 +313,52 @@ vm_Word method_String_equals[] = {
         {.instr = vm_op_return},
         {.intval = 1}  // consume other
 };
+//TODO: add string less
 
+obj_ref native_String_less(void ) {
+
+//TODO
+}
+
+vm_Word method_String_less[] = {
+        {.instr = vm_op_enter},
+        {.instr = vm_op_load},
+        {.intval = 0},   // this
+        {.instr = vm_op_load},
+        {.intval = -1},  // other
+        {.instr = vm_op_call_native},
+        {.native = native_String_less},
+        {.instr = vm_op_return},
+        {.intval = 1}  // consume other
+};
+
+obj_ref native_String_plus(void ) {
+    obj_ref this = vm_fp->obj;
+    assert_is_type(this, the_class_String);
+    obj_String this_str = (obj_String) this;
+    obj_ref other = (vm_fp - 1)->obj;
+    assert_is_type(other, the_class_String);
+    obj_String other_str = (obj_String) other;
+    size_t this_len = strlen(this_str->text);
+    size_t other_len = strlen(other_str->text);
+    char *s = (char *) malloc(sizeof(char) * (this_len+other_len+1));
+    s[0] = '\0';
+    strcat(s, this_str->text);
+    strcat(s, other_str->text);
+    return new_string(s);
+}
+
+vm_Word method_String_plus[] = {
+        {.instr = vm_op_enter},
+        {.instr = vm_op_load},
+        {.intval = 0},   // this
+        {.instr = vm_op_load},
+        {.intval = -1},  // other
+        {.instr = vm_op_call_native},
+        {.native = native_String_plus},
+        {.instr = vm_op_return},
+        {.intval = 1}  // consume other
+};
 
 /* The String Class (a singleton) */
 struct  class_struct  the_class_String_struct = {
@@ -325,7 +370,9 @@ struct  class_struct  the_class_String_struct = {
         method_String_constructor,     /* Constructor */
         method_String_string,
         method_String_print,
-        method_String_equals
+        method_String_equals,
+        method_String_less, //not present
+        method_String_plus
 };
 
 class_ref the_class_String = &the_class_String_struct;
@@ -388,7 +435,7 @@ vm_Word method_Boolean_string[] = {
 
 /* The Boolean Class (a singleton) */
 struct  class_struct  the_class_Boolean_struct = {
-        .header = {.class_name = "Boolean",
+        .header = {.class_name = "Bool",
                    .healthy_class_tag = HEALTHY,
                    .super = the_class_Obj,
                    .n_fields = 0,

@@ -1,0 +1,14 @@
+i: Int = 8 + 20/3;
+j: Int = i - 3;
+j.print();
+"\n".print();
+test1: String = "Does this";
+test2: String = " even work?";
+(test1 + test2).print();
+"\n".print();
+a: Bool = false;
+a.print();
+"\n".print();
+j: Int = j * j;
+j.print();
+"\n".print();

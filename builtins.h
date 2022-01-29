@@ -127,6 +127,7 @@ struct class_String_struct {
     vm_addr m_equals;
     /* Added method */
     vm_addr m_less;
+    vm_addr m_plus;
 };
 
 extern class_ref the_class_String;

@@ -13,12 +13,12 @@ the assembler.
 
 
 ```
-$ python3 assembler.py sample.asm OBJ/Main.json
+$ python3 assembler.py Main.asm OBJ/Main.json
 ```
 
-Once the tiny_vm executable has been built, it can be run
-and outputs the answer to the expressions specified in the 
-source-file.
+Once the tiny_vm executable has been built, the nano 
+quack program can be run
+
 
 ```
 $ ./bin/tiny_vm -L OBJ Main

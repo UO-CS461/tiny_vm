@@ -6,21 +6,6 @@
 #include "vm_loader.h"
 #include "logger.h"
 
-<<<<<<< HEAD
-int main() {
-    push_log_level(INFO);
-    log_info("Initiating loader");
-    vm_loader_init();
-    log_info("Load from sample.json");
-    vm_load_from_path("sample.json");
-    log_info("Code Loaded.");
-    vm_loader_set_main("Sample");
-    log_debug("Patched in call to constructor of 'Sample'");
-    //log_debug("Dumping constants");
-    //dump_constants();
-    vm_run();
-    log_info("Ran");
-=======
 #define PATHBUFSIZE 1000
 int main(int argc, char *argv[]) {
     set_log_level(INFO);
@@ -69,6 +54,5 @@ int main(int argc, char *argv[]) {
     } else {
         fprintf(stderr, "Errors, will not run\n");
     }
->>>>>>> f8cbfb0d35a5cea632d1fbd95c256f0db31b01d0
     return 0;
 }

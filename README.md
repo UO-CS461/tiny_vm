@@ -5,13 +5,26 @@ A tiny virtual machine interpreter for Quack programs
 
 Instructions
 
-run:
+
+For Nano-quack:
+
+build 
 ```
-python calc.py 
+cmake -S . -B ./build
+cd build
+make
+cd ..
 ```
-enter the arithmetic expression
-run
+
+generate ASM:
+```
+python quack_parser.py -i quacksample.qck -o test.asm
+```
+generate object code
 ``` 
-python assemble.py test.asm sample.json
-./build/tiny_vm
+python assemble.py test.asm OBJ/Main.json
+```
+execute
+```
+./bin/tiny_vm -L OBJ Main
 ```

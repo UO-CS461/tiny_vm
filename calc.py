@@ -46,19 +46,19 @@ class MakeAsm(Transformer):
         self.codes=['.class Sample:Obj','.method $constructor']
 
     def add(self,left,right):
-        self.codes.append("call Int:plus")
+        self.codes.extend(["call Int:plus"])
     def sub(self,left,right):
-        self.codes.append("call Int:sub")
+        self.codes.extend(["roll 1","call Int:sub"])
     def mul(self,left,right):
-        self.codes.append("call Int:mul")
+        self.codes.extend(["call Int:mul"])
     def div(self,left,right):
-        self.codes.append("call Int:div")
+        self.codes.extend(["roll 1","call Int:div"])
     def neg(self,right):
         self.codes.append("call Int:neg")
     def number(self,const):
         self.codes.append("const "+const)
     def end(self,right):
-        self.codes.extend(["call Int:print","pop","return 0"])
+        self.codes.extend(["call Int:print","pop","const nothing","return 0"])
         return self.codes
 
 

@@ -1,10 +1,7 @@
-cmake_minimum_required(VERSION 3.19)
+cmake_minimum_required(VERSION 3.13)
 project(tiny_vm C)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)  # No apparent effect
-
-# Very simple JSON library for loader
-find_package(cjson CONFIG REQUIRED)
 
 add_custom_command(
         OUTPUT  ${CMAKE_SOURCE_DIR}/vm_code_table.c
@@ -16,7 +13,10 @@ add_custom_command(
         DEPENDS ${CMAKE_SOURCE_DIR}/vm_code_table.h
 )
 
+include_directories(PRIVATE ${CMAKE_SOURCE_DIR} ${PROJECT_SOURCE_DIR} "cjson")
+
 add_executable(tiny_vm
+        cjson/cJSON.c cjson/cJSON.h
         main.c
         vm_state.c vm_state.h
         vm_ops.c vm_ops.h
@@ -27,11 +27,9 @@ add_executable(tiny_vm
         vm_loader.c vm_loader.h
         logger.c logger.h)
 
-target_include_directories(tiny_vm PRIVATE ${CJSON_INCLUDE_DIRS})
-target_link_libraries(tiny_vm PRIVATE cjson)
-
 # Unit tests as C code
 add_executable(test_roll
+        cjson/cJSON.c cjson/cJSON.h
         unit_tests/test_roll.c
         vm_core.c vm_core.h
         vm_state.c vm_state.h
@@ -41,8 +39,3 @@ add_executable(test_roll
         vm_code_table.c vm_code_table.h
         )
 
-target_include_directories(test_roll
-        PRIVATE ${CJSON_INCLUDE_DIRS},
-        ${CMAKE_SOURCE_DIR}
-        )
-target_link_libraries(test_roll PRIVATE cjson)

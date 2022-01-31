@@ -30,6 +30,8 @@ tests/OBJ/*.json
 # No need to keep built-in classes here;
 # we copy them in from the OBJ directory above
 
+#build directory
+build
 
 # Other generated files
 vm_code_table.c
@@ -89,3 +91,4 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+

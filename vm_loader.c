@@ -5,7 +5,7 @@
 #include "builtins.h" // For constants
 #include "vm_code_table.h" // opcode -> instruction
 #include "logger.h"
-#include <cjson/cJSON.h>
+#include "cjson/cJSON.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

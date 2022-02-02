@@ -13,7 +13,7 @@ the assembler.
 
 
 ```
-$ python3 assembler.py Main.asm OBJ/Main.json
+$ python3 assemble.py Main.asm OBJ/Main.json
 ```
 
 Once the tiny_vm executable has been built, the nano 

@@ -209,6 +209,7 @@ const class_ref the_class_Obj = &the_class_Obj_struct;
  *    STRING
  *    PRINT
  *    EQUALS
+ *    LESS
  *    FIXME: (Incomplete for now.)
  * ==================
  */
@@ -347,6 +348,32 @@ vm_Word method_String_plus[] = {
         {.intval = 1}
 };
 
+/* less (new native_method)  */
+obj_ref native_String_less(void ) {
+    obj_ref this = vm_fp->obj;
+    assert_is_type(this, the_class_String);
+    obj_String this_string = (obj_String) this;
+    obj_ref other = (vm_fp - 1)->obj;
+    assert_is_type(other, the_class_String);
+    obj_String other_string = (obj_String) other;
+    log_debug("Comparing string values for order: %s < %s",
+              this_string->text, other_string->text);
+    if (strcmp(this_string->text, other_string->text) < 0) {
+        return lit_true;
+    } else {
+        return lit_false;
+    }
+}
+
+vm_Word method_String_less[] = {
+        {.instr = vm_op_enter},
+        {.instr = vm_op_call_native},
+        {.native = native_String_less},
+        {.instr = vm_op_return},
+        {.intval = 1}
+};
+
+
 
 /* The String Class (a singleton) */
 struct  class_struct  the_class_String_struct = {
@@ -359,7 +386,8 @@ struct  class_struct  the_class_String_struct = {
         method_String_string,
         method_String_print,
         method_String_equals,
-        method_String_plus
+        method_String_plus,
+        method_String_less
 };
 
 class_ref the_class_String = &the_class_String_struct;
@@ -485,7 +513,7 @@ vm_Word method_Nothing_constructor[] = {
 /* Nothing:string */
 
 obj_ref native_Nothing_string() {
-    return get_const_value(str_literal_const("nothing"));
+    return get_const_value(str_literal_const("none"));
 }
 
 vm_Word method_Nothing_string[] = {

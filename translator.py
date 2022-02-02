@@ -23,9 +23,6 @@ from lark import Lark, Token, Tree
 from sys import argv
 
 
-
-
-
 quack_grammar = """
 
 ?start: program         // Ignore the first starting node.
@@ -36,44 +33,45 @@ quack_grammar = """
     statement: rexp ";" 
         | assignment
 
-    assignment: lexp ":" NAME "=" rexp ";"
+    assignment: lexp (":" NAME)? "=" rexp ";"
 
     ?rexp: sum
 
-    methodcall.3: rexp "." NAME "(" args ")"
+    methodcall: atom "." NAME "(" args ")"
     
     args: rexp? ("," rexp)*
     
-    lexp.2: NAME              -> var
-        | rexp "." NAME     -> member_access
+    lexp: NAME              -> var
+        | atom "." NAME     -> member_access
     
-    ?sum.5: product
+    ?sum: product
         | sum "+" product   -> mc_plus
         | sum "-" product   -> mc_sub
-        | methodcall
-        | lexp
-    
-    ?product.4: atom
+        
+    ?product: atom
         | product "*" atom  -> mc_mult
         | product "/" atom  -> mc_div
-
+        | "-" atom          -> mc_neg
         
-    ?atom.1: "-" sum        -> mc_neg
-         | "(" sum ")"
-         | const
-
-   const: INT       
-         | STRING   
-         | NAME     -> var
-
         
+    ?atom: "(" sum ")"
+         | methodcall
+         | lexp
+         | const     
+
+    !const: INT
+         | STRING
+         | "true"
+         | "false"
+         | "none"
+
+
 
     %import common.CNAME -> NAME
     %import common.INT
     %import common.WS
     %import python.STRING
     %ignore WS
-
 """
 
 
@@ -83,10 +81,21 @@ end_line = """  const "\\n"
   call  String:print
   pop"""
 
+
 # These methods need to be "de-sugared" and create a different kind of method call in the tree.
 builtin_methods = ["mc_plus", "mc_sub", "mc_div", "mc_mult", "mc_neg"]
 
-constant_types = {"INT": "Int", "STRING": "String"}
+
+constant_types = {
+    "INT": "Int",
+    "STRING": "String",
+    "TRUE": "Boolean",
+    "FALSE": "Boolean",
+    "NONE": "Nothing",
+    "OBJ": "Obj"
+}
+
+
 local_vars = {}
 local_instructs = []
 
@@ -107,7 +116,7 @@ def rt_post_recur_print(tree):
             call_method(tree)
         elif tree.data in builtin_methods:
             call_method_builtins(tree)
-        elif tree.data == "args":
+        elif tree.data == "args":   # args are already pushed onto the stack.
             pass
         else:
             print(tree)
@@ -139,6 +148,7 @@ def call_method_builtins(tree):
         type = local_vars[tree.children[0].children[0]]
     elif tree.children[0].data == "const":
         type = constant_types[tree.children[0].children[0].type]
+
     elif tree.children[0].data in  builtin_methods:
         type = infer_type(tree.children[0])
     else:
@@ -146,6 +156,7 @@ def call_method_builtins(tree):
         raise Exception()
 
     local_instructs.append(f"  call {type}:{tree.data[3:]}")
+
 
 # Gets the type of an input tree by following the children
 # until the child is a token or the child is a variable.
@@ -178,6 +189,7 @@ def call_method(tree):
 
         local_instructs.append(f"  call {type}:{method}")
     elif recv.data == "const":
+
         type = constant_types[recv.children[0].type]
         local_instructs.append(f"  call {type}:{method}")
 
@@ -203,6 +215,10 @@ def parse_statement(tree):
 
     elif tree.children[0].data == "methodcall":
         rt_post_recur_print(tree.children[0])
+    elif tree.children[0].data in builtin_methods:  # Ignore de-sugared calls that do not have an effect.
+        pass
+    elif isinstance(tree.children[0].data, Token): # Just a token that does not have an effect.
+        pass
     else:
         print(tree.children[0])
         raise Exception()
@@ -263,13 +279,11 @@ def main():
 
     # Exit program
     local_instructs.append(end_line)
-    local_instructs.append("  const nothing")
+    local_instructs.append("  const none")
     local_instructs.append("  return 0")
 
     for instr in local_instructs:
         print(instr)
-
-
 
 
 

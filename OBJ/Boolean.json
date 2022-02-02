@@ -1,5 +1,5 @@
 {
-  "class_name": "Bool",
+  "class_name": "Boolean",
   "super": "Obj",
   "methods": [ "$constructor",
     "string",

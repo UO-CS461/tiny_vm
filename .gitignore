@@ -7,7 +7,7 @@ cmake-build-debug
 # Project generated object files,
 #   but keeping the hand-written ones
 OBJ/*.json
-!OBJ/Bool.json
+!OBJ/Boolean.json
 !OBJ/Int.json
 !OBJ/Nothing.json
 !OBJ/Obj.json

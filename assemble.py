@@ -98,7 +98,7 @@ def import_module(module: str) -> ImportedModule:
 # #define CODE_TRUE (-3)
 #
 NAMED_LITERALS = {
-    "nothing": -1,
+    "none": -1,
     "false": -2,
     "true": -3
 }

@@ -7,9 +7,9 @@
     new Counter
     call Counter:$constructor
     store n
-# Oops, I really should allow a label on a
-# line by itself.
-loop:   const "\nHead of loop\n"
+
+loop:
+    const "\nHead of loop\n"
     call String:print
     pop
     const 10

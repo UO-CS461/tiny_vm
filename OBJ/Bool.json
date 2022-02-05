@@ -6,5 +6,7 @@
     "print",
     "equals"
   ],
-  "fields": []
+  "fields": [],
+  "constants": [],
+  "imports": []
 }

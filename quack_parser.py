@@ -3,6 +3,7 @@ Quack Parser
 ================
 Variable Assignment, Typed Method calls, adding functionality to REPL calculator
 """
+from pydoc import classname
 from lark import Lark, Transformer, v_args
 import sys
 import argparse
@@ -14,6 +15,10 @@ parser.add_argument('-i', '--input', default=None,
                     help="Specify input file name")
 parser.add_argument('-o', '--output', default=None,
                     help="Specify output file name")
+parser.add_argument('-cn', '--classname', default=None,
+                    help="Specify program class name")
+                
+                
 args = parser.parse_args()
 
 
@@ -79,9 +84,9 @@ calc_grammar = """
 @v_args(inline=True)    # Affects the signatures of the methods
 class MakeAsm(Transformer):
 
-    def __init__(self):
+    def __init__(self, class_name='Main'):
         self.vars = {}
-        self.codes=['.class Main:Obj','.method $constructor']
+        self.codes=[f'.class {class_name}:Obj','.method $constructor']
         self.stackheight=0
     def gettype(self,left):
         receivertype="Object"
@@ -132,7 +137,8 @@ class MakeAsm(Transformer):
     def methodcall(self,caller,methodname,methodargs):
         if methodname== 'print':
             self.stackheight-=1
-        self.codes.append(f"call {self.gettype(caller)}:{methodname} {''.join(methodargs)}")
+        self.codes.extend(methodargs)
+        self.codes.append(f"call {self.gettype(caller)}:{methodname}")
     def const_number(self,val):
         self.stackheight+=1
         self.codes.append("const "+val)
@@ -161,8 +167,6 @@ class MakeAsm(Transformer):
         return self.codes
 
 
-calc_parser1 = Lark(calc_grammar, parser='lalr',transformer=MakeAsm())
-calc1 = calc_parser1.parse
 calc_test=Lark(calc_grammar, parser='lalr')
 calc = calc_test.parse
 
@@ -170,9 +174,13 @@ def main():
     arguments = vars(args)
     f_input = arguments["input"]
     f_output = arguments["output"]
+    f_name = arguments["classname"]
     s = ""
     with open(f_input, 'r', encoding='utf-8') as f:
         s=f.read()
+    calc_parser1 = Lark(calc_grammar, parser='lalr',transformer=MakeAsm(class_name=f_name))
+    calc1 = calc_parser1.parse
+
     
 
     with open(f_output, 'w', encoding='utf-8') as f:

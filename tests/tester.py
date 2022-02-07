@@ -52,7 +52,7 @@ def assemble(class_name: str) -> bool:
         proc = subprocess.run([PY, ASM, src, obj], text=True)
         proc.check_returncode() # May throw CalledProcessError
     except subprocess.CalledProcessError:
-        log.warning("Assembler crashed on {src}")
+        log.warning(f"Assembler crashed on {src}")
         return False
     return True
 

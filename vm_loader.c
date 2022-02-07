@@ -355,10 +355,8 @@ vm_Word *translate_method_code(cJSON *ops, int const_map[], class_ref class_map[
 #define PATHBUFSIZE 4096
 extern int vm_load_class(char *classname) {
     char load_path[PATHBUFSIZE];
-    strlcpy(load_path, PATH_PREFIX, PATHBUFSIZE);
-    strlcat(load_path, "/", PATHBUFSIZE);
-    strlcat(load_path, classname, PATHBUFSIZE);
-    strlcat(load_path, ".json", PATHBUFSIZE);
+    // Use printf for multi-concat
+    snprintf(load_path, PATHBUFSIZE, "%s/%s.json", PATH_PREFIX, classname);
     log_info("Loading %s", load_path);
     return vm_load_from_path(load_path);
 }

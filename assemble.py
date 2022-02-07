@@ -365,6 +365,10 @@ class ObjectCode:
         self.str_constants.append(literal)
         return literal_index
 
+    def add_label(self, label: str):
+        """On a line by itself"""
+        self.labels[label] = len(self.code)
+
     def add_instruction(self, instr: Instruction):
         if instr.label:
             # Address of next instruction
@@ -462,19 +466,26 @@ def strip_comments(line: str) -> str:
 
 # Instruction pattern (single operation of vm)
 INSTR_PAT = re.compile(r"""
-    ((?P<label> \w+):)?   # Optional label
+    ((?P<label> \w+) [:] )?   # Optional label
     \s*
-    (?P<opname> [a-zA-Z]\w*)      # Operation name is required
+    (?P<opname> [a-zA-Z_]+)      # Operation name is required
     (\s+ (?P<operand>     # Operands are integers, quoted strings, or names
-         [0-9]+           # Integers are strings of digits
-       |
-         ["](             # String begins and ends with quote 
-           ([\\].)  |           # Anything escaped
-           [^"\\]               # Anything but a quote or escape
-         )*["]
-       |
-         (\w|[:$])+         # name, which may be part:part or $:part
-         ))?                # Operand is optional
+             [0-9]+           # Integers are strings of digits
+           |
+             ["](             # String begins and ends with quote 
+               ([\\].)  |           # Anything escaped
+               [^"\\]               # Anything but a quote or escape
+             )*["]
+           |
+             (\w|[:$])+         # name, which may be part:part or $:part
+             )
+    )?                # Operand is optional
+   \s*
+    """, re.VERBOSE)
+
+# Bare labels
+LABEL_PAT = re.compile(r"""
+    ((?P<label> \w+):)   # Nothing but the label
    \s*
     """, re.VERBOSE)
 
@@ -595,16 +606,27 @@ def translate(lines: List[str]) -> ObjectCode:
             continue
 
         # An operation (label: operation operand)
-        match = INSTR_PAT.match(line)
+        match = INSTR_PAT.fullmatch(line)
+        if match:
+            parts = match.groupdict()
+            label = parts["label"]
+            opname = parts["opname"]
+            operand = parts["operand"]
+            instruction = Instruction(label, INSTRS[opname], operand)
+            code.add_instruction(instruction)
+            continue
+
+        # A label with no instruction
+        # An operation (label: operation operand)
+        match = LABEL_PAT.match(line)
         if not match:
             log.error(f"NO MATCH on '{line}'")
             continue
         parts = match.groupdict()
         label = parts["label"]
-        opname = parts["opname"]
-        operand = parts["operand"]
-        instruction = Instruction(label, INSTRS[opname], operand)
-        code.add_instruction(instruction)
+        code.add_label(label)
+
+
 
     code.resolve_jumps()
     return code

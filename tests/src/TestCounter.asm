@@ -26,6 +26,24 @@
     call Counter:print
     pop
 
+    const "Counter is seven?\n"
+    call String:print
+    pop
+    const 7
+    load counter
+    call Counter:check
+    call Obj:print
+    pop
+
+    const "\nCounter is six?\n"
+    call String:print
+    pop
+    const 6
+    load counter
+    call Counter:check
+    call Obj:print
+    pop
+
     const "\nEnd of test\n"
     call String:print
     pop

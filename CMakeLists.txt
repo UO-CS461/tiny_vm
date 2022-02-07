@@ -13,7 +13,11 @@ add_custom_command(
         DEPENDS ${CMAKE_SOURCE_DIR}/vm_code_table.h
 )
 
+<<<<<<< HEAD
 include_directories(PRIVATE ${CMAKE_SOURCE_DIR} ${PROJECT_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/cjson)
+=======
+include_directories(PRIVATE ${CMAKE_SOURCE_DIR} ${PROJECT_SOURCE_DIR} "cjson")
+>>>>>>> upstream/main
 
 add_executable(tiny_vm
         cjson/cJSON.c cjson/cJSON.h

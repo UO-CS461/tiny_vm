@@ -7,7 +7,7 @@ from pydoc import classname
 from lark import Lark, Transformer, v_args
 import sys
 import argparse
-
+from quack_grammar import *
 parser = argparse.ArgumentParser(description=
                                  'Compile quack into assembly')
 
@@ -28,57 +28,6 @@ try:
 except NameError:
     pass
 
-
-calc_grammar = """
-    ?start: program -> end
-
-    ?program: statement*
-
-    statement: rexpr ";"
-      | assignment ";"
-
-    assignment: lexpr ":" type "=" rexpr -> assign
-
-    ?type: NAME
-
-    ?lexpr: NAME
-
-    ?rexpr: sum
-      | methodcall
-    
-    methodcall: rexpr "." methodname "(" methodargs ")" -> methodcall
-    
-    ?methodname : NAME
-    ?methodargs: (rexpr ("," rexpr)* )? -> methodargs
-
-    ?sum: product
-        | sum "+" product   -> add
-        | sum "-" product   -> sub
-
-    ?product: atom
-        | product "*" atom  -> mul
-        | product "/" atom  -> div
-
-    ?atom: NUMBER           -> const_number
-         | "-" atom         -> neg
-         | lexpr            -> var
-         | "(" sum ")"
-         | "true" -> const_true
-         | "false" -> const_false
-         | "nothing" -> const_nothing
-         | string -> const_string
-
-    ?string: ESCAPED_STRING
-
-    %import common.CNAME -> NAME
-    %import common.NUMBER
-    %import common.ESCAPED_STRING
-    %import common.WS_INLINE
-    %import common.WS
-
-    %ignore WS_INLINE
-    %ignore WS
-"""
 
 
 @v_args(inline=True)    # Affects the signatures of the methods

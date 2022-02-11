@@ -12,3 +12,4 @@ a.print();
 j: Int = j * j;
 j.print();
 "\n".print();
+((2+2)*3);

@@ -16,7 +16,7 @@ calc_grammar = """
     ?rexpr: sum
       | methodcall
     
-    methodcall: rexpr "." methodname "(" methodargs ")" -> methodcall
+    ?methodcall: rexpr "." methodname "(" methodargs ")" -> methodcall
     
     ?methodname : NAME
     ?methodargs: (rexpr ("," rexpr)* )? -> methodargs
@@ -29,7 +29,7 @@ calc_grammar = """
         | product "*" atom  -> mul
         | product "/" atom  -> div
 
-    ?atom: NUMBER           -> const_number
+    ?atom: SIGNED_INT           -> const_number
          | "-" atom         -> neg
          | lexpr            -> var
          | "(" sum ")"
@@ -41,7 +41,7 @@ calc_grammar = """
     ?string: ESCAPED_STRING
 
     %import common.CNAME -> NAME
-    %import common.NUMBER
+    %import common.SIGNED_INT
     %import common.ESCAPED_STRING
     %import common.WS_INLINE
     %import common.WS

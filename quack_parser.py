@@ -4,7 +4,7 @@ Quack Parser
 Variable Assignment, Typed Method calls, adding functionality to REPL calculator
 """
 from pydoc import classname
-from lark import Lark, Transformer, v_args
+from lark import Lark, Transformer, v_args,exceptions,tree
 import sys
 import argparse
 from quack_grammar import *
@@ -50,7 +50,9 @@ class MakeAsm(Transformer):
         if str.isdigit(left):
             receivertype = "Int"
         return receivertype
-
+    def returntype(self,methodname,caller):
+        X=dict(print='nothing')
+        return X.get(methodname,caller)
     def assign(self,name,typename,value):
         self.vars[name]=typename
         self.codes.append(f"store {name}")
@@ -86,8 +88,8 @@ class MakeAsm(Transformer):
     def methodcall(self,caller,methodname,methodargs):
         if methodname== 'print':
             self.stackheight-=1
-        self.codes.extend(methodargs)
         self.codes.append(f"call {self.gettype(caller)}:{methodname}")
+        return self.returntype(methodname,caller)
     def const_number(self,val):
         self.stackheight+=1
         self.codes.append("const "+val)
@@ -110,15 +112,14 @@ class MakeAsm(Transformer):
         return val
     def end(self,right):
         assert self.stackheight >=0, "negative stack height!!"
-        self.codes= self.codes[:2]+[".local "+','.join(self.vars.keys())]+self.codes[2:]
+        self.codes= self.codes[:2]+([".local "+','.join(self.vars.keys())] if self.vars  else [])+self.codes[2:]
         self.codes+=["pop"]*self.stackheight
         self.codes.extend(["const nothing","return 0"])
         return self.codes
 
 
-calc_test=Lark(calc_grammar, parser='lalr')
+calc_test=Lark(calc_grammar, parser='lalr',lexer="basic")
 calc = calc_test.parse
-
 def main():
     arguments = vars(args)
     f_input = arguments["input"]
@@ -127,16 +128,24 @@ def main():
     s = ""
     with open(f_input, 'r', encoding='utf-8') as f:
         s=f.read()
-    calc_parser1 = Lark(calc_grammar, parser='lalr',transformer=MakeAsm(class_name=f_name))
+    calc_parser1 = Lark(calc_grammar, parser='lalr',transformer=MakeAsm(class_name=f_name),lexer="basic")
     calc1 = calc_parser1.parse
 
     
 
     with open(f_output, 'w', encoding='utf-8') as f:
         #print tree for debug
-        #print(calc(s).pretty(),flush=True)
-        f.write('\n\t'+'\n\t'.join(calc1(s)))
+        print(calc(s).pretty(),flush=True)
+        try:
+            f.write('\n\t'+'\n\t'.join(calc1(s)))
+            #tree.pydot__tree_to_png( calc(s), './parser.png')
 
+        except exceptions.UnexpectedToken as ex:
+            print(calc(s).choices(),flush=True)
+            tree.pydot__tree_to_png( calc1(s), './parser.png')
+
+
+            
     
 
 def test():

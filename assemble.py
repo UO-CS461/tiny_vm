@@ -81,7 +81,8 @@ class ImportedModule:
         return self.fields.index(name)
 
 
-IMPORTS: Dict[str, ImportedModule] = {}
+IMPORTS: Dict[str, Optional[ImportedModule]] = { "$": None }
+# $ will be replaced by current class name in output .json file
 
 
 def import_module(module: str) -> ImportedModule:
@@ -245,6 +246,7 @@ class ObjectCode:
         self.method_list = super_module.methods
         self.n_inherited = len(super_module.methods)
         self.field_list = super_module.fields
+        # AND we need to be able to refer to this class in NEW
 
     def declare_field(self, name: str):
         """Add a field to objects of this class;
@@ -434,7 +436,7 @@ class ObjectCode:
         struct = {
             "class_name": self.class_name,
             "super": self.super_name,
-            "imports": list(IMPORTS),
+            "imports": [self.class_name] + list(IMPORTS)[1:],
             "methods": self.method_list,
             "fields": self.field_list,
             # It's just simpler to count fields and methods

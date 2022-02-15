@@ -224,11 +224,8 @@ static int load_json(char buf[]) {
     int constant_renumber_map[30];
     int n_consts = remap_constants(constant_renumber_map, tree, 30);
 
-    /* module class index -> class reference,
-     * with potential side effect of loading more class files.
-     */
-    class_ref class_map[30];
-    int n_classes = map_classes(class_map, tree, 30);
+    // Mapping imported classes was here; moving AFTER we
+    // create and index this class so that it can reference itself
 
     // Create and initialize a class object
     // push_log_level(DEBUG);
@@ -275,6 +272,13 @@ static int load_json(char buf[]) {
     set_loaded(the_class);
     // We want the class in the "loaded classes" table before loading
     // methods, because the methods might have references to the current class.
+
+    /* module class index -> class reference,
+    * with potential side effect of loading more class files.
+    */
+    class_ref class_map[30];
+    int n_classes = map_classes(class_map, tree, 30);
+
 
     cJSON *code_table = cJSON_GetObjectItemCaseSensitive(tree, "code");
     assert(code_table);  // Abort if it wasn't present

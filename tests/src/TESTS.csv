@@ -8,3 +8,5 @@ NewThis,assemble
 UseThis,run
 IsADuck,assemble
 DuckCheck,run
+RecursiveLoadSuper,run
+RecursiveLoadSuperDuper,run

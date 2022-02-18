@@ -52,6 +52,9 @@ extern void vm_op_call_native(void);
  */
  extern void vm_op_new(void);
 
+ /* is_instance is the other op that takes a class as operand */
+ extern void vm_op_is_instance(void);
+
 
  /* The interpreter may also create an object from within a
   * built-in method, without executing a VM instruction.

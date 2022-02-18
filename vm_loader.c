@@ -335,7 +335,8 @@ vm_Word *translate_method_code(cJSON *ops, int const_map[], class_ref class_map[
                 check_health_object(get_const_value(const_index));
                 vm_code_block[vm_code_index++] = (vm_Word)
                         {.intval=  const_index};
-            } else if(vm_op_bytecodes[opcode].instr == vm_op_new) {
+            } else if(vm_op_bytecodes[opcode].instr == vm_op_new
+                      || vm_op_bytecodes[opcode].instr == vm_op_is_instance) {
                 class_ref clazz = class_map[operand];
                 log_debug("Translating allocation of new '%s'",
                           clazz->header.class_name);

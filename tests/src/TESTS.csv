@@ -4,3 +4,9 @@ TestCounter,run
 Looper,run
 Pair,run
 Roleur,run
+NewThis,assemble
+UseThis,run
+IsADuck,assemble
+DuckCheck,run
+RecursiveLoadSuper,run
+RecursiveLoadSuperDuper,run

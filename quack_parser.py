@@ -36,7 +36,6 @@ class MakeAsm(Transformer):
     def __init__(self, class_name='Main'):
         self.vars = {}
         self.codes=[f'.class {class_name}:Obj','.method $constructor']
-        self.stackheight=0
     def gettype(self,left):
         receivertype="Object"
         if left in self.vars:
@@ -53,67 +52,52 @@ class MakeAsm(Transformer):
     def returntype(self,methodname,caller):
         X=dict(print='nothing')
         return X.get(methodname,caller)
+    def solo_statement(self,soloexpr):
+        self.codes.append('pop')
+
     def assign(self,name,typename,value):
         self.vars[name]=typename
         self.codes.append(f"store {name}")
-        self.stackheight-=1
     def var(self, name):
         assert name in self.vars, f"Variable {name} not assigned"
-        self.stackheight+=1
-
         self.codes.append(f"load {name}")
         return name
     def add(self,left,right):
-        self.stackheight-=1
-
         self.codes.extend(["roll 1",f"call {self.gettype(left)}:plus"])
         return left
     def sub(self,left,right):
-        self.stackheight-=1
         self.codes.extend(["roll 1",f"call {self.gettype(left)}:sub"])
         return left
     def mul(self,left,right):
-        self.stackheight-=1
         self.codes.extend(["roll 1",f"call {self.gettype(left)}:mul"])
         return left
     def div(self,left,right):
-        self.stackheight-=1
         self.codes.extend(["roll 1",f"call {self.gettype(left)}:div"])
         return left
     def neg(self,right):
-        self.codes.append(f"call {self.gettype(right)}:neg")
         return right
     def methodargs(self,*args):
         return args
     def methodcall(self,caller,methodname,methodargs):
-        if methodname== 'print':
-            self.stackheight-=1
         self.codes.append(f"call {self.gettype(caller)}:{methodname}")
         return self.returntype(methodname,caller)
     def const_number(self,val):
-        self.stackheight+=1
         self.codes.append("const "+val)
         return val
     def const_true(self):
-        self.stackheight+=1
         self.codes.append("const true")
         return "true"
     def const_false(self):
-        self.stackheight+=1
         self.codes.append("const false")
         return "false"
     def const_nothing(self):
-        self.stackheight+=1
         self.codes.append("const nothing")
         return "nothing"
     def const_string(self,val):
-        self.stackheight+=1
         self.codes.append("const "+val)
         return val
     def end(self,right):
-        assert self.stackheight >=0, "negative stack height!!"
         self.codes= self.codes[:2]+([".local "+','.join(self.vars.keys())] if self.vars  else [])+self.codes[2:]
-        self.codes+=["pop"]*self.stackheight
         self.codes.extend(["const nothing","return 0"])
         return self.codes
 
@@ -135,10 +119,10 @@ def main():
 
     with open(f_output, 'w', encoding='utf-8') as f:
         #print tree for debug
-        print(calc(s).pretty(),flush=True)
+        #print(calc(s).pretty(),flush=True)
         try:
             f.write('\n\t'+'\n\t'.join(calc1(s)))
-            #tree.pydot__tree_to_png( calc(s), './parser.png')
+            tree.pydot__tree_to_png( calc(s), './parser.png')
 
         except exceptions.UnexpectedToken as ex:
             print(calc(s).choices(),flush=True)

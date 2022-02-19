@@ -21,3 +21,4 @@ roll,vm_op_roll,1  # [obj arg1 ... argn] -> [arg1 ... argn obj]
 jump,vm_op_jump,1  # Unconditional relative jump
 jump_if,vm_op_jump_if,1  # Conditional relative jump, if true
 jump_ifnot,vm_op_jump_ifnot,1  # Conditional relative jump, if false
+is_instance,vm_op_is_instance,1   # Test membership in class (for typecase)

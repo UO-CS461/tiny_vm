@@ -1,0 +1,2 @@
+This is RecursiveLoadSuperDuper's constructor
+This is RecursiveLoadSuper's shout method

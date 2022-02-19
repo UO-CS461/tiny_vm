@@ -172,6 +172,41 @@ extern void vm_op_new(void) {
     return;
 }
 
+/* is_instance is the other op that takes a class as operand
+ * FIXME:  Refactor to reduce duplication with assert_is_type
+ *
+ */
+
+int is_instance(obj_ref thing, class_ref clazz) {
+    if (thing->header.tag != GOOD_OBJ_TAG) {
+        fprintf(stderr, "Type check failure: %p is Not on object!\n", thing);
+        assert(0);
+    }
+    assert(clazz->header.healthy_class_tag == HEALTHY);
+    class_ref thing_class = thing->header.clazz;
+    while (1) {
+        if (thing_class == clazz) {
+            return 1; // True, is an instance
+        }
+        if (clazz == the_class_Obj) {
+            return 0;  // Not an instance
+        }
+        clazz = clazz->header.super;
+        assert(clazz->header.healthy_class_tag == HEALTHY);
+    }
+ }
+
+extern void vm_op_is_instance(void) {
+    class_ref clazz = vm_fetch_next().clazz;
+    check_health_class(clazz);
+    if (is_instance(vm_frame_pop_word().obj, clazz)) {
+        vm_frame_push_word((vm_Word) lit_true);
+    } else {
+        vm_frame_push_word((vm_Word) lit_false);
+    }
+}
+
+
 /*
  * Stack and local variable manipulation
  */

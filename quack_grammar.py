@@ -29,7 +29,7 @@ calc_grammar = """
         | product "*" atom  -> mul
         | product "/" atom  -> div
 
-    ?atom: SIGNED_INT           -> const_number
+    ?atom: INT           -> const_number
          | "-" atom         -> neg
          | lexpr            -> var
          | "(" sum ")"
@@ -41,7 +41,7 @@ calc_grammar = """
     ?string: ESCAPED_STRING
 
     %import common.CNAME -> NAME
-    %import common.SIGNED_INT
+    %import common.INT
     %import common.ESCAPED_STRING
     %import common.WS_INLINE
     %import common.WS

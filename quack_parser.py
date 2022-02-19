@@ -135,7 +135,7 @@ def main():
 
     with open(f_output, 'w', encoding='utf-8') as f:
         #print tree for debug
-        print(calc(s).pretty(),flush=True)
+        #print(calc(s).pretty(),flush=True)
         try:
             f.write('\n\t'+'\n\t'.join(calc1(s)))
             #tree.pydot__tree_to_png( calc(s), './parser.png')

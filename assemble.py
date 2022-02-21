@@ -494,7 +494,7 @@ LABEL_PAT = re.compile(r"""
 # Directive:  Name this class
 CLASS_DECL_PAT = re.compile(r"""
 [.]class \s+ 
-(?P<class_name> \w+ )[:](?P<super_name> \w+)
+(?P<class_name> [\w$]+ )[:](?P<super_name> \w+)
 \s*
 """, re.VERBOSE)
 

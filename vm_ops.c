@@ -188,11 +188,11 @@ int is_instance(obj_ref thing, class_ref clazz) {
         if (thing_class == clazz) {
             return 1; // True, is an instance
         }
-        if (clazz == the_class_Obj) {
+        if (thing_class == the_class_Obj) {
             return 0;  // Not an instance
         }
-        clazz = clazz->header.super;
-        assert(clazz->header.healthy_class_tag == HEALTHY);
+        thing_class = thing_class->header.super;
+        assert(thing_class->header.healthy_class_tag == HEALTHY);
     }
  }
 

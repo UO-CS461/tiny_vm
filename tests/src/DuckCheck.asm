@@ -37,6 +37,19 @@ not_a_string:
     load duck
     call  IsADuck:print
     pop
+    # BUG FIX CHECK: Ducks are objects
+    load duck
+    is_instance Obj
+    jump_ifnot bad_duck
+    const "Ducks are objects, although they don't think so\n"
+    call String:print
+    pop
+    jump done
+bad_duck:
+    const "Failed, Ducks should be instance of Obj\n"
+    call String:print
+    pop
+done:
     const "Ducks have been checked.\n"
     call String:print
     return 0

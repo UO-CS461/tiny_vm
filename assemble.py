@@ -269,6 +269,13 @@ class ObjectCode:
         # it's not filled in later in the code.
 
     def begin_method(self, method_name: str):
+        self.resolve_jumps()  # Of preceding method!
+        # And then re-initialize tables
+        # label -> address
+        self.labels: Dict[str, int] = {}
+        # address -> unresolved label
+        self.label_patch: Dict[int, str] = {}
+        ###
         if method_name not in self.method_list:
             self.method_list.append(method_name)
         method_slot = self.method_list.index(method_name)
@@ -494,7 +501,7 @@ LABEL_PAT = re.compile(r"""
 # Directive:  Name this class
 CLASS_DECL_PAT = re.compile(r"""
 [.]class \s+ 
-(?P<class_name> \w+ )[:](?P<super_name> \w+)
+(?P<class_name> [\w$]+ )[:](?P<super_name> \w+)
 \s*
 """, re.VERBOSE)
 
@@ -630,7 +637,7 @@ def translate(lines: List[str]) -> ObjectCode:
 
 
 
-    code.resolve_jumps()
+    code.resolve_jumps()  # Of the last method entered
     return code
 
 

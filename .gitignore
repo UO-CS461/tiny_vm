@@ -4,6 +4,8 @@
 # IDE cruft
 .idea
 
+#VSCODE debugger
+.vscode
 #Python Pycache
 __pycache__
 

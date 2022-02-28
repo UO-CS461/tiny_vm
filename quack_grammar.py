@@ -24,40 +24,48 @@ calc_grammar = """
 
     ?lexpr: NAME
 
-    ?rexpr: "(" rexpr ")"
-      | methodcall
-      | atom
-      | condition
-      | rexpr "*" rexpr  -> mul
-      | rexpr "/" rexpr  -> div
-      | rexpr "+" rexpr   -> add
-      | rexpr "-" rexpr   -> sub
+    ?rexpr: rexpr1
+            | condition
+    
+    ?rexpr1: rexpr2
+            | "not" rexpr1      -> _not
+            | relation
+
+    ?rexpr2:"(" rexpr ")"
+            | methodcall
+            | atom
+            | rexpr2 "*" rexpr2  -> mul
+            | rexpr2 "/" rexpr2 -> div
+            | rexpr2 "+" rexpr2  -> add
+            | rexpr2 "-" rexpr2  -> sub
+
+
+
     
 
-    ?methodcall: rexpr "." methodname "(" methodargs ")" -> methodcall
+    ?methodcall: rexpr2 "." methodname "(" methodargs ")" -> methodcall
     
     ?methodname : NAME
     ?methodargs: (rexpr ("," rexpr)* )? -> methodargs          
 
 
     ?atom: INT           -> const_number
-         | "-" atom         -> neg
+         | "-" rexpr2         -> neg
          | lexpr            -> var
          | "true" -> const_true
          | "false" -> const_false
          | "nothing" -> const_nothing
          | string -> const_string
 
-    ?condition: rexpr "and" rexpr -> and
-              | rexpr "or" rexpr -> or
-              | "not" rexpr -> not
-              | relation
-              
-    ?relation:  rexpr "<" rexpr -> less
-              | rexpr "<=" rexpr -> atmost
-              | rexpr ">" rexpr -> more
-              | rexpr ">=" rexpr -> atleast
-              | rexpr "==" rexpr -> equals
+    ?condition:   rexpr1 "and" rexpr1 -> _and
+                | rexpr1 "or" rexpr1 -> _or
+
+    
+    ?relation:  rexpr2 "<" rexpr2 -> less
+              | rexpr2 "<=" rexpr2 -> atmost
+              | rexpr2 ">" rexpr2 -> more
+              | rexpr2 ">=" rexpr2 -> atleast
+              | rexpr2 "==" rexpr2 -> equals
     
     ?string: ESCAPED_STRING
 
@@ -80,7 +88,7 @@ relational_methods = {'less', 'more', 'equals', 'atmost', 'atleast'}
 nothing_methods = {'print'}
 str_methods = {'string'}
 arithmetic_methods = {'mul', 'sub', 'div', 'neg', 'plus'}
-logical_methods = {'and', 'or', 'not'}
+logical_methods = {'not'}
 OBJ_methods = {'print', 'equals', 'string'}
 STRING_methods = OBJ_methods | {'plus'} | relational_methods
 INT_methods = OBJ_methods | arithmetic_methods | relational_methods
@@ -98,7 +106,7 @@ for cls, methods in zip(clsnames, [OBJ_methods, INT_methods, BOOL_methods, STRIN
         elif method in arithmetic_methods:
             temp[method] = [[cls], cls]
         elif method in logical_methods:
-            temp[method] = [['Bool'], 'Bool']
+            temp[method] = [[], 'Bool']
         elif method in str_methods:
             temp[method] = [[], 'String']
 def commontype(t1,t2):

@@ -427,6 +427,26 @@ vm_Word method_Boolean_string[] = {
         {.intval = 0 }
 };
 
+/* Boolean Not */
+obj_ref native_Boolean_not() {
+    obj_ref this = vm_fp->obj;
+    if (this == lit_true) {
+        return lit_false;
+    } else if (this == lit_false) {
+        return lit_true;
+    } else {
+        return get_const_value(str_literal_const("!!!BOGUS BOOLEAN"));
+    }
+}
+
+vm_Word method_Boolean_not[] = {
+        {.instr = vm_op_enter},
+        {.instr = vm_op_call_native},
+        {.native = native_Boolean_not},
+        {.instr = vm_op_return},
+        {.intval = 0 }
+};
+
 /* Inherit Obj:equals, since we have only two
  * objects of class Boolean.
  */
@@ -445,7 +465,8 @@ struct  class_struct  the_class_Boolean_struct = {
                  method_Boolean_constructor, // constructor
                  method_Boolean_string, // STRING
                  method_Obj_print, // PRINT
-                 method_Obj_equals  // EQUALS
+                 method_Obj_equals,  // EQUALS
+                 method_Boolean_not
                 }
 };
 
@@ -657,6 +678,83 @@ vm_Word method_Int_less[] = {
 };
 
 
+
+/* more (new native_method)  */
+obj_ref native_Int_more(void ) {
+    obj_ref this = vm_fp->obj;
+    assert_is_type(this, the_class_Int);
+    obj_Int this_int = (obj_Int) this;
+    obj_ref other = (vm_fp - 1)->obj;
+    assert_is_type(other, the_class_Int);
+    obj_Int other_int = (obj_Int) other;
+    log_debug("Comparing integer values for order: %d > %d",
+           this_int->value, other_int->value);
+    if (this_int->value > other_int->value) {
+        return lit_true;
+    } else {
+        return lit_false;
+    }
+}
+
+vm_Word method_Int_more[] = {
+        {.instr = vm_op_enter},
+        {.instr = vm_op_call_native},
+        {.native = native_Int_more},
+        {.instr = vm_op_return},
+        {.intval = 1}
+};
+
+/* atleast (new native_method)  */
+obj_ref native_Int_atleast(void ) {
+    obj_ref this = vm_fp->obj;
+    assert_is_type(this, the_class_Int);
+    obj_Int this_int = (obj_Int) this;
+    obj_ref other = (vm_fp - 1)->obj;
+    assert_is_type(other, the_class_Int);
+    obj_Int other_int = (obj_Int) other;
+    log_debug("Comparing integer values for order: %d >= %d",
+           this_int->value, other_int->value);
+    if (this_int->value >= other_int->value) {
+        return lit_true;
+    } else {
+        return lit_false;
+    }
+}
+
+vm_Word method_Int_atleast[] = {
+        {.instr = vm_op_enter},
+        {.instr = vm_op_call_native},
+        {.native = native_Int_atleast},
+        {.instr = vm_op_return},
+        {.intval = 1}
+};
+
+/* atmost (new native_method)  */
+obj_ref native_Int_atmost(void ) {
+    obj_ref this = vm_fp->obj;
+    assert_is_type(this, the_class_Int);
+    obj_Int this_int = (obj_Int) this;
+    obj_ref other = (vm_fp - 1)->obj;
+    assert_is_type(other, the_class_Int);
+    obj_Int other_int = (obj_Int) other;
+    log_debug("Comparing integer values for order: %d <= %d",
+           this_int->value, other_int->value);
+    if (this_int->value <= other_int->value) {
+        return lit_true;
+    } else {
+        return lit_false;
+    }
+}
+
+vm_Word method_Int_atmost[] = {
+        {.instr = vm_op_enter},
+        {.instr = vm_op_call_native},
+        {.native = native_Int_atmost},
+        {.instr = vm_op_return},
+        {.intval = 1}
+};
+
+
 /* Int:plus (new native_method) */
 obj_ref native_Int_plus(void ) {
     obj_ref this = vm_fp->obj;
@@ -775,6 +873,9 @@ struct  class_struct  the_class_Int_struct = {
                 method_Obj_print, // PRINT
                 method_Int_equals,  // EQUALS
                 method_Int_less, // LESS
+                method_Int_more, // MORE
+                method_Int_atleast, // ATLEAST
+                method_Int_atmost, // ATMOST
                 method_Int_plus,
                 method_Int_sub,
                 method_Int_neg,

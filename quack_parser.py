@@ -50,7 +50,7 @@ class Quack_Interpreter(Interpreter):
         super().__init__()
         self.vars={} 
         self.allvars={}
-        labelcounts={i:count() for i in ['if','elif','else','while','endif','endwhile']}
+        labelcounts={i:count() for i in ['if','elif','else','while','endif','endwhile','and_false','and_end','or_true','or_end']}
         self.label= lambda i:f'{i}{next(labelcounts[i])}' 
         self.code =[]
         self.class_name=class_name
@@ -97,7 +97,7 @@ class Quack_Interpreter(Interpreter):
         if else_present:
             elsebody,*_ = elsec.children
             self.visit(elsebody)
-            self.code.append(f'jump {endlabel}')
+        self.code.append(f'jump {endlabel}')
         self.code.append(f'{iflabel}:')
         self.visit(ifbody)
         self.code.append(f'jump {endlabel}')
@@ -146,7 +146,34 @@ class Quack_Interpreter(Interpreter):
         self.code.append(f'call {caller.type}:{name}')
         t.type=methodlist[caller.type][name][1]
         
+    def _and(self,t):
+        left,right = t.children
+        andlabel = self.label('and_false')
+        endlabel = self.label('and_end')
+        self.visit(left)
+        self.code.append(f'jump_ifnot {andlabel}')
+        self.visit(right)
+        self.code.extend([f'jump_ifnot {andlabel}',
+                            'const true',
+                            f'jump {endlabel}',
+                            f'{andlabel}: const false',
+                            f'{endlabel}:'])
+        t.type = 'Bool'
 
+    def _or(self,t):
+        left,right = t.children
+        orlabel = self.label('or_true')
+        endlabel = self.label('or_end')
+        self.visit(left)
+        self.code.append(f'jump_if {orlabel}')
+        self.visit(right)
+        self.code.extend([f'jump_if {orlabel}',
+                            'const false',
+                            f'jump {endlabel}',
+                            f'{orlabel}: const true',
+                            f'{endlabel}:'])
+        t.type = 'Bool'
+    
     def end(self,t):
         self.visit_children(t)
         self.code = ([f'.class {self.class_name}:Obj','.method $constructor']+
@@ -207,6 +234,10 @@ class DesugarTransformer(Transformer_InPlaceRecursive):
     def equals(self,t):
         left,right= t
         return methodcall_tree(left,'equals',right)
+    def _not(self,t):
+        right,*_= t
+        return methodcall_tree(right,'not')
+
     def __default__(self,data,children,meta):
         return TTree(data,children,meta)
 
@@ -221,9 +252,9 @@ def main():
     with open(f_input, 'r', encoding='utf-8') as f:
         s=f.read()
     parsetree = calc(s)
-#    tree.pydot__tree_to_png(parsetree, './TTree1.png')
+    tree.pydot__tree_to_png(parsetree, './TTree1.png')
     DesugarTransformer().transform(parsetree)
-#    tree.pydot__tree_to_png( parsetree, './sugar.png')
+    tree.pydot__tree_to_png( parsetree, './sugar.png')
 
     res=Quack_Interpreter()
     res.visit(parsetree)

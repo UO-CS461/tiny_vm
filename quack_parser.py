@@ -252,13 +252,13 @@ def main():
     with open(f_input, 'r', encoding='utf-8') as f:
         s=f.read()
     parsetree = calc(s)
-    tree.pydot__tree_to_png(parsetree, './TTree1.png')
+    # tree.pydot__tree_to_png(parsetree, './TTree1.png')
     DesugarTransformer().transform(parsetree)
-    tree.pydot__tree_to_png( parsetree, './sugar.png')
+    # tree.pydot__tree_to_png( parsetree, './sugar.png')
 
     res=Quack_Interpreter()
     res.visit(parsetree)
-    qpd.draw_png(parsetree,'./typedtree.png')   
+    # qpd.draw_png(parsetree,'./typedtree.png')   
     with open(f_output, 'w', encoding='utf-8') as f:
         f.write('\n\t'+'\n\t'.join(res.code))
 

@@ -127,6 +127,9 @@ struct class_String_struct {
     vm_addr m_equals;
     /* Added method */
     vm_addr m_less;
+    vm_addr m_more;
+    vm_addr m_atleast;
+    vm_addr m_atmost;
     vm_addr m_plus;
 };
 

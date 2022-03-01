@@ -6,7 +6,7 @@ A tiny virtual machine interpreter for Quack programs
 Instructions
 
 
-For Nano-quack:
+For Mini-quack:
 
 build 
 ```
@@ -16,15 +16,18 @@ make
 cd ..
 ```
 
-generate ASM:
+# Compile and Run:
 ```
-python quack_parser.py -i quacksample.qck -o test.asm
+./quack -i quacksample.qck [-o Main.asm] [-cn Main]
 ```
-generate object code
-``` 
-python assemble.py test.asm OBJ/Main.json
+# Compile:
+
 ```
-execute
+./quackc -i quacksample.qck [-o Main.asm] [-cn Main]
 ```
-./bin/tiny_vm -L OBJ Main
-```
+
+Use the -o and -cn optional parameters to change the output file name and the program class name.
+Options:
+-i / --input : specify input quack program
+-o / --output : specify output asm file name (defaults to Main.asm)
+-cn / --classname : specify program class name (defaults to Main)

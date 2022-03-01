@@ -4,13 +4,10 @@ Quack Parser
 Variable Assignment, Typed Method calls, adding functionality to REPL calculator
 """
 from calendar import c
-from pydoc import classname
 from lark import Lark, Transformer, v_args,exceptions,Tree,tree,Token
 from lark.visitors import Interpreter,Transformer_InPlaceRecursive
 from itertools import count
-import sys
 import argparse
-from sympy import Q
 from quack_grammar import calc_grammar,methodlist,commontype
 import quackpydot as qpd
 import logging

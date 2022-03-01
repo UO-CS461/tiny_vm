@@ -27,7 +27,11 @@ cd ..
 ```
 
 Use the -o and -cn optional parameters to change the output file name and the program class name.
+
 Options:
+
 -i / --input : specify input quack program
+
 -o / --output : specify output asm file name (defaults to Main.asm)
+
 -cn / --classname : specify program class name (defaults to Main)

@@ -1,9 +1,20 @@
-i=1;
-while i<=3{
-  j="";
-  while j<="aaaaa"{
-    j=j+"a";
-    (j+"\n").print();
-  }
-  i=i+1;
+// Testing while loop logic by generating factorial numbers
+factorial = 1; // The accumulator
+iterator = 0; // The iterator for our loop
+num_iters = 10; // The number of iterations
+"This program should print out ".print();
+num_iters.print();
+" factorial numbers\n\n".print();
+while iterator < num_iters {
+    // Perform calculation
+    iterator = iterator + 1;
+    factorial = factorial * iterator;
+    
+    // Print out info
+    "Iteration ".print();
+    iterator.print();
+    ": ".print();
+    factorial.print();
+    "\n".print();
 }
+"Done\n".print();

@@ -253,7 +253,7 @@ def main():
     DesugarTransformer().transform(parsetree)
     # tree.pydot__tree_to_png( parsetree, './sugar.png')
 
-    res=Quack_Interpreter()
+    res=Quack_Interpreter(f_name)
     res.visit(parsetree)
     # qpd.draw_png(parsetree,'./typedtree.png')   
     with open(f_output, 'w', encoding='utf-8') as f:

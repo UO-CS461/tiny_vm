@@ -29,6 +29,7 @@ if [ "$CLASSNAME" == "" ]; then
 fi
 
 
-./quackc -i "$INFILE" -cn "$CLASSNAME"
-
-./bin/tiny_vm -L OBJ "$CLASSNAME"
+. ./quackc -i "$INFILE" -cn "$CLASSNAME"
+if [ $ret -eq 0 ]; then
+    ./bin/tiny_vm -L OBJ "$CLASSNAME"
+fi

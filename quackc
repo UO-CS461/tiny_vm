@@ -27,7 +27,9 @@ done
 if [ "$CLASSNAME" == "" ]; then
     CLASSNAME="Main"
 fi
-rm 0_*.asm
+
+rm -f 0_*.asm
+
 classes=`python3 quack_parser.py -i "$INFILE" -cn "$CLASSNAME"`
 
 ret=$?
@@ -39,5 +41,6 @@ if [ $ret -eq 0 ]; then
         if [ $ret -ne 0 ]; then
             exit 1
         fi
+        echo "Compiled 0_${cls}.asm"
     done
 fi

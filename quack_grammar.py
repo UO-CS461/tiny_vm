@@ -142,7 +142,16 @@ def commontype(t1,t2):
     t1p= clsname_hierarchy[t1]
     t2p= clsname_hierarchy[t2]
     if t1 == t2p:
-        return t1p
+        return t1
     if t2 == t1p:
         return t2
+    if commontype(t1,t2p) == t1:
+        return t1
+    if commontype(t2,t1p) == t2:
+        return t2
+    if 'Obj' in (t1,t2):
+        return 'Obj'
     return commontype(t1p,t2p)
+
+def commontypelist(T1,T2):
+    return [commontype(i,j) for i,j in zip(T1,T2)]

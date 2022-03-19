@@ -1,10 +1,26 @@
 
 calc_grammar = """
-    ?start: program -> end
+    ?start: program 
 
-    ?program: statement*
+    ?program: class* global_constructor
 
-    statement: soloexpr ";" 
+    ?global_constructor: statement* -> end
+
+    class: class_signature class_body  
+
+    class_signature: "class" type "(" formalargs ")" ["extends" type] ->class_signature
+
+    formalargs: ( formalarg ("," formalarg)* )? -> formalargs
+
+    formalarg: lexpr ":" type   
+
+    ?class_body: "{" class_constructor class_method* "}"
+
+    class_constructor: statement* -> constructor
+
+    class_method: "def" lexpr "(" formalargs ")" [":" type] statement_block ->method_def
+
+    ?statement: soloexpr ";" 
       | assignment ";" 
       | if_block elif_block* [else_block] -> if_handler
       | "while"  rexpr  statement_block -> while_handler
@@ -12,11 +28,14 @@ calc_grammar = """
     if_block: "if"  rexpr  statement_block
     elif_block: "elif"  rexpr  statement_block
     else_block: "else" statement_block
+    return_stmt: "return" rexpr ";"-> return_handler
 
-    ?statement_block: "{" statement* "}"
+    ?statement_block: "{" statement* [return_stmt]"}"
 
     assignment: lexpr ":" type "=" rexpr -> assign
               | lexpr "=" rexpr -> assign_infertype
+              | "this" "." lexpr [":" type] "=" rexpr -> assign_this_field
+              | rexpr "." lexpr "=" rexpr -> assign_field
 
     ?soloexpr: rexpr -> solo_statement
 
@@ -30,28 +49,34 @@ calc_grammar = """
     ?rexpr1: rexpr2
             | "not" rexpr1      -> _not
             | relation
-
-    ?rexpr2:"(" rexpr ")"
-            | methodcall
-            | atom
-            | rexpr2 "*" rexpr2  -> mul
+    
+    ?rexpr2: rexpr3
+            |rexpr2 "*" rexpr2  -> mul
             | rexpr2 "/" rexpr2 -> div
             | rexpr2 "+" rexpr2  -> add
             | rexpr2 "-" rexpr2  -> sub
 
+    ?rexpr3:"(" rexpr ")"
+            | methodcall
+            | atom
+            | constructorcall
 
 
+
+    ?constructorcall: type "(" methodargs ")" -> constructorcall
     
 
-    ?methodcall: rexpr2 "." methodname "(" methodargs ")" -> methodcall
+    ?methodcall: rexpr3 "." methodname "(" methodargs ")" -> methodcall
     
     ?methodname : NAME
     ?methodargs: (rexpr ("," rexpr)* )? -> methodargs          
 
 
     ?atom: INT           -> const_number
-         | "-" rexpr2         -> neg
+         | "-" rexpr3         -> neg
          | lexpr            -> var
+         | "this" "." lexpr ->load_this_field
+         | rexpr3 "." lexpr -> load_field 
          | "true" -> const_true
          | "false" -> const_false
          | "nothing" -> const_nothing
@@ -73,6 +98,7 @@ calc_grammar = """
     %import common.INT
     %import common.ESCAPED_STRING
     %import common.CPP_COMMENT 
+    %import common.C_COMMENT 
 
     %import common.WS_INLINE
     %import common.WS
@@ -80,6 +106,7 @@ calc_grammar = """
     %ignore WS_INLINE
     %ignore WS
     %ignore CPP_COMMENT
+    %ignore C_COMMENT
 """
 
 clsnames = ['Obj', 'Int', 'Bool', 'String', 'Nothing']

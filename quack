@@ -2,16 +2,10 @@
 
 POSITIONAL_ARGS=()
 CLASSNAME=""
-OUTFILE=""
 while [[ $# -gt 0 ]]; do
   case $1 in
     -i|--input)
       INFILE="$2"
-      shift # past argument
-      shift # past value
-      ;;
-    -o|--output)
-      OUTFILE="$2"
       shift # past argument
       shift # past value
       ;;
@@ -33,10 +27,8 @@ done
 if [ "$CLASSNAME" == "" ]; then
     CLASSNAME="Main"
 fi
-if [ "$OUTFILE" == "" ]; then
-    OUTFILE="Main.asm"
-fi
 
-./quackc -i "$INFILE" -o "$OUTFILE" -cn "$CLASSNAME"
+
+./quackc -i "$INFILE" -cn "$CLASSNAME"
 
 ./bin/tiny_vm -L OBJ "$CLASSNAME"

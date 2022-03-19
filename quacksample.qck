@@ -1,20 +1,111 @@
-// Testing while loop logic by generating factorial numbers
-factorial = 1; // The accumulator
-iterator = 0; // The iterator for our loop
-num_iters = 10; // The number of iterations
-"This program should print out ".print();
-num_iters.print();
-" factorial numbers\n\n".print();
-while iterator < num_iters {
-    // Perform calculation
-    iterator = iterator + 1;
-    factorial = factorial * iterator;
+/* 
+    Calculates the golden ratio using only integers
+    First I implement modulo operation
+    Then I calculate two consecutive Fibonacci numbers. Their ratio is golden ratio
+    Then I implement integer division algorithm that returns one digit at a time
+    https://stackoverflow.com/questions/29424349/implementing-long-division-using-a-generator-function-in-python
+*/
+
+class Mod(modulus: Int) extends Obj {
+    this.modulus = modulus;
+
+    def mod(x: Int) : Int {
+        // Returns x mod this.modulus
     
-    // Print out info
-    "Iteration ".print();
-    iterator.print();
-    ": ".print();
-    factorial.print();
-    "\n".print();
+        y = this.modulus;
+
+        while x >= y {
+            x = x - y;
+        }
+
+        while x < 0 {
+            x = x + y;
+        }
+
+        return x;
+    }
+    
+    def printModulus() : Nothing {
+        this.modulus.print();
+    }
 }
-"Done\n".print();
+
+class Fibonacci(n: Int) extends Obj {
+    this.n = n;
+    this.v1 = 1;
+    this.v2 = 0;
+
+    def calcfib() : Nothing {
+        i = 0;
+        while i < this.n {
+            v3 = this.v1 + this.v2;
+
+            if v3 < 0 {
+                "Warning: integer overflow on iter ".print();
+                i.print();
+                ". Breaking prematurely\n".print();
+                i = this.n;
+            } else {
+                // Loop invariance: v1 > v2
+                this.v2 = this.v1;
+                this.v1 = v3;
+                i = i + 1;
+            }
+        }
+    }
+
+    def v1() : Int {
+        return this.v1;
+    }
+
+    def v2() : Int {
+        return this.v2;
+    }
+}
+
+class Division(p: Int, q: Int) {
+    this.leading = p / q;
+
+    this.q = q;
+    this.mod = Mod(q);
+
+    this.p = this.mod.mod(p) * 10;
+
+    def next() : Int {
+        ret = this.p / this.q;
+        this.p = this.mod.mod(this.p) * 10;
+        return ret;
+    }
+
+    def leading() : Int {
+        return this.leading;
+    }
+}
+
+
+n = 40; // nth Fibonacci 
+digits = 64; // Digits to print out
+
+f = Fibonacci(n);
+f.calcfib();
+p = f.v1();
+q = f.v2();
+
+d = Division(p, q);
+
+"This program approximates the Golden Ratio to ".print();
+digits.print();
+" digits:\n\n".print();
+p.print();
+" / ".print();
+q.print();
+" = ".print();
+
+d.leading().print();
+".".print();
+i = 0;
+while i < digits {
+    i = i + 1;
+    d.next().print();
+}
+"\n".print();

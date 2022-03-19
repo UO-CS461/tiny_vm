@@ -34,7 +34,7 @@ def pydot__tree_to_graph(tree, rankdir="LR", **kwargs):
 
         subnodes = [_to_pydot(child) if isinstance(child, Tree) else new_leaf(child)
                     for child in subtree.children]
-        node = pydot.Node(i[0], style="filled", shape="Mrecord",fillcolor="#%x" % color, label=subtree.data+' | '+str(subtree.type))
+        node = pydot.Node(i[0], style="filled", shape="Mrecord",fillcolor="#%x" % color, label=subtree.data+(f' | {str(subtree.type)}' if hasattr(subtree,'type') else ''))
         i[0] += 1
         graph.add_node(node)
 

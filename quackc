@@ -2,16 +2,10 @@
 
 POSITIONAL_ARGS=()
 CLASSNAME=""
-OUTFILE=""
 while [[ $# -gt 0 ]]; do
   case $1 in
     -i|--input)
       INFILE="$2"
-      shift # past argument
-      shift # past value
-      ;;
-    -o|--output)
-      OUTFILE="$2"
       shift # past argument
       shift # past value
       ;;
@@ -33,12 +27,17 @@ done
 if [ "$CLASSNAME" == "" ]; then
     CLASSNAME="Main"
 fi
-if [ "$OUTFILE" == "" ]; then
-    OUTFILE="Main.asm"
-fi
-python3 quack_parser.py -i "$INFILE" -o "${OUTFILE}" -cn "$CLASSNAME"
+rm 0_*.asm
+classes=`python3 quack_parser.py -i "$INFILE" -cn "$CLASSNAME"`
 
 ret=$?
 if [ $ret -eq 0 ]; then
-    python3 assemble.py "${OUTFILE}" "OBJ/${CLASSNAME}.json"
+    for cls in $classes
+    do
+        python3 assemble.py "0_${cls}.asm" "OBJ/${cls}.json"
+        ret=$?
+        if [ $ret -ne 0 ]; then
+            exit 1
+        fi
+    done
 fi

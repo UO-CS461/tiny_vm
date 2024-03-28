@@ -16,12 +16,12 @@ for Windows, although I have not tested there.
 
 ### Dependencies
 
-Make sure you have version 3.13 or later of CMake installed.  (I
+Make sure you have version 3.13 or later of _CMake_ installed.  (I
 currently have version 3.28, so 3.13 or later should be easy to
-satisfy.)    You can find CMake distributions at
+satisfy.)    You can find _CMake_ distributions at
 https://cmake.org/download/
 
-You will also need the Unix utility Make, which should be installed
+You will also need the Unix utility _make_, which should be installed
 by default in any Linux, MacOS, or other Unixoid system. 
 
 ### Steps
@@ -34,7 +34,7 @@ cd cmake-build-debug
 make
 ```
 
-The first command should produce output that looks something like this (with appropriate substitutions for your platform): 
+The first command (cmake) should produce output that looks something like this (with appropriate substitutions for your platform): 
 
 ```
 volo:tiny_vm michal$ cmake -Bcmake-build-debug -S.
@@ -49,7 +49,8 @@ volo:tiny_vm michal$ cmake -Bcmake-build-debug -S.
 -- Build files have been written to: /Users/michal/Dropbox/24S-461-compilers/dev/tiny_vm/cmake-build-debug
 ```
 
-The second command should produce output that looks like this: 
+The last command (make) should produce output that looks like this: 
+
 ```
 volo:cmake-build-debug michal$ make
 [  4%] Generating /Users/michal/Dropbox/24S-461-compilers/dev/tiny_vm/vm_code_table.c
@@ -113,9 +114,10 @@ Finished testing the 'roll' operation.
 
 ###  Huh? What did we just do? 
 
-Here's a little explanation of how CMake and Make build the tiny vm. 
+Here's a little explanation of how _CMake_ and _make_ build the tiny vm. 
 
-_CMake_ and _make_ are tools for building software in a Unix environment.
+_CMake_ and _make_ are tools for building software in a Unix
+or Unix-like environment.
 _Make_ is the grandparent of all such tools.  _make_ reads a script
 called a _Makefile_ which describes dependencies among program
 artifacts  (source files, .o files, executables, etc).  It constructs
@@ -130,14 +132,12 @@ in the right order, or writing inflexible shell scripts, partly
 because it inspected file modification dates to determine which
 files really needed to be recompiled.  Before long,
 though, _Makefile_ scripts became complicated enough that developers
-wanted more. 
-
-After _make_ established the usefulness of project build tools, dozens
-of alternatives and extensions were devised.  Some, like _Ant_, are
+wanted more. Dozens
+of alternatives and extensions have been devised.  Some, like _Ant_, are
 basically language-specific replacements for _make_.   Others, like
 _Maven_ and _Gradle_, try to be more complete project management
 tools, typically with lots of plug-in extensions.   Some replace
-_make_, others use build _Makefile_ scripts and then use _make_ for
+_make_, others build _Makefile_ scripts and then use _make_ for
 the compilation step.  _CMake_ is an example of the latter, a more
 sophisticated build tool that is designed particularly for C++
 applications (but capable of building C applications as well),
@@ -151,14 +151,14 @@ such as important library files being located in different places
 depending on which version of an operating system one is working
 with.  These are reasons I selected _CMake_ for the tiny vm. 
 
-There is one other very important reason for choosing _CMake_:
+Another very important reason I chose _CMake_:
 I knew that many graduate
 students in our department are already familiar with _CMake_.  I will
 never be more than minimally competent with any sophisticated build
 tool.  When one cannot build deep expertise, it is important to have
 access to experts.
 
-### What we built
+### The executable binaries
 
 The `tiny_vm/bin` directory should now contain two executable programs. 
 

@@ -30,8 +30,55 @@ From the tiny_vm directory, execute these commands at the command line:
 
 ```cli
 cmake -Bcmake-build-debug -S.
-make -f cmake-build-debug/Makefile
+cd cmake-build-debug
+make
 ```
+
+The first command should produce output that looks something like this (with appropriate substitutions for your platform): 
+
+```
+volo:tiny_vm michal$ cmake -Bcmake-build-debug -S.
+-- The C compiler identification is AppleClang 13.0.0.13000029
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/cc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Configuring done (0.5s)
+-- Generating done (0.0s)
+-- Build files have been written to: /Users/michal/Dropbox/24S-461-compilers/dev/tiny_vm/cmake-build-debug
+```
+
+The second command should produce output that looks like this: 
+```
+volo:cmake-build-debug michal$ make
+[  4%] Generating /Users/michal/Dropbox/24S-461-compilers/dev/tiny_vm/vm_code_table.c
+INFO:__main__:Bytecode table generation
+INFO:__main__:Finished bytecode table generation
+[  9%] Building C object CMakeFiles/tiny_vm.dir/cjson/cJSON.c.o
+[ 14%] Building C object CMakeFiles/tiny_vm.dir/main.c.o
+[ 19%] Building C object CMakeFiles/tiny_vm.dir/vm_state.c.o
+[ 23%] Building C object CMakeFiles/tiny_vm.dir/vm_ops.c.o
+[ 28%] Building C object CMakeFiles/tiny_vm.dir/vm_code_table.c.o
+[ 33%] Building C object CMakeFiles/tiny_vm.dir/builtins.c.o
+[ 38%] Building C object CMakeFiles/tiny_vm.dir/vm_core.c.o
+[ 42%] Building C object CMakeFiles/tiny_vm.dir/vm_loader.c.o
+[ 47%] Building C object CMakeFiles/tiny_vm.dir/logger.c.o
+[ 52%] Linking C executable /Users/michal/Dropbox/24S-461-compilers/dev/tiny_vm/bin/tiny_vm
+[ 52%] Built target tiny_vm
+[ 57%] Building C object CMakeFiles/test_roll.dir/cjson/cJSON.c.o
+[ 61%] Building C object CMakeFiles/test_roll.dir/unit_tests/test_roll.c.o
+[ 66%] Building C object CMakeFiles/test_roll.dir/vm_core.c.o
+[ 71%] Building C object CMakeFiles/test_roll.dir/vm_state.c.o
+[ 76%] Building C object CMakeFiles/test_roll.dir/builtins.c.o
+[ 80%] Building C object CMakeFiles/test_roll.dir/vm_ops.c.o
+[ 85%] Building C object CMakeFiles/test_roll.dir/logger.c.o
+[ 90%] Building C object CMakeFiles/test_roll.dir/vm_code_table.c.o
+[ 95%] Linking C executable /Users/michal/Dropbox/24S-461-compilers/dev/tiny_vm/bin/test_roll
+[100%] Built target test_roll
+
+```
+
 
 Test the constructed  `test_roll` executable: 
 
@@ -110,5 +157,14 @@ students in our department are already familiar with _CMake_.  I will
 never be more than minimally competent with any sophisticated build
 tool.  When one cannot build deep expertise, it is important to have
 access to experts.
+
+### What we built
+
+The `tiny_vm/bin` directory should now contain two executable programs. 
+
+- `test_roll` is a tiny test program, a "smoke test" that does not thoroughly test the tiny virtual machine, but is likely to fail if the build went horribly wrong. 
+- `tiny_vm` is the tiny virtual machine that will execute instructions that we generate, first for a calculator and later for Quack programs. 
+
+
 
 

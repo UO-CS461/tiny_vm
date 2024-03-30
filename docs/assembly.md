@@ -143,26 +143,26 @@ machine manage creation of objects and method call and return.
 The instruction and their names are declared in `opdefs.txt` and 
 implemented in `vm_ops.c`. 
 
-| Instruction | Operands | C function        | Description                                                     |
-|-------------|----------|-------------------|-----------------------------------------------------------------|
-| halt        | 0        | vm_op_halt        | Stops the processor.                                            |
-| const       | 1        | vm_op_const       | Push constant  (operand is constant to push)                    |
-| call        | 1        | vm_op_methodcall  | Call an interpreted method                                      |
-| call_native | 1        | vm_op_call_native | Trampoline to native method                                     |
-| enter       | 0        | vm_op_enter       | Prologue of called method                                       |
-| return      | 1        | vm_op_return      | Return from method, reclaiming locals                           |
-| new         | 1        | vm_op_new         | Allocate a new object instance                                  |
-| pop         | 0        | vm_op_pop         | Discard top of stack                                            |
-| alloc       | 1        | vm_op_alloc       | Allocate stack space for locals                                 |
-| load        | 1        | vm_op_load        | Load (push) a local variable onto stack                         |
-| store       | 1        | vm_op_store       | Store (pop) top of stack to local variable                      |
-| load_field  | 1        | vm_op_load_field  | Load from object field                                          |
-| store_field | 1        | vm_op_store_field | Store to object field                                           |
-| roll        | 1        | vm_op_roll        | rotate top of stack  [obj arg1 ... argn] -> [arg1 ... argn obj] |
-| jump        | 1        | vm_op_jump        | Unconditional relative jump                                     |
-| jump_if     | 1        | vm_op_jump_if,1   | Conditional relative jump, if true                              |
-| jump_ifnot  | 1        | vm_op_jump_ifnot  | Conditional relative jump, if false                             |
-| is_instance | 1        | vm_op_is_instance | Test membership in class (for typecase)                         |                                                                 |
+| Instruction | Operands | C function        | Description                                                          |
+|-------------|----------|-------------------|----------------------------------------------------------------------|
+| halt        | 0        | vm_op_halt        | Stops the processor.                                                 |
+| const       | 1        | vm_op_const       | Push constant  (operand is constant to push)                         |
+| call        | 1        | vm_op_methodcall  | Call an interpreted method                                           |
+| call_native | 1        | vm_op_call_native | Trampoline to native method (cannot be written in assembly language) |
+| enter       | 0        | vm_op_enter       | Prologue of called method                                            |
+| return      | 1        | vm_op_return      | Return from method, reclaiming locals                                |
+| new         | 1        | vm_op_new         | Allocate a new object instance                                       |
+| pop         | 0        | vm_op_pop         | Discard top of stack                                                 |
+| alloc       | 1        | vm_op_alloc       | Allocate stack space for locals                                      |
+| load        | 1        | vm_op_load        | Load (push) a local variable onto stack                              |
+| store       | 1        | vm_op_store       | Store (pop) top of stack to local variable                           |
+| load_field  | 1        | vm_op_load_field  | Load from object field                                               |
+| store_field | 1        | vm_op_store_field | Store to object field                                                |
+| roll        | 1        | vm_op_roll        | rotate top of stack  [obj arg1 ... argn] -> [arg1 ... argn obj]      |
+| jump        | 1        | vm_op_jump        | Unconditional relative jump                                          |
+| jump_if     | 1        | vm_op_jump_if,1   | Conditional relative jump, if true                                   |
+| jump_ifnot  | 1        | vm_op_jump_ifnot  | Conditional relative jump, if false                                  |
+| is_instance | 1        | vm_op_is_instance | Test membership in class (for typecase)                              |                                                                 |
 
 ### Linkage: Method call and return 
 
@@ -225,4 +225,65 @@ field `i`:
     return 1    ;  Pops one argument before returning
 ```
 
-# FIXME ... double check what 'return 1' means
+### Native methods
+
+It can't be turtles all the way down. 
+In addition to the operations of the tiny vm itself, the built-in 
+classes (Int, String, etc) have some methods that cannot be 
+implemented through sequences of other virtual machine instructions. 
+These are instead implemented in C, which is the "native code" of 
+the tiny virtual machine.  
+
+While `call_native` is an operation code of the virtual machine, it 
+is impossible to write its operand, a reference to a C function, in 
+assembly language.   The _trampoline_ code which bridges from 
+interpreted code to native code must instead be specified in a C 
+struct and compiled by a C compiler which has access to the address 
+of the implementation function.
+
+Consider the method `Equals` of class `Int`.  The `Int` class wraps 
+a native C integer, so the `Equals` method must access that native C 
+integer and use the C equality to compare it to the native C integer 
+wrapped in another object.  The `Int:Equals` method is implemented 
+as a sequence of tiny vm operations that includes a `call_native` 
+instruction to the C implementation.  The sequence of vm 
+instructions is held in the following C struct in `builtins.c`: 
+
+```c
+vm_Word method_Int_equals[] = {
+        {.instr = vm_op_enter},
+        {.instr = vm_op_call_native},
+        {.native = native_Int_equals},
+        {.instr = vm_op_return},
+        {.intval = 1}
+};
+```
+
+The `native` element of the `vm_Word` union is a reference to a C 
+function, in this case `native_Int_equals`.  T
+
+```c
+obj_ref native_Int_equals(void ) {
+    obj_ref this = vm_fp->obj;
+    assert_is_type(this, the_class_Int);
+    obj_Int this_int = (obj_Int) this;
+    obj_ref other = (vm_fp - 1)->obj;
+    assert_is_type(other, the_class_Int);
+    obj_Int other_int = (obj_Int) other;
+    log_debug("Comparing integer values for equality: %d == %d",
+           this_int->value, other_int->value);
+    if (this_int->value == other_int->value) {
+        return lit_true;
+    } else {
+        return lit_false;
+    }
+}
+```
+
+Note that `native_Int_equals` takes no arguments, but is aware of 
+the layout of the activation record including the receiver object
+`this` at the top of the stack (the frame pointer `fp`) and the 
+other operand just below it.
+
+FIXME: why is it at fp and not at sp? Why does it leave them on the 
+stack? 

@@ -103,6 +103,9 @@ object code.  I do not know JavaScript well, but I believe JavaScript
 also uses delegation.  
 
 The Kotlin language (a successor to Java) has a mechanism called 
-"delegation", but I don't believe it is the same mechanism
-as delegation in NewtonScript, Self, and related delegation-based
-object oriented languages. 
+"delegation" that differs from delegation in NewtonScript,
+Self, and related delegation-based object oriented languages.  Delegation
+in Kotlin combines _composition_ with implementation inheritance: A
+composite object can delegate some methods to its component objects,
+setting the "self" object appropriately (which a vtable by itself
+would not do).

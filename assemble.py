@@ -6,7 +6,7 @@ There are two approaches to "resolving" labels:
 (a) Two pass resolution: Run through the source code once to determine
     addresses, then run through a second time to actually produce
     object code with resolved addresses.  The simple assembler we use
-    in CIS 211 for the Duck Machine uses two pass resolution.
+    in CS 211 for the Duck Machine uses two pass resolution.
 (b) One pass assembly with back-patching.  We keep track of all the
     references to labels and "patch them up" at the end.
 """
@@ -162,19 +162,7 @@ class InstructionSet:
         return self.ops[name]
 
 
-# First just for constants; then add
-#   - Labels
-#   - Locals (Done)
-#   - Method arguments (in progress)
-#   - Classes   (Done)
-#   - Class.method   (Done)
-#   - Class.field  (Done)
-# with all the class things depending on reading
-# OTHER json files.  (So we get separate compilation
-# after all).  Create stub symbol files for built-ins.
-# So assembler does a lot of the symbolic -> numeric resolution. 
-
-# Instruction set is a global
+# Instruction set is global
 INSTRS = InstructionSet("opdefs.txt")
 
 

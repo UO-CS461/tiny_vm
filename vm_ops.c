@@ -66,7 +66,7 @@ extern void vm_op_jump_ifnot() {
 /* Call a method on an object; the object
  * should be on the eval stack, and the
  * next word in the instruction stream should
- * be the index of the native_method in the vtable.
+ * be the index of the method in the vtable.
  */
 extern void vm_op_methodcall(void) {
     int method_index = vm_fetch_next().intval;
@@ -163,6 +163,11 @@ extern obj_ref vm_new_obj(class_ref clazz) {
     return new_thing;
 }
 
+/* The "new" operation first allocates space for a new, uninitialized
+ * object of the right size, then calls the constructor to initialize it.
+ * One operand, a class reference.
+ * [ ] -> [ object ]
+ */
 extern void vm_op_new(void) {
     class_ref clazz = vm_fetch_next().clazz;
     check_health_class(clazz);
@@ -172,11 +177,9 @@ extern void vm_op_new(void) {
     return;
 }
 
-/* is_instance is the other op that takes a class as operand
+/* Is thing an instance of clazz?
  * FIXME:  Refactor to reduce duplication with assert_is_type
- *
  */
-
 int is_instance(obj_ref thing, class_ref clazz) {
     if (thing->header.tag != GOOD_OBJ_TAG) {
         fprintf(stderr, "Type check failure: %p is Not on object!\n", thing);
@@ -196,6 +199,9 @@ int is_instance(obj_ref thing, class_ref clazz) {
     }
  }
 
+ /* is_instance operation:
+  * [ obj, class ] -> [ bool ]
+  */
 extern void vm_op_is_instance(void) {
     class_ref clazz = vm_fetch_next().clazz;
     check_health_class(clazz);
@@ -232,7 +238,7 @@ void vm_op_roll(void) {
 
 
 /* Push element loaded from local variable
- * [] -> [x]
+ * (ref) [] -> [x]
  * FIXME: Refactor stack access into vm_state ?
  */
 extern void vm_op_load() {
@@ -256,7 +262,7 @@ extern void vm_op_store() {
 }
 
 /* Allocate stack space for local variables.
- * [] -> [ n, n, ... ]   (As many nothing objects as allocated)
+ * (i) [] -> [ n1, n2, ..., ni ]   (As many nothing objects as allocated)
  */
 extern void vm_op_alloc() {
     int alloc_how_much = vm_fetch_next().intval;
@@ -269,8 +275,8 @@ extern void vm_op_alloc() {
  */
 
 /* For load, object should be at top of stack.
- * [obj] -> [field]
- * */
+ * (i) [obj] -> [field]
+ */
 extern void vm_op_load_field() {
     int field_slot = vm_fetch_next().intval;
     obj_ref the_obj = vm_frame_pop_word().obj;
@@ -288,7 +294,7 @@ extern void vm_op_load_field() {
  * and the object, which can be inefficient if we want to
  * store into several fields of the same object, but it's
  * the simplest and most consistent approach for code generation.
- * [val obj] -> []
+ * (i) [val obj] -> []
  */
 extern void vm_op_store_field() {
     // push_log_level(DEBUG);

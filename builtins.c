@@ -64,7 +64,7 @@ obj_ref native_tbd() {
 }
 
 /* Since the method needs to know its arity, we have a TBD
- * (unimplemented) method for each each arity 0..2.
+ * (unimplemented) method for each arity 0..2.
  */
 vm_Word method_tbd_0[] = {
         {.instr = vm_op_enter},

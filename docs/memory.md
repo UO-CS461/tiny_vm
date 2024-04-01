@@ -146,3 +146,61 @@ pointer address to use for `native_String_print` (a C function),
 whereas the process loader would have difficulty resolving it.  
 
 ## Activation record layout
+
+While `vm_frame_stack` consists of `vm_Word` cells that could hold 
+anything, it is called a "frame stack" for a reason:  We use to hold 
+a stack of method activation records, also called "frames".  An 
+activation record holds the data needed by one activation (call) of 
+a method, including its arguments (including the "self" or receiver 
+object), local variables, and the return address and other 
+information needed to return to the calling method.  In a 
+register-oriented hardware 
+implementation, the activation record would also include an area for 
+saving register values;  in tvm it instead includes some stack space 
+for evaluating expressions. 
+
+Unlike a typical stack data type in which each stack element is a 
+single item, activation records on the frame stack can vary in size. 
+A "frame" is the set of `vm_Word` cells between the _frame pointer_ 
+(`fp`) and the _stack pointer_ (`sp`).  
+
+In a hardware implementation,
+`fp` and `sp` would typically be registers dedicated to these 
+purposes.  It is possible to get by with only a stack pointer, as 
+the difference between stack pointer value and frame pointer value 
+is always known. 
+
+In the tvm frame layout, the frame pointer points to the receiver 
+object ("self" or "this"), local variables are at known offsets 
+forward, 
+`fp+k`, and arguments to the current function are at known offsets 
+backward, `fp-i`.  
+
+![Activation record layout](img/frame-layout-active.svg)
+
+When one method calls another, arguments are pushed onto the stack, 
+the last argument being the receiver object.  When a method returns, 
+it reclaims the whole activation record as well as its arguments, 
+leaving a return value in place of the first argument. 
+
+### Activation records: Call and return
+
+When a method prepares to call another method, it pushes arguments 
+to the receiver method and then the receiver method itself onto the 
+evaluation stack: 
+
+![Preparing to call](img/frame-layout-prepare.svg)
+
+The `call` operation establishes a new activation record with a 
+frame pointer located at the receiver object.  (The call method also 
+dispatches through the vtable of the receiver object's class to call 
+dynamically dispatch to the appropriate method code, as described in 
+a separate document.)
+
+![Call establishes new frame](img/frame-layout-call.svg)
+
+The `return` operation reclaims the activation record of the called 
+method and its arguments, leaving a return value at the top of the 
+evaluation stack. 
+
+![Return from method](img/frame-layout-return.svg)

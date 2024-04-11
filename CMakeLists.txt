@@ -38,4 +38,14 @@ add_executable(test_roll
         logger.c logger.h
         vm_code_table.c vm_code_table.h
         )
-
+# Testing builtins.c        
+add_executable(test_builtins
+        cjson/cJSON.c cjson/cJSON.h
+        unit_tests/test_builtins.c
+        vm_core.c vm_core.h
+        vm_state.c vm_state.h
+        builtins.c builtins.h
+        vm_ops.c vm_ops.h
+        logger.c logger.h
+        vm_code_table.c vm_code_table.h
+        )

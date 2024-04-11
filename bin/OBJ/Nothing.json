@@ -1,0 +1,10 @@
+{
+  "class_name": "Nothing",
+  "super": "Obj",
+  "methods": [ "$constructor",
+    "string",
+    "print",
+    "equals"
+  ],
+  "fields": []
+}

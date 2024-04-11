@@ -1,0 +1,71 @@
+{
+    "class_name": "UseThis",
+    "super": "Obj",
+    "imports": [
+        "UseThis",
+        "Obj",
+        "String",
+        "NewThis",
+        "Int"
+    ],
+    "methods": [
+        "$constructor",
+        "string",
+        "print",
+        "equals"
+    ],
+    "fields": [],
+    "n_fields": 0,
+    "n_methods": 4,
+    "n_inherited": 4,
+    "constants": [
+        {
+            "kind": "s",
+            "value": "\n*** Use This ***\n"
+        },
+        {
+            "kind": "i",
+            "value": "42"
+        },
+        {
+            "kind": "s",
+            "value": "\n *** end of use this ***\n"
+        }
+    ],
+    "code": [
+        {
+            "name": "$constructor",
+            "slot": 0,
+            "code": [
+                4,
+                1,
+                0,
+                2,
+                2,
+                7,
+                1,
+                1,
+                6,
+                3,
+                2,
+                0,
+                2,
+                4,
+                11,
+                0,
+                2,
+                2,
+                7,
+                1,
+                2,
+                2,
+                2,
+                7,
+                9,
+                0,
+                5,
+                0
+            ]
+        }
+    ]
+}

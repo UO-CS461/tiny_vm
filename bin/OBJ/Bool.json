@@ -1,0 +1,12 @@
+{
+  "class_name": "Bool",
+  "super": "Obj",
+  "methods": [ "$constructor",
+    "string",
+    "print",
+    "equals"
+  ],
+  "fields": [],
+  "constants": [],
+  "imports": []
+}

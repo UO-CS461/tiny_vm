@@ -1,0 +1,117 @@
+{
+    "class_name": "Roleur",
+    "super": "Obj",
+    "imports": [
+        "Roleur",
+        "Obj",
+        "String",
+        "Int"
+    ],
+    "methods": [
+        "$constructor",
+        "string",
+        "print",
+        "equals"
+    ],
+    "fields": [],
+    "n_fields": 0,
+    "n_methods": 4,
+    "n_inherited": 4,
+    "constants": [
+        {
+            "kind": "i",
+            "value": "44"
+        },
+        {
+            "kind": "i",
+            "value": "41"
+        },
+        {
+            "kind": "i",
+            "value": "43"
+        },
+        {
+            "kind": "i",
+            "value": "42"
+        },
+        {
+            "kind": "s",
+            "value": "Expect 41: "
+        },
+        {
+            "kind": "s",
+            "value": "\nExpect 42: "
+        },
+        {
+            "kind": "s",
+            "value": "\nExpect 43: "
+        },
+        {
+            "kind": "s",
+            "value": "\nExpect 44: "
+        },
+        {
+            "kind": "s",
+            "value": "\n"
+        }
+    ],
+    "code": [
+        {
+            "name": "$constructor",
+            "slot": 0,
+            "code": [
+                1,
+                0,
+                1,
+                1,
+                1,
+                2,
+                1,
+                3,
+                13,
+                2,
+                1,
+                4,
+                2,
+                2,
+                7,
+                2,
+                2,
+                7,
+                1,
+                5,
+                2,
+                2,
+                7,
+                2,
+                2,
+                7,
+                1,
+                6,
+                2,
+                2,
+                7,
+                2,
+                2,
+                7,
+                1,
+                7,
+                2,
+                2,
+                7,
+                2,
+                2,
+                7,
+                1,
+                8,
+                2,
+                2,
+                7,
+                1,
+                -1,
+                5,
+                0
+            ]
+        }
+    ]
+}

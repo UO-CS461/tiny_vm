@@ -1,0 +1,135 @@
+{
+    "class_name": "TestCounter",
+    "super": "Obj",
+    "imports": [
+        "TestCounter",
+        "Obj",
+        "Counter",
+        "String"
+    ],
+    "methods": [
+        "$constructor",
+        "string",
+        "print",
+        "equals"
+    ],
+    "fields": [],
+    "n_fields": 0,
+    "n_methods": 4,
+    "n_inherited": 4,
+    "constants": [
+        {
+            "kind": "i",
+            "value": "5"
+        },
+        {
+            "kind": "s",
+            "value": "Expecting '5' on next line\n"
+        },
+        {
+            "kind": "s",
+            "value": "\nExpecting '6' on next line\n"
+        },
+        {
+            "kind": "s",
+            "value": "Counter is seven?\n"
+        },
+        {
+            "kind": "i",
+            "value": "7"
+        },
+        {
+            "kind": "s",
+            "value": "\nCounter is six?\n"
+        },
+        {
+            "kind": "i",
+            "value": "6"
+        },
+        {
+            "kind": "s",
+            "value": "\nEnd of test\n"
+        }
+    ],
+    "code": [
+        {
+            "name": "$constructor",
+            "slot": 0,
+            "code": [
+                8,
+                1,
+                4,
+                1,
+                0,
+                6,
+                2,
+                2,
+                0,
+                10,
+                3,
+                1,
+                1,
+                2,
+                2,
+                7,
+                9,
+                3,
+                2,
+                2,
+                7,
+                9,
+                3,
+                2,
+                4,
+                7,
+                1,
+                2,
+                2,
+                2,
+                7,
+                9,
+                3,
+                2,
+                2,
+                7,
+                1,
+                3,
+                2,
+                2,
+                7,
+                1,
+                4,
+                9,
+                3,
+                2,
+                5,
+                2,
+                2,
+                7,
+                1,
+                5,
+                2,
+                2,
+                7,
+                1,
+                6,
+                9,
+                3,
+                2,
+                5,
+                2,
+                2,
+                7,
+                1,
+                7,
+                2,
+                2,
+                7,
+                9,
+                0,
+                5,
+                0
+            ]
+        }
+    ]
+}

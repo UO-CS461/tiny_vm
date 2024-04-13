@@ -100,7 +100,7 @@ def main():
         # Generate the asm code
         asm = calc(s)
         print("Parse tree (concrete syntax):")
-        print(concrete)
+        print(asm)
 
 if __name__ == '__main__':
     main()

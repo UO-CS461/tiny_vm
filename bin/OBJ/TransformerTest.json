@@ -1,0 +1,74 @@
+{
+    "class_name": "TransformerTest",
+    "super": "Obj",
+    "imports": [
+        "TransformerTest",
+        "Obj",
+        "Int",
+        "String"
+    ],
+    "methods": [
+        "$constructor",
+        "string",
+        "print",
+        "equals"
+    ],
+    "fields": [],
+    "n_fields": 0,
+    "n_methods": 4,
+    "n_inherited": 4,
+    "constants": [
+        {
+            "kind": "i",
+            "value": "5"
+        },
+        {
+            "kind": "i",
+            "value": "4"
+        },
+        {
+            "kind": "i",
+            "value": "3"
+        },
+        {
+            "kind": "i",
+            "value": "2"
+        },
+        {
+            "kind": "s",
+            "value": "\n"
+        }
+    ],
+    "code": [
+        {
+            "name": "$constructor",
+            "slot": 0,
+            "code": [
+                4,
+                1,
+                0,
+                1,
+                1,
+                2,
+                6,
+                1,
+                2,
+                1,
+                3,
+                2,
+                5,
+                2,
+                7,
+                2,
+                2,
+                1,
+                4,
+                2,
+                2,
+                7,
+                5,
+                0
+            ]
+        }
+    ]
+}

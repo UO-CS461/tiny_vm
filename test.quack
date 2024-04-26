@@ -1,0 +1,9 @@
+x:Int = 3+3;
+z:Int = (13+2)*4;
+thisisalongname: Int = x*z;
+
+b:String = "Below this is nonsense";
+
+c:String = "t:Int = f*7; -> this will fail because f is not defined";
+
+c.print();

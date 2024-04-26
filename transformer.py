@@ -1,6 +1,7 @@
 from lark import Lark, Transformer, v_args
 import sys
 import os
+import ASTutils
 # From Lark Example calculator Grammar
 
 calc_grammar = """
@@ -25,7 +26,6 @@ calc_grammar = """
         | product "/" atom  -> div
 
     ?atom: NUMBER           -> number
-         | "-" atom         -> neg
          | NAME             -> var
          | "(" sum ")"
          | NAME ":" TYPE ";" -> declare_var
@@ -43,39 +43,6 @@ calc_grammar = """
 
     %ignore WS_INLINE
 """
-class ASTNode:
-    pass
-
-class Declaration(ASTNode):
-    def __init__(self, name, t_type):
-        self.name = name
-        self.t_type = t_type
-
-class Assignment(ASTNode):
-    def __init__(self, name, value, t_type="OBJ"):
-        self.name = name
-        self.t_type = t_type
-        self.value = value
-
-class BinaryOperation(ASTNode):
-    def __init__(self, left, operator, right):
-        self.left = left
-        self.operator = operator
-        self.right = right
-
-class Variable(ASTNode):
-    def __init__(self, name):
-        self.name = name
-
-class Constant(ASTNode):
-    def __init__(self, value):
-        self.value = value
-        
-class Methods(ASTNode):
-    def __init__(self, obj, method):
-        self.obj = obj
-        self.method = method
-        
 # Single pass / direct translator
 @v_args(inline=True)
 class AssemblyCodeGenerator(Transformer):
@@ -198,67 +165,70 @@ class ASTGenerator(Transformer):
     def assign_var(self, name, t_type, value):
         self.vars[name] = value
         self.types[name] = t_type
-        return Assignment(name, value, t_type)
+        return ASTutils.Assignment(name, value, t_type)
     
     def call_method(self, obj, method):
-        return Methods(obj,method)
+        return ASTutils.Methods(obj,method)
     
     def assign_var_notype(self, name, value):
-        return Assignment(name, value)
+        return ASTutils.Assignment(name, value)
     
     def add(self, left, right):
-        return BinaryOperation(left, '+', right)
+        return ASTutils.BinaryOperation(left, '+', right)
 
     def sub(self, left, right):
-        return BinaryOperation(left, '-', right)
+        return ASTutils.BinaryOperation(left, '-', right)
 
     def mul(self, left, right):
-        return BinaryOperation(left, '*', right)
+        return ASTutils.BinaryOperation(left, '*', right)
 
     def div(self, left, right):
-        return BinaryOperation(left, '/', right)
+        return ASTutils.BinaryOperation(left, '/', right)
 
     def number(self, value):
-        return Constant(value)
+        return ASTutils.Constant(value)
 
     def string(self, value):
-        return Constant(value)
+        return ASTutils.Constant(value)
 
     def var(self, name):
-        return Variable(name)
+        return ASTutils.Variable(name)
     
     def print_ast(self, node=None, indent=0):
         if node is None:
             return
 
-        if isinstance(node, Declaration):
+        if isinstance(node, ASTutils.Declaration):
             print(' ' * indent, 'Declaration:', node.name, node.t_type)
-        elif isinstance(node, Assignment):
+        elif isinstance(node, ASTutils.Assignment):
             print(' ' * indent, 'Assignment:', node.name)
             self.print_ast(node.value, indent + 4)
-        elif isinstance(node, BinaryOperation):
+        elif isinstance(node, ASTutils.BinaryOperation):
             print(' ' * indent, 'Binary Operation:', node.operator)
             self.print_ast(node.left, indent + 4)
             self.print_ast(node.right, indent + 4)
-        elif isinstance(node, Constant):
+        elif isinstance(node, ASTutils.Constant):
             print(' ' * indent, 'Constant:', node.value)
-        elif isinstance(node, Variable):
+        elif isinstance(node, ASTutils.Variable):
             print(' ' * indent, 'Variable:', node.name)
+        elif isinstance(node, ASTutils.Methods):
+            print(' ' * indent, 'Method Call:', node.obj,":",f"{self.types[node.obj]}, {node.method}")
 
     def generate_asm(self, node=None):
         if node is None:
             return ''
-        if isinstance(node, Declaration):
-            return f".local {node.name}\n"
-        elif isinstance(node, Assignment):
+        if isinstance(node, ASTutils.Declaration):
+            return ''
+        elif isinstance(node, ASTutils.Assignment):
             asm = self.generate_asm(node.value)
             return f"{asm}\nstore {node.name}"
-        elif isinstance(node, Methods):
+        elif isinstance(node, ASTutils.Methods):
+            assert node.obj in self.types.keys()
             call = f"call {self.types[node.obj]}:{node.method}"
             if (node.method == "print"):
                 call += "\npop"
             return call
-        elif isinstance(node, BinaryOperation):
+        elif isinstance(node, ASTutils.BinaryOperation):
             left_asm = self.generate_asm(node.left)
             right_asm = self.generate_asm(node.right)
             if node.operator == '+':
@@ -269,31 +239,21 @@ class ASTGenerator(Transformer):
                 return f"{right_asm}\n{left_asm}\ncall Int:mult"
             elif node.operator == '/':
                 return f"{right_asm}\n{left_asm}\ncall Int:div"
-        elif isinstance(node, Constant):
+        elif isinstance(node, ASTutils.Constant):
             return f"const {node.value}"
-        elif isinstance(node, Variable):
+        elif isinstance(node, ASTutils.Variable):
             return f"load {node.name}"
             
-def find_file(start_dir, target_file):
-    # Iterate over all files and directories in the start directory
-    for root, dirs, files in os.walk(start_dir):
-        # Check if the target file exists in the current directory
-        if target_file in files:
-            # Construct the full path to the target file
-            file_path = os.path.join(root, target_file)
-            return file_path  # Return the path to the file
-
-    # If the file is not found in any directory
-    return None
-
 # probably need to generate the asm file this time instead of just generating the code and printing it out
 def main():
     debug = open('debug', 'w', encoding="utf-8")
     file = False
     asm = []
     transformer = ASTGenerator()
+    calc_parser_ptree = Lark(calc_grammar, parser='lalr')
     calc_parser = Lark(calc_grammar, parser='lalr', transformer=transformer)
     calc = calc_parser.parse
+    calcp = calc_parser_ptree.parse
     for index, arg in enumerate(sys.argv[1:]):
         if arg == "-f":
             if index + 1 <len(sys.argv[1:]):
@@ -303,7 +263,7 @@ def main():
                 print(f"Error: requires filename after -f")
                 return
     if file:
-        path = find_file(os.getcwd(),filename)
+        path = ASTutils.find_file(os.getcwd(),filename)
         if path:
             print(f"Found {filename} at:{path}")
         else:
@@ -323,8 +283,8 @@ def main():
         except IOError:
             print("Error opening file:", path)
         
-        main = open('Main.asm', 'w+', encoding="utf-8")
-        print(f".class Main:Obj\n.method $constructor",file=main)
+        main = open('$Main.asm', 'w+', encoding="utf-8")
+        print(f".class $Main:Obj\n.method $constructor",file=main)
         print('.local',','.join(transformer.vars.keys()),file=main)
         for i in range(len(asm)):
             print(transformer.generate_asm(asm[i]),file=main)
@@ -337,9 +297,13 @@ def main():
                 break
             # Generate the asm code
             AST = calc(s.strip())
-            print("AST")
+            ptree = calcp(s.strip())
+            print("Parse Tree:")
+            tree = ptree.pretty('   ')
+            print(tree)
+            print("AST:")
             transformer.print_ast(AST)
-            print("ASM")
+            print("ASM:")
             print(transformer.generate_asm(AST))
             
     debug.close()

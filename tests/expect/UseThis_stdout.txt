@@ -1,0 +1,6 @@
+
+*** Use This ***
+Creating a NewThis object, value 42
+Creating a NewThis object, value 43
+43
+ *** end of use this ***

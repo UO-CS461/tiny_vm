@@ -1,0 +1,5 @@
+
+Shoudl be 42, from Int:print: 42
+Shoudl be 42, from Obj:print: 42
+Should be 42, after store and load: 42
+Should be 42, after store and load: 42

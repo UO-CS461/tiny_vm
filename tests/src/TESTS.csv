@@ -11,3 +11,4 @@ DuckCheck,run
 RecursiveLoadSuper,run
 RecursiveLoadSuperDuper,run
 MultiMethodJumps,run
+Locals,run

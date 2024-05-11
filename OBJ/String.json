@@ -5,7 +5,6 @@
     "string",
     "print",
     "equals",
-    "less",
     "plus"
   ],
   "fields": []

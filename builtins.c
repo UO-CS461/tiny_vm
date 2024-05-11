@@ -317,7 +317,33 @@ vm_Word method_String_equals[] = {
         {.intval = 1}  // consume other
 };
 
+obj_ref native_String_plus(void ) {
+    log_debug("native call plus string");
+    obj_ref this = vm_fp->obj;
+    assert_is_type(this, the_class_String);
+    obj_String this_string = (obj_String) this;
+    obj_ref other = (vm_fp - 1)->obj;
+    assert_is_type(other, the_class_String);
+    obj_String other_string = (obj_String) other;
+    log_debug("Concatenating string values: %s + %s",
+           this_string->text, other_string->text);
+    size_t this_str_s = strlen(this_string->text);
+    size_t other_str_s = strlen(other_string->text);
+    // +2 for space and the null terminator
+    size_t total_len = this_str_s+other_str_s+2;
+    char* buf = (char *)malloc(total_len);
+    snprintf(buf,total_len,"%s %s",this_string->text, other_string->text);
+    obj_ref str = new_string(buf);
+    return str;
+}
 
+vm_Word method_String_plus[] = {
+        {.instr = vm_op_enter},
+        {.instr = vm_op_call_native},
+        {.native = native_String_plus},
+        {.instr = vm_op_return},
+        {.intval = 1}
+};
 /* The String Class (a singleton) */
 struct  class_struct  the_class_String_struct = {
         .header = {.class_name="String",
@@ -325,10 +351,14 @@ struct  class_struct  the_class_String_struct = {
                    .n_fields = 0,
                    .object_size = sizeof(struct obj_String_struct),
                    .super=the_class_Obj},
-        method_String_constructor,     /* Constructor */
-        method_String_string,
-        method_String_print,
-        method_String_equals
+        .vtable = 
+            {
+            method_String_constructor,     /* Constructor */
+            method_String_string,
+            method_String_print,
+            method_String_equals,
+            method_String_plus
+            }
 };
 
 class_ref the_class_String = &the_class_String_struct;

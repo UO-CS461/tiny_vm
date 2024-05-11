@@ -58,53 +58,52 @@ class ASTGenerator(Transformer):
     # Extending the Lark Transformer class to generate an AST instead of directly translating
     def __init__(self):
         self.vars = set()
-        # we're going to be doing type inference later so this will go away
-        self.types = {}
+        self.symboltable = {}
     
     def assign_var_notype(self, name, value):
         self.vars.add(name)
         node = ASTutils.Assignment(name, value)
-        node.infer(self.types)
+        node.infer(self.symboltable)
         return node
     
     def call_method(self, obj, method):
         node = ASTutils.Methods(obj,method)
-        node.infer(self.types)
+        node.infer(self.symboltable)
         return node
     
     def add(self, left, right):
         node = ASTutils.BinaryOperation(left, '+', right)
-        node.infer(self.types)
+        node.infer(self.symboltable)
         return node
 
     def sub(self, left, right):
         node = ASTutils.BinaryOperation(left, '-', right)
-        node.infer(self.types)
+        node.infer(self.symboltable)
         return node
 
     def mul(self, left, right):
         node = ASTutils.BinaryOperation(left, '*', right)
-        node.infer(self.types)
+        node.infer(self.symboltable)
         return node
 
     def div(self, left, right):
         node = ASTutils.BinaryOperation(left, '/', right)
-        node.infer(self.types)
+        node.infer(self.symboltable)
         return node
 
     def number(self, value):
         node = ASTutils.Constant(value)
-        node.infer(self.types)
+        node.infer(self.symboltable)
         return node
         
     def string(self, value):
         node = ASTutils.Constant(value)
-        node.infer(self.types)
+        node.infer(self.symboltable)
         return node
 
     def var(self, name):
         node = ASTutils.Variable(name)
-        node.infer(self.types)
+        node.infer(self.symboltable)
         return node
     
     def print_ast(self, node=None, indent=0):
@@ -127,7 +126,7 @@ class ASTGenerator(Transformer):
         elif isinstance(node, ASTutils.Methods):
             print(' ' * indent, 'Method Call:', node.method)
             self.print_ast(node.obj, indent + 4)
-        # print(self.types)
+        # print(self.symboltable)
 
     def generate_asm(self, node=None):
         if node is None:
@@ -142,7 +141,7 @@ class ASTGenerator(Transformer):
                 nodekey = node.obj.value
             else:
                 nodekey = node.obj.name
-            call = f"{asm}\ncall {self.types[nodekey]}:{node.method}"
+            call = f"{asm}\ncall {self.symboltable[nodekey]}:{node.method}"
             
             if (node.method == "print"):
                 call += "\npop"
@@ -152,13 +151,13 @@ class ASTGenerator(Transformer):
             left_asm = self.generate_asm(node.left)
             right_asm = self.generate_asm(node.right)
             if node.operator == '+':
-                return f"{right_asm}\n{left_asm}\ncall {self.types[node.identifier]}:plus"
+                return f"{right_asm}\n{left_asm}\ncall {self.symboltable[node.identifier]}:plus"
             elif node.operator == '-':
-                return f"{right_asm}\n{left_asm}\ncall {self.types[node.identifier]}:minus"
+                return f"{right_asm}\n{left_asm}\ncall {self.symboltable[node.identifier]}:minus"
             elif node.operator == '*':
-                return f"{right_asm}\n{left_asm}\ncall {self.types[node.identifier]}:mult"
+                return f"{right_asm}\n{left_asm}\ncall {self.symboltable[node.identifier]}:mult"
             elif node.operator == '/':
-                return f"{right_asm}\n{left_asm}\ncall {self.types[node.identifier]}:div"
+                return f"{right_asm}\n{left_asm}\ncall {self.symboltable[node.identifier]}:div"
             
         elif isinstance(node, ASTutils.Constant):
             return f"const {node.value}"
@@ -200,7 +199,7 @@ def main():
                         # get the ast
                         ast = calc(line.strip())
                         # infer types
-                        ast.infer(transformer.types)
+                        ast.infer(transformer.symboltable)
                         # add it to the asm list
                         asm.append(ast)
   
@@ -209,15 +208,15 @@ def main():
         except IOError:
             print("Error opening file:", path)
         
-        main = open('$Main.asm', 'w+', encoding="utf-8")
-        print(f".class $Main:Obj\n.method $constructor",file=main)
+        main = open('Main.asm', 'w+', encoding="utf-8")
+        print(f".class Main:Obj\n.method $constructor",file=main)
         print('.local',','.join(transformer.vars),file=main)
         for i in range(len(asm)):
             print(transformer.generate_asm(asm[i]),file=main)
             if(transformer.print_ast(asm[i])!=None):
                 print(transformer.print_ast(asm[i]))
         print(f"return 0\n",file=main)
-        # print(transformer.types)
+        # print(transformer.symboltable)
     else:
         while True:
             try:

@@ -1,11 +1,3 @@
-x = 3+3;
-z = (13+2)*4;
-thisisalongname = x*z;
-x.print();
 b = "Below this is nonsense";
-c = "t:Int = f*7; -> this will fail because f is not defined";
-d = c+b;
-d.print();
-x = c+c;
-x.print();
-"hello\n".print();
+a = b + b;
+a.print();

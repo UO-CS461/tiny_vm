@@ -1,0 +1,320 @@
+*INFO* : This is the tiny VM
+
+Noisy debugging selected with -D
+*DEBUG* : Finished options, load library is ./OBJ
+
+*DEBUG* : There is at least one non-option argument
+
+*DEBUG* : Allocating a new object of type String
+
+*DEBUG* : Processing command line argument 2
+
+*INFO* : Loading ./OBJ/Main.json
+*DEBUG* : Allocating a new object of type String
+
+*DEBUG* : Literal Below this is nonsense internal 0 remapped to 5
+*INFO* : Class Main extends Obj
+*INFO* : Class Main has 4 methods and 0 fields
+*DEBUG* : Class Main class object size 64 with 4 methods
+*DEBUG* : Objects of Main size 16 with 0 fields
+*DEBUG* : Size of object header alone is 16 bytes
+
+*DEBUG* : [16] Op: 8 (alloc)
+*DEBUG* : [17] Operand: 2
+*DEBUG* : [18] Op: 1 (const)
+*DEBUG* : [19] Operand: 0
+*DEBUG* : [20] Op: 10 (store)
+*DEBUG* : [21] Operand: 3
+*DEBUG* : [22] Op: 9 (load)
+*DEBUG* : [23] Operand: 3
+*DEBUG* : [24] Op: 9 (load)
+*DEBUG* : [25] Operand: 3
+*DEBUG* : [26] Op: 2 (call)
+*DEBUG* : [27] Operand: 4
+*DEBUG* : [28] Op: 10 (store)
+*DEBUG* : [29] Operand: 4
+*DEBUG* : [30] Op: 9 (load)
+*DEBUG* : [31] Operand: 4
+*DEBUG* : [32] Op: 2 (call)
+*DEBUG* : [33] Operand: 2
+*DEBUG* : [34] Op: 7 (pop)
+*DEBUG* : [35] Op: 5 (return)
+*DEBUG* : [36] Operand: 0
+*INFO* : Executing Main
+
+*DEBUG* : Fetched [0] (0x55e101a1a0fc : new)
+*DEBUG* : Step:  new
+*DEBUG* : Fetched [1] (0x55e101d33920 : Unknown thing: 0x55e101d33920)
+*DEBUG* : Allocating a new object of type Main
+
+*DEBUG* : ===
+*DEBUG* : -fp-> 0 : (int) 0
+*DEBUG* :       1 : (Main object) 0x55e101d32a10
+*DEBUG* : ===
+*DEBUG* : Fetched [2] (0x55e101a19e2c : call)
+*DEBUG* : Step:  call
+*DEBUG* : Fetched [3] ((nil) : (int) 0)
+*DEBUG* : ===
+*DEBUG* :       0 : (int) 0
+*DEBUG* : -fp-> 1 : (Main object) 0x55e101d32a10
+*DEBUG* :       2 : Unknown thing: 0x55e101a22c60
+*DEBUG* :       3 : (stack ptr) 0
+*DEBUG* : ===
+*DEBUG* : Fetched [16] (0x55e101a1a35a : alloc)
+*DEBUG* : Step:  alloc
+*DEBUG* : Fetched [17] (0x2 : (int) 2)
+*DEBUG* : ===
+*DEBUG* :       0 : (int) 0
+*DEBUG* : -fp-> 1 : (Main object) 0x55e101d32a10
+*DEBUG* :       2 : Unknown thing: 0x55e101a22c60
+*DEBUG* :       3 : (stack ptr) 0
+*DEBUG* :       4 : (Nothing object) 0x55e101a22b10
+*DEBUG* :       5 : (Nothing object) 0x55e101a22b10
+*DEBUG* : ===
+*DEBUG* : Fetched [18] (0x55e101a19d13 : const)
+*DEBUG* : Step:  const
+*DEBUG* : Fetched [19] (0x5 : (int) 5)
+*DEBUG* : ===
+*DEBUG* :       0 : (int) 0
+*DEBUG* : -fp-> 1 : (Main object) 0x55e101d32a10
+*DEBUG* :       2 : Unknown thing: 0x55e101a22c60
+*DEBUG* :       3 : (stack ptr) 0
+*DEBUG* :       4 : (Nothing object) 0x55e101a22b10
+*DEBUG* :       5 : (Nothing object) 0x55e101a22b10
+*DEBUG* :       6 : (String object) 0x55e101d338e0
+*DEBUG* : ===
+*DEBUG* : Fetched [20] (0x55e101a1a313 : store)
+*DEBUG* : Step:  store
+*DEBUG* : Fetched [21] (0x3 : (int) 3)
+*DEBUG* : ===
+*DEBUG* :       0 : (int) 0
+*DEBUG* : -fp-> 1 : (Main object) 0x55e101d32a10
+*DEBUG* :       2 : Unknown thing: 0x55e101a22c60
+*DEBUG* :       3 : (stack ptr) 0
+*DEBUG* :       4 : (String object) 0x55e101d338e0
+*DEBUG* :       5 : (Nothing object) 0x55e101a22b10
+*DEBUG* : ===
+*DEBUG* : Fetched [22] (0x55e101a1a2ce : load)
+*DEBUG* : Step:  load
+*DEBUG* : Fetched [23] (0x3 : (int) 3)
+*DEBUG* : ===
+*DEBUG* :       0 : (int) 0
+*DEBUG* : -fp-> 1 : (Main object) 0x55e101d32a10
+*DEBUG* :       2 : Unknown thing: 0x55e101a22c60
+*DEBUG* :       3 : (stack ptr) 0
+*DEBUG* :       4 : (String object) 0x55e101d338e0
+*DEBUG* :       5 : (Nothing object) 0x55e101a22b10
+*DEBUG* :       6 : (String object) 0x55e101d338e0
+*DEBUG* : ===
+*DEBUG* : Fetched [24] (0x55e101a1a2ce : load)
+*DEBUG* : Step:  load
+*DEBUG* : Fetched [25] (0x3 : (int) 3)
+*DEBUG* : ===
+*DEBUG* :       0 : (int) 0
+*DEBUG* : -fp-> 1 : (Main object) 0x55e101d32a10
+*DEBUG* :       2 : Unknown thing: 0x55e101a22c60
+*DEBUG* :       3 : (stack ptr) 0
+*DEBUG* :       4 : (String object) 0x55e101d338e0
+*DEBUG* :       5 : (Nothing object) 0x55e101a22b10
+*DEBUG* :       6 : (String object) 0x55e101d338e0
+*DEBUG* :       7 : (String object) 0x55e101d338e0
+*DEBUG* : ===
+*DEBUG* : Fetched [26] (0x55e101a19e2c : call)
+*DEBUG* : Step:  call
+*DEBUG* : Fetched [27] (0x4 : (int) 4)
+*DEBUG* : ===
+*DEBUG* :       1 : (Main object) 0x55e101d32a10
+*DEBUG* :       2 : Unknown thing: 0x55e101a22c60
+*DEBUG* :       3 : (stack ptr) 0
+*DEBUG* :       4 : (String object) 0x55e101d338e0
+*DEBUG* :       5 : (Nothing object) 0x55e101a22b10
+*DEBUG* :       6 : (String object) 0x55e101d338e0
+*DEBUG* : -fp-> 7 : (String object) 0x55e101d338e0
+*DEBUG* :       8 : Unknown thing: 0x55e101a22d20
+*DEBUG* :       9 : (stack ptr) 1
+*DEBUG* : ===
+*DEBUG* : Fetched 0x55e101a19f6e (enter)
+*DEBUG* : Step:  enter
+*DEBUG* : Function entered
+
+*DEBUG* : ===
+*DEBUG* :       0 : (int) 0
+*DEBUG* :       1 : (Main object) 0x55e101d32a10
+*DEBUG* :       2 : Unknown thing: 0x55e101a22c60
+*DEBUG* :       3 : (stack ptr) 0
+*DEBUG* :       4 : (String object) 0x55e101d338e0
+*DEBUG* :       5 : (Nothing object) 0x55e101a22b10
+*DEBUG* :       6 : (String object) 0x55e101d338e0
+*DEBUG* : -fp-> 7 : (String object) 0x55e101d338e0
+*DEBUG* :       8 : Unknown thing: 0x55e101a22d20
+*DEBUG* :       9 : (stack ptr) 1
+*DEBUG* : ===
+*DEBUG* : ===
+*DEBUG* :       1 : (Main object) 0x55e101d32a10
+*DEBUG* :       2 : Unknown thing: 0x55e101a22c60
+*DEBUG* :       3 : (stack ptr) 0
+*DEBUG* :       4 : (String object) 0x55e101d338e0
+*DEBUG* :       5 : (Nothing object) 0x55e101a22b10
+*DEBUG* :       6 : (String object) 0x55e101d338e0
+*DEBUG* : -fp-> 7 : (String object) 0x55e101d338e0
+*DEBUG* :       8 : Unknown thing: 0x55e101a22d20
+*DEBUG* :       9 : (stack ptr) 1
+*DEBUG* : ===
+*DEBUG* : Fetched 0x55e101a19ec5 (call_native)
+*DEBUG* : Step:  call_native
+*DEBUG* : Making native call
+
+*DEBUG* : Fetched 0x55e101a1a8fa (Unknown thing: 0x55e101a1a8fa)
+*DEBUG* : native call plus string
+*DEBUG* : Concatenating string values: Below this is nonsense + Below this is nonsense
+*DEBUG* : Allocating a new object of type String
+
+*DEBUG* : Native method returned String
+
+*DEBUG* : ===
+*DEBUG* :       2 : Unknown thing: 0x55e101a22c60
+*DEBUG* :       3 : (stack ptr) 0
+*DEBUG* :       4 : (String object) 0x55e101d338e0
+*DEBUG* :       5 : (Nothing object) 0x55e101a22b10
+*DEBUG* :       6 : (String object) 0x55e101d338e0
+*DEBUG* : -fp-> 7 : (String object) 0x55e101d338e0
+*DEBUG* :       8 : Unknown thing: 0x55e101a22d20
+*DEBUG* :       9 : (stack ptr) 1
+*DEBUG* :       10 : (String object) 0x55e101d329a0
+*DEBUG* : ===
+*DEBUG* : Fetched 0x55e101a19f90 (return)
+*DEBUG* : Step:  return
+*DEBUG* : Fetched 0x1 ((int) 1)
+*DEBUG* : ===
+*DEBUG* :       0 : (int) 0
+*DEBUG* : -fp-> 1 : (Main object) 0x55e101d32a10
+*DEBUG* :       2 : Unknown thing: 0x55e101a22c60
+*DEBUG* :       3 : (stack ptr) 0
+*DEBUG* :       4 : (String object) 0x55e101d338e0
+*DEBUG* :       5 : (Nothing object) 0x55e101a22b10
+*DEBUG* :       6 : (String object) 0x55e101d329a0
+*DEBUG* : ===
+*DEBUG* : Fetched [28] (0x55e101a1a313 : store)
+*DEBUG* : Step:  store
+*DEBUG* : Fetched [29] (0x4 : (int) 4)
+*DEBUG* : ===
+*DEBUG* :       0 : (int) 0
+*DEBUG* : -fp-> 1 : (Main object) 0x55e101d32a10
+*DEBUG* :       2 : Unknown thing: 0x55e101a22c60
+*DEBUG* :       3 : (stack ptr) 0
+*DEBUG* :       4 : (String object) 0x55e101d338e0
+*DEBUG* :       5 : (String object) 0x55e101d329a0
+*DEBUG* : ===
+*DEBUG* : Fetched [30] (0x55e101a1a2ce : load)
+*DEBUG* : Step:  load
+*DEBUG* : Fetched [31] (0x4 : (int) 4)
+*DEBUG* : ===
+*DEBUG* :       0 : (int) 0
+*DEBUG* : -fp-> 1 : (Main object) 0x55e101d32a10
+*DEBUG* :       2 : Unknown thing: 0x55e101a22c60
+*DEBUG* :       3 : (stack ptr) 0
+*DEBUG* :       4 : (String object) 0x55e101d338e0
+*DEBUG* :       5 : (String object) 0x55e101d329a0
+*DEBUG* :       6 : (String object) 0x55e101d329a0
+*DEBUG* : ===
+*DEBUG* : Fetched [32] (0x55e101a19e2c : call)
+*DEBUG* : Step:  call
+*DEBUG* : Fetched [33] (0x2 : (int) 2)
+*DEBUG* : ===
+*DEBUG* :       0 : (int) 0
+*DEBUG* :       1 : (Main object) 0x55e101d32a10
+*DEBUG* :       2 : Unknown thing: 0x55e101a22c60
+*DEBUG* :       3 : (stack ptr) 0
+*DEBUG* :       4 : (String object) 0x55e101d338e0
+*DEBUG* :       5 : (String object) 0x55e101d329a0
+*DEBUG* : -fp-> 6 : (String object) 0x55e101d329a0
+*DEBUG* :       7 : Unknown thing: 0x55e101a22d50
+*DEBUG* :       8 : (stack ptr) 1
+*DEBUG* : ===
+*DEBUG* : Fetched 0x55e101a19f6e (enter)
+*DEBUG* : Step:  enter
+*DEBUG* : Function entered
+
+*DEBUG* : ===
+*DEBUG* :       0 : (int) 0
+*DEBUG* :       1 : (Main object) 0x55e101d32a10
+*DEBUG* :       2 : Unknown thing: 0x55e101a22c60
+*DEBUG* :       3 : (stack ptr) 0
+*DEBUG* :       4 : (String object) 0x55e101d338e0
+*DEBUG* :       5 : (String object) 0x55e101d329a0
+*DEBUG* : -fp-> 6 : (String object) 0x55e101d329a0
+*DEBUG* :       7 : Unknown thing: 0x55e101a22d50
+*DEBUG* :       8 : (stack ptr) 1
+*DEBUG* : ===
+*DEBUG* : ===
+*DEBUG* :       0 : (int) 0
+*DEBUG* :       1 : (Main object) 0x55e101d32a10
+*DEBUG* :       2 : Unknown thing: 0x55e101a22c60
+*DEBUG* :       3 : (stack ptr) 0
+*DEBUG* :       4 : (String object) 0x55e101d338e0
+*DEBUG* :       5 : (String object) 0x55e101d329a0
+*DEBUG* : -fp-> 6 : (String object) 0x55e101d329a0
+*DEBUG* :       7 : Unknown thing: 0x55e101a22d50
+*DEBUG* :       8 : (stack ptr) 1
+*DEBUG* : ===
+*DEBUG* : Fetched 0x55e101a19ec5 (call_native)
+*DEBUG* : Step:  call_native
+*DEBUG* : Making native call
+
+*DEBUG* : Fetched 0x55e101a1a7f0 (Unknown thing: 0x55e101a1a7f0)
+*DEBUG* : **** PRINT |Below this is nonsense Below this is nonsense| ****
+
+*DEBUG* : Native method returned Nothing
+
+*DEBUG* : ===
+*DEBUG* :       1 : (Main object) 0x55e101d32a10
+*DEBUG* :       2 : Unknown thing: 0x55e101a22c60
+*DEBUG* :       3 : (stack ptr) 0
+*DEBUG* :       4 : (String object) 0x55e101d338e0
+*DEBUG* :       5 : (String object) 0x55e101d329a0
+*DEBUG* : -fp-> 6 : (String object) 0x55e101d329a0
+*DEBUG* :       7 : Unknown thing: 0x55e101a22d50
+*DEBUG* :       8 : (stack ptr) 1
+*DEBUG* :       9 : (Nothing object) 0x55e101a22b10
+*DEBUG* : ===
+*DEBUG* : Fetched 0x55e101a19f90 (return)
+*DEBUG* : Step:  return
+*DEBUG* : Fetched (nil) ((int) 0)
+*DEBUG* : ===
+*DEBUG* :       0 : (int) 0
+*DEBUG* : -fp-> 1 : (Main object) 0x55e101d32a10
+*DEBUG* :       2 : Unknown thing: 0x55e101a22c60
+*DEBUG* :       3 : (stack ptr) 0
+*DEBUG* :       4 : (String object) 0x55e101d338e0
+*DEBUG* :       5 : (String object) 0x55e101d329a0
+*DEBUG* :       6 : (Nothing object) 0x55e101a22b10
+*DEBUG* : ===
+*DEBUG* : Fetched [34] (0x55e101a1a298 : pop)
+*DEBUG* : Step:  pop
+*DEBUG* : ===
+*DEBUG* :       0 : (int) 0
+*DEBUG* : -fp-> 1 : (Main object) 0x55e101d32a10
+*DEBUG* :       2 : Unknown thing: 0x55e101a22c60
+*DEBUG* :       3 : (stack ptr) 0
+*DEBUG* :       4 : (String object) 0x55e101d338e0
+*DEBUG* :       5 : (String object) 0x55e101d329a0
+*DEBUG* : ===
+*DEBUG* : Fetched [35] (0x55e101a19f90 : return)
+*DEBUG* : Step:  return
+*DEBUG* : Fetched [36] ((nil) : (int) 0)
+*DEBUG* : ===
+*DEBUG* : -fp-> 0 : (int) 0
+*DEBUG* :       1 : (String object) 0x55e101d329a0
+*DEBUG* : ===
+*DEBUG* : Fetched [4] (0x55e101a1a298 : pop)
+*DEBUG* : Step:  pop
+*DEBUG* : ===
+*DEBUG* : -fp-> 0 : (int) 0
+*DEBUG* : ===
+*DEBUG* : Fetched [5] (0x55e101a19d4c : halt)
+*DEBUG* : Step:  halt
+*DEBUG* : ===
+*DEBUG* : -fp-> 0 : (int) 0
+*DEBUG* : ===
+*INFO* : Ran
+Below this is nonsense Below this is nonsense

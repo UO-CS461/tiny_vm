@@ -2,11 +2,11 @@
   "class_name": "String",
   "super": "Obj",
   "methods": [ "$constructor",
-    "string",
-    "print",
-    "equals",
-    "less",
-    "plus"
+                "string",
+                "print",
+                "equals",
+                "plus"
+
   ],
   "fields": []
 }

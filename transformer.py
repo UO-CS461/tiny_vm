@@ -8,12 +8,22 @@ calc_grammar = """
     ?start: declaration
         | assignment
         | method_call
+        | stmt
     
-    ?declaration: NAME ":" TYPE ";" -> declare_var
-    ?assignment: NAME ":" TYPE "=" value ";" -> assign_var
-        | NAME "=" value ";" -> assign_var_notype
+    ?condition: value (">" | "<" | "==" | "!=") value
+    
+    ?stmt: ifstmt
+        | whilestmt
+        
+    ?ifstmt: "if" condition "{" start* "}" -> ifcall
+    
+    ?whilestmt: "while" condition "{" start* "}" -> whilecall
+    
+    ?declaration: NAME (":" TYPE)? ";" -> declare_var
+    
+    ?assignment: NAME "=" value ";" -> assign_var_notype
 
-    ?method_call: NAME "." NAME "(" ")" ";" -> call_method
+    ?method_call: value "." NAME "(" ")" ";" -> call_method
     
     ?value: sum
     
@@ -28,8 +38,7 @@ calc_grammar = """
     ?atom: NUMBER           -> number
          | NAME             -> var
          | "(" sum ")"
-         | NAME ":" TYPE ";" -> declare_var
-         | STRING -> number
+         | STRING -> string
 
     TYPE: "Int" 
          | "String"
@@ -43,156 +52,59 @@ calc_grammar = """
 
     %ignore WS_INLINE
 """
-# Single pass / direct translator
-@v_args(inline=True)
-class AssemblyCodeGenerator(Transformer):
-    # Got my lefts and rights swapped
-    # working now
-    def __init__(self):
-        self.vars = {}
-        self.types = {}
-    # I don't think this requires storing or loading variables right now
-    # but i'm going to leave this here even if its incorrect
-    def declare_var(self, name, t_type):
-        if name not in self.vars:
-            if t_type == "String":
-                self.vars[name] = ""
-
-            else:
-                self.vars[name] = 0
-            self.types[name] = t_type
-            return f".local {name}"
-        else:
-            # maybe throw and error since you declared the var twice
-            return ""
-    
-    # this is very silly but i'm not as familiar with overloading in python as I am in c likes
-    # I very much dislike this though.
-    # maybe in the future figure out how to change the order lark passes args
-    def assign_var(self, name, t_type, value):
-        # Handle variable assignment
-        
-        # print to a debug file for easier reading
-        print(f"t_type:{t_type}\n name:{name}\n value:\n{value}\n",file=debug)
-        if name not in self.vars:
-            self.vars[name] = value
-            return f".local {name}\n{value}\nstore {name}"
-        return f"{value}\nstore {name}"
-    
-    # how to write a polymorphic function in python should be simple ...
-    def assign_var_notype(self, name, value):
-        # Handle variable assignment
-        if name not in self.vars:
-            self.vars[name] = value
-            return f".local {name}\n{value}\nstore {name}"
-        return f"{value}\nstore {name}"
-
-    def var(self, name):
-        # Handle variable usage
-        if name not in self.vars:
-            raise ValueError(f"Variable '{name}' is not defined.")
-        return f"load {name}"
-
-    # Lark example used from operators, defining these by hand for our language
-
-    def add(self, left, right):
-        # Handle addition operation
-        return f"{right}\n{left}\ncall Int:plus"
-
-    def sub(self, left, right):
-        # Handle subtraction operation
-        return f"{right}\n{left}\ncall Int:minus"
-
-    def mul(self, left, right):
-        # Handle multiplication operation
-        return f"{right}\n{left}\ncall Int:mult"
-
-    def div(self, left, right):
-        # Handle division operation
-        return f"{right}\n{left}\ncall Int:div"
-
-    def number(self, value):
-        # Handle constants
-        return f"const {value}"
-    
-    def string(self,value):
-        return f"const {value}"
-    
-    # def type_print(self,t_type,value)
-
-    # I don't think I need this but I might be wrong
-    # def sum_in_parentheses(self, expr):
-    #     # Handle expressions within parentheses
-    #     return expr
-
-    # Recursive handling
-    
-    def sum(self, left, op, right):
-        # Handle sum (addition or subtraction) with recursion for nested expressions
-        return f"{self.transform(left)}\n{self.transform(right)}\ncall Int:{op}"
-
-    def product(self, left, op, right):
-        # Handle product (multiplication or division) with recursion for nested expressions
-        return f"{self.transform(left)}\n{self.transform(right)}\ncall Int:{op}"
-
 # Parse -> AST -> ASM
 @v_args(inline=True)
 class ASTGenerator(Transformer):
     # Extending the Lark Transformer class to generate an AST instead of directly translating
     def __init__(self):
-        self.vars = {}
+        self.vars = set()
+        # we're going to be doing type inference later so this will go away
         self.types = {}
-        self.asm_code = []
-        self.asm_code.append(f".class Main:Obj\n.method $constructor")
-        
-    
-    def declare_var(self, name, t_type):
-        self.types[name] = t_type
-        if(t_type == "String"):
-            self.vars[name] = ""
-            
-        elif (t_type == "Int"):
-            self.vars[name] = 0
-            
-        elif (t_type == "Bool"):
-            self.vars[name] = True
-            
-        else:
-            self.vars[name] = None
-            
-        return Declaration(name,t_type)
-
-    def assign_var(self, name, t_type, value):
-        self.vars[name] = value
-        self.types[name] = t_type
-        return ASTutils.Assignment(name, value, t_type)
-    
-    def call_method(self, obj, method):
-        return ASTutils.Methods(obj,method)
     
     def assign_var_notype(self, name, value):
-        return ASTutils.Assignment(name, value)
+        node = ASTutils.Assignment(name, value)
+        node.infer(self.types)
+        return node
+    
+    def call_method(self, obj, method):
+        node = ASTutils.Methods(obj,method)
+        node.infer(self.types)
+        return node
     
     def add(self, left, right):
-        return ASTutils.BinaryOperation(left, '+', right)
+        node = ASTutils.BinaryOperation(left, '+', right)
+        node.infer(self.types)
+        return node
 
     def sub(self, left, right):
-        return ASTutils.BinaryOperation(left, '-', right)
+        node = ASTutils.BinaryOperation(left, '-', right)
+        node.infer(self.types)
+        return node
 
     def mul(self, left, right):
-        return ASTutils.BinaryOperation(left, '*', right)
+        node = ASTutils.BinaryOperation(left, '*', right)
+        node.infer(self.types)
+        return node
 
     def div(self, left, right):
-        return ASTutils.BinaryOperation(left, '/', right)
+        node = ASTutils.BinaryOperation(left, '/', right)
+        node.infer(self.types)
+        return node
 
     def number(self, value):
-        return ASTutils.Constant(value)
-
+        node = ASTutils.Constant(value)
+        node.infer(self.types)
+        return node
+        
     def string(self, value):
-        return ASTutils.Constant(value)
+        node = ASTutils.Constant(value)
+        node.infer(self.types)
+        return node
 
     def var(self, name):
-        return ASTutils.Variable(name)
+        node = ASTutils.Variable(name)
+        node.infer(self.types)
+        return node
     
     def print_ast(self, node=None, indent=0):
         if node is None:
@@ -212,33 +124,39 @@ class ASTGenerator(Transformer):
         elif isinstance(node, ASTutils.Variable):
             print(' ' * indent, 'Variable:', node.name)
         elif isinstance(node, ASTutils.Methods):
-            print(' ' * indent, 'Method Call:', node.obj,":",f"{self.types[node.obj]}, {node.method}")
+            print(' ' * indent, 'Method Call:', node.method)
+            self.print_ast(node.obj, indent + 4)
+        # print(self.types)
 
     def generate_asm(self, node=None):
         if node is None:
             return ''
-        if isinstance(node, ASTutils.Declaration):
-            return ''
         elif isinstance(node, ASTutils.Assignment):
             asm = self.generate_asm(node.value)
             return f"{asm}\nstore {node.name}"
+        
         elif isinstance(node, ASTutils.Methods):
-            assert node.obj in self.types.keys()
-            call = f"call {self.types[node.obj]}:{node.method}"
+            if isinstance(node.obj, ASTutils.Constant):
+                asm = self.generate_asm(node.obj)
+                call = f"{asm}\ncall {self.types[node.obj.value]}:{node.method}"
+            else:
+                call = f"call {self.types[node.obj.name]}:{node.method}"
             if (node.method == "print"):
                 call += "\npop"
             return call
+        
         elif isinstance(node, ASTutils.BinaryOperation):
             left_asm = self.generate_asm(node.left)
             right_asm = self.generate_asm(node.right)
             if node.operator == '+':
-                return f"{right_asm}\n{left_asm}\ncall Int:plus"
+                return f"{right_asm}\n{left_asm}\ncall {self.types[node.identifier]}:plus"
             elif node.operator == '-':
-                return f"{right_asm}\n{left_asm}\ncall Int:minus"
+                return f"{right_asm}\n{left_asm}\ncall {self.types[node.identifier]}:minus"
             elif node.operator == '*':
-                return f"{right_asm}\n{left_asm}\ncall Int:mult"
+                return f"{right_asm}\n{left_asm}\ncall {self.types[node.identifier]}:mult"
             elif node.operator == '/':
-                return f"{right_asm}\n{left_asm}\ncall Int:div"
+                return f"{right_asm}\n{left_asm}\ncall {self.types[node.identifier]}:div"
+            
         elif isinstance(node, ASTutils.Constant):
             return f"const {node.value}"
         elif isinstance(node, ASTutils.Variable):
@@ -276,7 +194,12 @@ def main():
                 for line in file_stream:
                     # skip new lines
                     if line != "\n":
-                        asm.append(calc(line.strip()))
+                        # get the ast
+                        ast = calc(line.strip())
+                        # infer types
+                        ast.infer(transformer.types)
+                        # add it to the asm list
+                        asm.append(ast)
   
         except FileNotFoundError:
             print("File not found:", path)
@@ -285,10 +208,13 @@ def main():
         
         main = open('$Main.asm', 'w+', encoding="utf-8")
         print(f".class $Main:Obj\n.method $constructor",file=main)
-        print('.local',','.join(transformer.vars.keys()),file=main)
+        print('.local',','.join(transformer.vars),file=main)
         for i in range(len(asm)):
             print(transformer.generate_asm(asm[i]),file=main)
+            if(transformer.print_ast(asm[i])!=None):
+                print(transformer.print_ast(asm[i]))
         print(f"return 0\n",file=main)
+        # print(transformer.types)
     else:
         while True:
             try:

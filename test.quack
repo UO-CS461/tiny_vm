@@ -1,7 +1,7 @@
-a = 3;
 x = 3+3;
 z = (13+2)*4;
 thisisalongname = x*z;
+x.print();
 b = "Below this is nonsense";
 c = "t:Int = f*7; -> this will fail because f is not defined";
 d = c+b;

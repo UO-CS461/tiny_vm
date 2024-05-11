@@ -62,6 +62,7 @@ class ASTGenerator(Transformer):
         self.types = {}
     
     def assign_var_notype(self, name, value):
+        self.vars.add(name)
         node = ASTutils.Assignment(name, value)
         node.infer(self.types)
         return node
@@ -136,11 +137,13 @@ class ASTGenerator(Transformer):
             return f"{asm}\nstore {node.name}"
         
         elif isinstance(node, ASTutils.Methods):
+            asm = self.generate_asm(node.obj)
             if isinstance(node.obj, ASTutils.Constant):
-                asm = self.generate_asm(node.obj)
-                call = f"{asm}\ncall {self.types[node.obj.value]}:{node.method}"
+                nodekey = node.obj.value
             else:
-                call = f"call {self.types[node.obj.name]}:{node.method}"
+                nodekey = node.obj.name
+            call = f"{asm}\ncall {self.types[nodekey]}:{node.method}"
+            
             if (node.method == "print"):
                 call += "\npop"
             return call

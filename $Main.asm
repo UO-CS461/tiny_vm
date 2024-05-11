@@ -1,8 +1,6 @@
 .class $Main:Obj
 .method $constructor
-.local 
-const 3
-store a
+.local thisisalongname,z,b,x,d,c
 const 3
 const 3
 call Int:plus
@@ -17,6 +15,9 @@ load z
 load x
 call Int:mult
 store thisisalongname
+load x
+call String:print
+pop
 const "Below this is nonsense"
 store b
 const "t:Int = f*7; -> this will fail because f is not defined"
@@ -25,12 +26,14 @@ load b
 load c
 call String:plus
 store d
+load d
 call String:print
 pop
 load c
 load c
 call String:plus
 store x
+load x
 call String:print
 pop
 const "hello\n"

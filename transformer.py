@@ -1,29 +1,47 @@
-from lark import Lark, Transformer, v_args
+from lark import Lark, Transformer, v_args 
+import lark.tree as t
 import sys
 import os
 import ASTutils
 # From Lark Example calculator Grammar
 
 calc_grammar = """
-    ?start: declaration
-        | assignment
+    ?start: codeblock
+    
+    codeblock: statement+
+    
+    ?statement: assignment
         | method_call
-        | stmt
+        | flow
     
-    ?condition: value (">" | "<" | "==" | "!=") value
+    ?condition: value evaluator value -> conditional
     
-    ?stmt: ifstmt
+    ?evaluator: ">" -> gt
+        | "<" -> lt
+        | "==" -> equals
+        | "!=" -> nequals
+        | "and"
+        | "or"
+        | "not"
+        
+    ?flow: ifstmt
+        | elifstmt
         | whilestmt
         
-    ?ifstmt: "if" condition "{" start* "}" -> ifcall
+    ?ifstmt: "if" condition "{" start* "}" elsestmt -> ifcall
+    
+    ?elifstmt: "elif" condition "{" start* "}" -> elifcall
+    
+    ?elsestmt: "else" "{" start* "}" -> elsecall
+        | -> codeblock
     
     ?whilestmt: "while" condition "{" start* "}" -> whilecall
     
-    ?declaration: NAME (":" TYPE)? ";" -> declare_var
-    
-    ?assignment: NAME "=" value ";" -> assign_var_notype
+    ?assignment: NAME "=" value ";" -> assign_var
 
-    ?method_call: value "." NAME "(" ")" ";" -> call_method
+    ?method_call: value "." NAME "(" argument_list? ")" ";" -> call_method
+    
+    argument_list: value ("," value)*
     
     ?value: sum
     
@@ -43,6 +61,7 @@ calc_grammar = """
     TYPE: "Int" 
          | "String"
          | "OBJ"
+         | "Bool"
          
     STRING: /"[^"]*"/
     
@@ -59,17 +78,44 @@ class ASTGenerator(Transformer):
     def __init__(self):
         self.vars = set()
         self.symboltable = {}
+        # this is really hacky and bad
+        self.if_counter = 0
     
-    def assign_var_notype(self, name, value):
+    def assign_var(self, name, value):
         self.vars.add(name)
         node = ASTutils.Assignment(name, value)
         node.infer(self.symboltable)
         return node
     
-    def call_method(self, obj, method):
-        node = ASTutils.Methods(obj,method)
+    def call_method(self, obj, method, args=None):
+        node = ASTutils.Methods(obj,method,args)
         node.infer(self.symboltable)
         return node
+    
+    def argument_list(self, *args):
+        return list(args)
+    
+    def conditional(self, left, operator, right):
+        # I could abuse the Binary Operation node for now...
+        # but that will fall apart when I have to add and, or and not
+        node = ASTutils.Conditional(left,operator,right)
+        node.infer(self.symboltable)
+        return node
+    
+    def ifcall(self, conditional, body, elsepart=None):
+        node = ASTutils.IfStatement(conditional,body,elsepart)
+        node.infer(self.symboltable)
+        return node
+    
+    # OPERATORS
+    def gt(self):
+        return ">"
+    def lt(self):
+        return "<"
+    def equals(self):
+        return "=="
+    def nequals(self):
+        return "!="
     
     def add(self, left, right):
         node = ASTutils.BinaryOperation(left, '+', right)
@@ -126,21 +172,67 @@ class ASTGenerator(Transformer):
         elif isinstance(node, ASTutils.Methods):
             print(' ' * indent, 'Method Call:', node.method)
             self.print_ast(node.obj, indent + 4)
+            if(node.args != None):
+                for arg in node.args:
+                    self.print_ast(arg, indent + 8)
         # print(self.symboltable)
 
     def generate_asm(self, node=None):
         if node is None:
             return ''
-        elif isinstance(node, ASTutils.Assignment):
+        if isinstance(node,t.Tree):
+            asm = ""
+            for statement in node.children:
+                asm+= self.generate_asm(statement) + "\n"
+            return asm
+        
+        if isinstance(node, ASTutils.Assignment):
             asm = self.generate_asm(node.value)
             return f"{asm}\nstore {node.name}"
         
+        elif isinstance(node,ASTutils.IfStatement):
+            ifasm = ""
+            condition_asm = self.generate_asm(node.condition)
+            then_asm = self.generate_asm(node.body)
+            thenlabel = f"then_{self.if_counter}"
+            elselabel = f"else_{self.if_counter}"
+            endiflabel = f"endif_{self.if_counter}"
+            self.if_counter += 1
+            ifasm += f"{condition_asm}\n"
+            ifasm += f"jump_ifnot {elselabel}\n"
+            ifasm += f"jump {thenlabel}\n"
+            ifasm += f"{thenlabel}:\n{then_asm}\njump {endiflabel}\n"
+            if node.elsebody != None:
+                else_asm = self.generate_asm(node.elsebody)
+                ifasm+=f"{elselabel}:\n"
+                ifasm+= f"{else_asm}"
+            ifasm += f"{endiflabel}:\n"
+            return ifasm
+            
+        elif isinstance(node,ASTutils.Conditional):
+            left_asm = self.generate_asm(node.left)
+            right_asm = self.generate_asm(node.right)
+            if node.operator == '>':
+                return f"{left_asm}\n{right_asm}\ncall {self.symboltable[node.identifier]}:less"
+            elif node.operator == '<':
+                return f"{right_asm}\n{left_asm}\ncall {self.symboltable[node.identifier]}:less"
+            elif node.operator == '==':
+                return f"{right_asm}\n{left_asm}\ncall {self.symboltable[node.identifier]}:equals"            
+            
         elif isinstance(node, ASTutils.Methods):
             asm = self.generate_asm(node.obj)
             if isinstance(node.obj, ASTutils.Constant):
                 nodekey = node.obj.value
             else:
                 nodekey = node.obj.name
+            if(node.args != None):
+                # uhh, do something with the args,
+                # probably something like load them I think...
+                # I don't think we need this for mini quack right now though
+                # since we're only doing <= >= == < > which aren't called like methods
+                # like print, which I think is the only "legitimate" method
+                pass
+            
             call = f"{asm}\ncall {self.symboltable[nodekey]}:{node.method}"
             
             if (node.method == "print"):
@@ -163,12 +255,13 @@ class ASTGenerator(Transformer):
             return f"const {node.value}"
         elif isinstance(node, ASTutils.Variable):
             return f"load {node.name}"
+        return ""
             
 # probably need to generate the asm file this time instead of just generating the code and printing it out
 def main():
     debug = open('debug', 'w', encoding="utf-8")
     file = False
-    asm = []
+    asm = ""
     transformer = ASTGenerator()
     calc_parser_ptree = Lark(calc_grammar, parser='lalr')
     calc_parser = Lark(calc_grammar, parser='lalr', transformer=transformer)
@@ -193,15 +286,9 @@ def main():
             # Open the file in read mode as a stream
             with open(path, 'r') as file_stream:
                 # Process the file stream (e.g., read lines, parse data)
-                for line in file_stream:
-                    # skip new lines
-                    if line != "\n":
-                        # get the ast
-                        ast = calc(line.strip())
-                        # infer types
-                        ast.infer(transformer.symboltable)
-                        # add it to the asm list
-                        asm.append(ast)
+                content = file_stream.read().replace("\n","")
+                tree = calc(content)
+                asm = transformer.generate_asm(tree)
   
         except FileNotFoundError:
             print("File not found:", path)
@@ -211,10 +298,7 @@ def main():
         main = open('Main.asm', 'w+', encoding="utf-8")
         print(f".class Main:Obj\n.method $constructor",file=main)
         print('.local',','.join(transformer.vars),file=main)
-        for i in range(len(asm)):
-            print(transformer.generate_asm(asm[i]),file=main)
-            if(transformer.print_ast(asm[i])!=None):
-                print(transformer.print_ast(asm[i]))
+        print(asm,file=main)
         print(f"return 0\n",file=main)
         # print(transformer.symboltable)
     else:

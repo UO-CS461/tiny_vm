@@ -1,15 +1,57 @@
 import os
+import lark.tree as t
 class ASTNode:
     def __init__(self):
         self.children = []
     def infer(self, symboltable):
         pass
 
-# this shouldn't be needed since quack doesn't have declarations but I'm leaving it here for now since its not really hurting anyone
-class Declaration(ASTNode):
-    def __init__(self, name):
-        self.name = name
+class Conditional(ASTNode):
+    def __init__(self, left, operator, right):
+        self.left = left
+        self.operator = operator
+        self.right = right
+        self.inferred_type = "OBJ"
+        self.identifier = f"{left}{operator}{right}"
+        
+    def infer(self, symboltable):
+        ltype = self.left.infer(symboltable)
+        rtype = self.right.infer(symboltable)
+        if ltype != rtype:
+            # same thing as binary ops, do lca
+            raise ValueError("Types of left and right expressions in conditional must match")
+        # for now if the two types match return a bool
+        symboltable[self.identifier] = ltype
+        self.inferred_type = "Bool"
+        return self.inferred_type
 
+class IfStatement(ASTNode):
+    def __init__(self, condition, body, elsebody=None):
+        self.condition = condition
+        self.elsebody = elsebody
+        self.body = body
+          
+    def infer(self, symboltable):
+        condition_type = self.condition.infer(symboltable)
+        if condition_type != "Bool":
+            raise ValueError("Condition expression in if statement must evaluate to boolean type")
+        # print(self.body)
+        # print(self.elsebody.children)
+        if isinstance(self.body, t.Tree):
+            for statement in self.body.children:
+                if isinstance(statement, ASTNode):
+                    statement.infer(symboltable)
+        elif isinstance(self.body, ASTNode):
+            self.body.infer(symboltable)
+
+        if isinstance(self.elsebody, t.Tree):
+            for statement in self.elsebody.children:
+                if isinstance(statement, ASTNode):
+                    statement.infer(symboltable)
+        elif isinstance(self.elsebody, ASTNode):
+            self.elsebody.infer(symboltable)
+        
+            
 class Assignment(ASTNode):
     def __init__(self, name, value, t_type="NULL"):
         self.inferred_type = None
@@ -24,10 +66,11 @@ class Assignment(ASTNode):
 
 class BinaryOperation(ASTNode):
     def __init__(self, left, operator, right):
-        # print(type(left))
+        # print(left)
         self.left = left
         self.operator = operator
         self.right = right
+        # kinda hacky 
         self.inferred_type = "OBJ"
         self.identifier = f"{left}{operator}{right}"
     def infer(self,symboltable):
@@ -73,10 +116,12 @@ class Constant(ASTNode):
         return "OBJ"
         
 class Methods(ASTNode):
-    def __init__(self, obj, method):
+    def __init__(self, obj, method, args=None):
         # print(obj)
         self.obj = obj
         self.method = method
+        self.args = args
+        
     def infer(self,symboltable):
         # should methods have types? the things they return should have a type if it isn't a method uhh for now pass maybe OBJ
         return symboltable.get(self.obj,"OBJ")

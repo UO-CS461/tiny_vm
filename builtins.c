@@ -317,6 +317,33 @@ vm_Word method_String_equals[] = {
         {.intval = 1}  // consume other
 };
 
+obj_ref native_String_less(void) {
+    obj_ref this = vm_fp->obj;
+    assert_is_type(this, the_class_String);
+    obj_String this_str = (obj_String)this;
+    obj_ref other = (vm_fp - 1)->obj;
+    assert_is_type(other, the_class_String);
+    obj_String other_str = (obj_String)other;
+
+    // Compare the strings lexicographically
+    int comparison = strcmp(this_str->text, other_str->text);
+
+    // If this string is less than the other, return true; otherwise, return false
+    if (comparison < 0) {
+        return lit_true;
+    } else {
+        return lit_false;
+    }
+}
+
+vm_Word method_String_less[] = {
+    {.instr = vm_op_enter},
+    {.instr = vm_op_call_native},
+    {.native = native_String_less},
+    {.instr = vm_op_return},
+    {.intval = 1}
+};
+
 obj_ref native_String_plus(void ) {
     log_debug("native call plus string");
     obj_ref this = vm_fp->obj;
@@ -357,6 +384,7 @@ struct  class_struct  the_class_String_struct = {
             method_String_string,
             method_String_print,
             method_String_equals,
+            method_String_less,
             method_String_plus
             }
 };

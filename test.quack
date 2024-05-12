@@ -1,3 +1,16 @@
+x = 3+3;
+z = (13+2)*4;
+thisisalongname = x*z;
+x.print();
 b = "Below this is nonsense";
-a = b + b;
-a.print();
+c = "t:Int = f*7; -> this will fail because f is not defined";
+"\nhello\n".print();
+
+if x < z {
+    "hello x is less than z\n".print();
+}else{
+    "hello x is not less than z\n".print();
+    if z > x {
+        "x is greater than z\n".print();
+    }
+}

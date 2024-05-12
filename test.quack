@@ -1,10 +1,5 @@
-x = 3+3;
-z = (13+2)*4;
-thisisalongname = x*z;
-x.print();
-b = "Below this is nonsense";
-c = "t:Int = f*7; -> this will fail because f is not defined";
-"\nhello\n".print();
+x = 2;
+z = 10;
 
 if x < z {
     "hello x is less than z\n".print();
@@ -14,3 +9,27 @@ if x < z {
         "x is greater than z\n".print();
     }
 }
+
+a = z;
+b = x;
+
+while x < z {
+    while a > b{
+        "inside of second while a:".print();
+        a.print();
+        "\n".print();
+        a = a - 1;
+    }
+    x = x + 1;
+    "x:".print();
+    x.print();
+    "\n".print();
+}
+
+x = "this should throw error\n";
+x.print();
+
+x = z+x;
+x.print();
+
+"\nthis really shouldn't happen".print();

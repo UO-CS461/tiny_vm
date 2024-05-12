@@ -15,6 +15,7 @@ calc_grammar = """
         | flow
     
     ?condition: value evaluator value -> conditional
+        | value
     
     ?evaluator: ">" -> gt
         | "<" -> lt
@@ -30,7 +31,7 @@ calc_grammar = """
         
     ?ifstmt: "if" condition "{" start* "}" elsestmt -> ifcall
     
-    ?elifstmt: "elif" condition "{" start* "}" -> elifcall
+    ?elifstmt: "elif" condition "{" start* "}" -> ifcall
     
     ?elsestmt: "else" "{" start* "}" -> elsecall
         | -> codeblock
@@ -80,6 +81,7 @@ class ASTGenerator(Transformer):
         self.symboltable = {}
         # this is really hacky and bad
         self.if_counter = 0
+        self.while_counter = 0
     
     def assign_var(self, name, value):
         self.vars.add(name)
@@ -107,7 +109,12 @@ class ASTGenerator(Transformer):
         node.infer(self.symboltable)
         return node
     
-    # OPERATORS
+    def whilecall(self,conditional, body):
+        node = ASTutils.WhileStatement(conditional,body)
+        node.infer(self.symboltable)
+        return node
+    
+    # Evaluators
     def gt(self):
         return ">"
     def lt(self):
@@ -208,6 +215,21 @@ class ASTGenerator(Transformer):
                 ifasm+= f"{else_asm}"
             ifasm += f"{endiflabel}:\n"
             return ifasm
+        
+        elif isinstance(node, ASTutils.WhileStatement):
+            while_asm = ""
+            condition_asm = self.generate_asm(node.condition)
+            body_asm = self.generate_asm(node.body)
+            whilelabel = f"while_{self.while_counter}"
+            endlabel = f"endwhile_{self.while_counter}"
+            self.while_counter += 1
+            while_asm += f"{whilelabel}:\n"
+            while_asm += f"{condition_asm}\n"
+            while_asm += f"jump_ifnot {endlabel}\n"
+            while_asm += f"{body_asm}\n"
+            while_asm += f"jump {whilelabel}\n"
+            while_asm += f"{endlabel}:\n"
+            return while_asm
             
         elif isinstance(node,ASTutils.Conditional):
             left_asm = self.generate_asm(node.left)
@@ -253,6 +275,7 @@ class ASTGenerator(Transformer):
             
         elif isinstance(node, ASTutils.Constant):
             return f"const {node.value}"
+        
         elif isinstance(node, ASTutils.Variable):
             return f"load {node.name}"
         return ""

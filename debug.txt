@@ -1,2 +1,53 @@
-Found test.quack at:/home/aotae/tiny_vm/test.quack
-{Token('NUMBER', '3'): 'Int', '<ASTutils.Constant object at 0x7f5a288ea0a0>+<ASTutils.Constant object at 0x7f5a288ea850>': 'Int', Token('NAME', 'x'): 'Int', Token('NUMBER', '13'): 'Int', Token('NUMBER', '2'): 'Int', '<ASTutils.Constant object at 0x7f5a28844670>+<ASTutils.Constant object at 0x7f5a28844850>': 'Int', Token('NUMBER', '4'): 'Int', '<ASTutils.BinaryOperation object at 0x7f5a28844820>*<ASTutils.Constant object at 0x7f5a28844700>': 'Int', Token('NAME', 'z'): 'Int', '<ASTutils.Variable object at 0x7f5a28844250>*<ASTutils.Variable object at 0x7f5a288390a0>': 'Int', Token('NAME', 'thisisalongname'): 'Int', Token('STRING', '"Below this is nonsense"'): 'String', Token('NAME', 'b'): 'String', Token('STRING', '"t:Int = f*7; -> this will fail because f is not defined"'): 'String', Token('NAME', 'c'): 'String', Token('STRING', '"hello\\n"'): 'String', '<ASTutils.Variable object at 0x7f5a288392b0><<ASTutils.Variable object at 0x7f5a28839a00>': 'String', '<ASTutils.Variable object at 0x7f5a288390d0><<ASTutils.Variable object at 0x7f5a288398e0>': 'Int'}
+Found test.quack at:
+/home/aotae/tiny_vm/test.quack
+{Token('NUMBER', '3'):'Int', 
+'<ASTutils.Constant object at 0x7f3d81fb7ee0>+<ASTutils.Constant object at 0x7f3d81f1a100>':
+ 'Int', 
+ 
+ Token('NAME', 'x'):
+ 'Int', 
+
+ Token('NUMBER', '13'):
+ 'Int', 
+
+ Token('NUMBER', '2'):
+ 'Int', 
+
+ '<ASTutils.Constant object at 0x7f3d81f46e20>+<ASTutils.Constant object at 0x7f3d81f46d00>':
+ 'Int', 
+ 
+ Token('NUMBER', '4'):
+ 'Int', 
+
+ '<ASTutils.BinaryOperation object at 0x7f3d81f46be0>*<ASTutils.Constant object at 0x7f3d81f46b20>':
+ 'Int', 
+
+ Token('NAME', 'z'):
+ 'Int', 
+
+ '<ASTutils.Variable object at 0x7f3d81f46c10>*<ASTutils.Variable object at 0x7f3d81f46a00>':
+ 'Int', 
+
+ Token('NAME', 'thisisalongname'):
+ 'Int', 
+
+ Token('STRING', '"Below this is nonsense"'):
+ 'String', 
+
+ Token('NAME', 'b'):
+ 'String', 
+
+ Token('STRING', '"t:Int = f*7; -> this will fail because f is not defined"'):
+ 'String', 
+
+ Token('NAME', 'c'):
+ 'String', 
+
+ Token('STRING', '"hello\\n"'):
+ 'String', 
+
+ '<ASTutils.Variable object at 0x7f3d81f83700><<ASTutils.Variable object at 0x7f3d81f83a90>':
+ 'String', 
+
+ '<ASTutils.Variable object at 0x7f3d81f8cdf0><<ASTutils.Variable object at 0x7f3d81f8cb80>':
+ 'Int'}

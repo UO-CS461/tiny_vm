@@ -11,7 +11,7 @@ class Conditional(ASTNode):
         self.left = left
         self.operator = operator
         self.right = right
-        self.inferred_type = "OBJ"
+        self.inferred_type = "Obj"
         self.identifier = f"{left}{operator}{right}"
         
     def infer(self, symboltable):
@@ -51,7 +51,24 @@ class IfStatement(ASTNode):
         elif isinstance(self.elsebody, ASTNode):
             self.elsebody.infer(symboltable)
         
-            
+class WhileStatement(ASTNode):
+    def __init__(self, condition, body):
+        self.condition = condition
+        self.body = body
+
+    def infer(self, symboltable):
+        condition_type = self.condition.infer(symboltable)
+        if condition_type != "Bool":
+            raise ValueError("Condition expression in while loop must evaluate to boolean type")
+        
+        if isinstance(self.body, t.Tree):
+            for statement in self.body.children:
+                if isinstance(statement, ASTNode):
+                    statement.infer(symboltable)
+                    
+        elif isinstance(self.body, ASTNode):
+            self.body.infer(symboltable)
+                     
 class Assignment(ASTNode):
     def __init__(self, name, value, t_type="NULL"):
         self.inferred_type = None
@@ -60,10 +77,21 @@ class Assignment(ASTNode):
     def infer(self, symboltable):
         # print(self.value)
         self.inferred_type = self.value.infer(symboltable)
+        # check if name is alreadyin table
+        if self.name in symboltable:
+            # do LCA
+            existing_type = symboltable[self.name]
+            # print("existing type:",existing_type)
+            if (existing_type != self.inferred_type):
+                # for now just assume LCA is Obj since thats really the only ancestor for all types right now
+                print("we got here")
+                self.inferred_type = "Obj"
+                                 
         symboltable[self.name] = self.inferred_type
+        # print("final type:",self.inferred_type)
+        # print("symbol table var value:", symboltable[self.name])
         return self.inferred_type
         
-
 class BinaryOperation(ASTNode):
     def __init__(self, left, operator, right):
         # print(left)
@@ -71,7 +99,7 @@ class BinaryOperation(ASTNode):
         self.operator = operator
         self.right = right
         # kinda hacky 
-        self.inferred_type = "OBJ"
+        self.inferred_type = "Obj"
         self.identifier = f"{left}{operator}{right}"
     def infer(self,symboltable):
         ltype = self.left.infer(symboltable)
@@ -81,7 +109,7 @@ class BinaryOperation(ASTNode):
             symboltable[self.identifier] = ltype
             self.inferred_type = ltype
         else:
-            # do LCA... uh for now just return OBJ I guess.. the most common ancestor?
+            # do LCA... uh for now just return Obj I guess.. the most common ancestor?
             symboltable[self.identifier] = self.inferred_type
             return self.inferred_type
         
@@ -92,8 +120,8 @@ class Variable(ASTNode):
         self.name = name
         self.inferred_type = None
     def infer(self,symboltable):
-        # get the type from the symbol table, if dne return OBJ
-        self.inferred_type = symboltable.get(self.name,'OBJ')
+        # get the type from the symbol table, if dne return Obj
+        self.inferred_type = symboltable.get(self.name,'Obj')
         return self.inferred_type
         
 class Constant(ASTNode):
@@ -112,8 +140,8 @@ class Constant(ASTNode):
             self.inferred_type = "Int"
             symboltable[self.value] = self.inferred_type
             return "Int"
-        symboltable[self.value] = "OBJ"
-        return "OBJ"
+        symboltable[self.value] = "Obj"
+        return "Obj"
         
 class Methods(ASTNode):
     def __init__(self, obj, method, args=None):
@@ -123,8 +151,8 @@ class Methods(ASTNode):
         self.args = args
         
     def infer(self,symboltable):
-        # should methods have types? the things they return should have a type if it isn't a method uhh for now pass maybe OBJ
-        return symboltable.get(self.obj,"OBJ")
+        # should methods have types? the things they return should have a type if it isn't a method uhh for now pass maybe Obj
+        return symboltable.get(self.obj,"Obj")
         
 
 def find_file(start_dir, target_file):

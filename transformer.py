@@ -3,6 +3,7 @@ import lark.tree as t
 import sys
 import os
 import ASTutils
+import staticsemantics as ss
 # From Lark Example calculator Grammar
 
 calc_grammar = """
@@ -15,8 +16,8 @@ calc_grammar = """
         | flow
     
     ?condition: value evaluator value -> conditional
-        | value
-    
+        | value -> boolean
+
     ?evaluator: ">" -> gt
         | "<" -> lt
         | "==" -> equals
@@ -45,7 +46,9 @@ calc_grammar = """
     argument_list: value ("," value)*
     
     ?value: sum
-    
+        | TRUE -> tf
+        | FALSE -> tf
+        
     ?sum: product
         | sum "+" product   -> add
         | sum "-" product   -> sub
@@ -55,17 +58,12 @@ calc_grammar = """
         | product "/" atom  -> div
 
     ?atom: NUMBER           -> number
+         | STRING -> string
          | NAME             -> var
          | "(" sum ")"
-         | STRING -> string
-
-    TYPE: "Int" 
-         | "String"
-         | "OBJ"
-         | "Bool"
-         
+    TRUE: "true"
+    FALSE: "false"
     STRING: /"[^"]*"/
-    
     %import common.CNAME -> NAME
     %import common.NUMBER
     %import common.WS_INLINE
@@ -114,7 +112,8 @@ class ASTGenerator(Transformer):
         node.infer(self.symboltable)
         return node
     
-    # Evaluators
+    # EVALUATORS
+    
     def gt(self):
         return ">"
     def lt(self):
@@ -124,6 +123,13 @@ class ASTGenerator(Transformer):
     def nequals(self):
         return "!="
     
+    # BIN OPS
+    
+    def boolean(self, value):
+        node = ASTutils.SoloCond(value)
+        node.infer(self.symboltable)
+        return node
+        
     def add(self, left, right):
         node = ASTutils.BinaryOperation(left, '+', right)
         node.infer(self.symboltable)
@@ -144,6 +150,8 @@ class ASTGenerator(Transformer):
         node.infer(self.symboltable)
         return node
 
+    # TERMINALS
+    
     def number(self, value):
         node = ASTutils.Constant(value)
         node.infer(self.symboltable)
@@ -154,18 +162,26 @@ class ASTGenerator(Transformer):
         node.infer(self.symboltable)
         return node
 
+    def tf(self, value):
+        node = ASTutils.Constant(value)
+        node.infer(self.symboltable)
+        return node
+    
     def var(self, name):
         node = ASTutils.Variable(name)
         node.infer(self.symboltable)
         return node
     
+    # VISITORS
+    
     def print_ast(self, node=None, indent=0):
         if node is None:
             return
-
-        if isinstance(node, ASTutils.Declaration):
-            print(' ' * indent, 'Declaration:', node.name, node.t_type)
-        elif isinstance(node, ASTutils.Assignment):
+        
+        if isinstance(node,t.Tree):
+            for statement in node.children:
+                self.print_ast(statement)
+        if isinstance(node, ASTutils.Assignment):
             print(' ' * indent, 'Assignment:', node.name)
             self.print_ast(node.value, indent + 4)
         elif isinstance(node, ASTutils.BinaryOperation):
@@ -179,11 +195,36 @@ class ASTGenerator(Transformer):
         elif isinstance(node, ASTutils.Methods):
             print(' ' * indent, 'Method Call:', node.method)
             self.print_ast(node.obj, indent + 4)
-            if(node.args != None):
+            if node.args is not None:
                 for arg in node.args:
                     self.print_ast(arg, indent + 8)
-        # print(self.symboltable)
+        elif isinstance(node, ASTutils.IfStatement):
+            print(' ' * indent, 'If Statement:')
+            self.print_ast(node.condition, indent + 4)
+            self.print_ast(node.body, indent + 4)
+            if node.elsebody is not None:
+                print(' ' * indent, 'Else:')
+                self.print_ast(node.elsebody, indent + 4)
+        elif isinstance(node, ASTutils.WhileStatement):
+            print(' ' * indent, 'While Loop:')
+            self.print_ast(node.condition, indent + 4)
+            self.print_ast(node.body, indent + 4)
+        elif isinstance(node, ASTutils.Conditional):
+            print(' ' * indent, 'Conditional:')
+            self.print_ast(node.left, indent + 4)
+            print(' ' * (indent + 4), 'Operator:', node.operator)
+            self.print_ast(node.right, indent + 4)
+        elif isinstance(node, ASTutils.SoloCond):
+            print(' ' * indent, 'Solo Conditional:')
+            self.print_ast(node.value, indent + 4)
 
+    def typecheck(self, checker, node=None ):
+        if node is None:
+            return ''
+        if isinstance(node,t.Tree):
+            for statement in node.children:
+                checker(statement)
+            
     def generate_asm(self, node=None):
         if node is None:
             return ''
@@ -240,7 +281,10 @@ class ASTGenerator(Transformer):
                 return f"{right_asm}\n{left_asm}\ncall {self.symboltable[node.identifier]}:less"
             elif node.operator == '==':
                 return f"{right_asm}\n{left_asm}\ncall {self.symboltable[node.identifier]}:equals"            
-            
+        elif isinstance(node,ASTutils.SoloCond):
+            s_cond_asm = self.generate_asm(node.value)
+            return f"{s_cond_asm}"
+                   
         elif isinstance(node, ASTutils.Methods):
             asm = self.generate_asm(node.obj)
             if isinstance(node.obj, ASTutils.Constant):
@@ -280,7 +324,7 @@ class ASTGenerator(Transformer):
             return f"load {node.name}"
         return ""
             
-# probably need to generate the asm file this time instead of just generating the code and printing it out
+
 def main():
     debug = open('debug', 'w', encoding="utf-8")
     file = False
@@ -311,6 +355,10 @@ def main():
                 # Process the file stream (e.g., read lines, parse data)
                 content = file_stream.read().replace("\n","")
                 tree = calc(content)
+                checker = ss.Checker(transformer.symboltable)
+                # print(tree.pretty("     "))
+                # transformer.print_ast(tree)
+                transformer.typecheck(checker.check,tree)
                 asm = transformer.generate_asm(tree)
   
         except FileNotFoundError:

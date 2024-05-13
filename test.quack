@@ -1,7 +1,7 @@
 x = 2;
 z = 10;
-
-if x < z {
+y = true;
+if y {
     "hello x is less than z\n".print();
 }else{
     "hello x is not less than z\n".print();
@@ -13,23 +13,3 @@ if x < z {
 a = z;
 b = x;
 
-while x < z {
-    while a > b{
-        "inside of second while a:".print();
-        a.print();
-        "\n".print();
-        a = a - 1;
-    }
-    x = x + 1;
-    "x:".print();
-    x.print();
-    "\n".print();
-}
-
-x = "this should throw error\n";
-x.print();
-
-x = z+x;
-x.print();
-
-"\nthis really shouldn't happen".print();

@@ -19,10 +19,12 @@ class Conditional(ASTNode):
         rtype = self.right.infer(symboltable)
         if ltype != rtype:
             # same thing as binary ops, do lca
-            raise ValueError("Types of left and right expressions in conditional must match")
+            self.inferred_type = "Obj"
+            symboltable[self.identifier] = self.inferred_type
+        else:
+            self.inferred_type = "Bool"
+            symboltable[self.identifier] = ltype
         # for now if the two types match return a bool
-        symboltable[self.identifier] = ltype
-        self.inferred_type = "Bool"
         return self.inferred_type
 
 class IfStatement(ASTNode):
@@ -33,8 +35,6 @@ class IfStatement(ASTNode):
           
     def infer(self, symboltable):
         condition_type = self.condition.infer(symboltable)
-        if condition_type != "Bool":
-            raise ValueError("Condition expression in if statement must evaluate to boolean type")
         # print(self.body)
         # print(self.elsebody.children)
         if isinstance(self.body, t.Tree):
@@ -84,7 +84,7 @@ class Assignment(ASTNode):
             # print("existing type:",existing_type)
             if (existing_type != self.inferred_type):
                 # for now just assume LCA is Obj since thats really the only ancestor for all types right now
-                print("we got here")
+                # print("we got here")
                 self.inferred_type = "Obj"
                                  
         symboltable[self.name] = self.inferred_type
@@ -136,13 +136,26 @@ class Constant(ASTNode):
             self.inferred_type = "String"
             symboltable[self.value] = self.inferred_type
             return "String"
+        elif(self.value == "true" or self.value == "false"):
+            self.inferred_type = "Bool"
+            symboltable[self.value] = self.inferred_type
+            return "Bool"
         else:
             self.inferred_type = "Int"
             symboltable[self.value] = self.inferred_type
             return "Int"
         symboltable[self.value] = "Obj"
         return "Obj"
-        
+
+class SoloCond(ASTNode):
+    def __init__(self, value):
+        self.value = value
+        self.inferred_type = None
+    def infer(self,symboltable):
+        self.inferred_type = self.value.infer(symboltable)
+        return self.inferred_type
+            
+            
 class Methods(ASTNode):
     def __init__(self, obj, method, args=None):
         # print(obj)
@@ -151,10 +164,10 @@ class Methods(ASTNode):
         self.args = args
         
     def infer(self,symboltable):
-        # should methods have types? the things they return should have a type if it isn't a method uhh for now pass maybe Obj
+        # should methods have types? the things they return should have a type if it isn't a method 
+        # uhh for now pass the variable type and if the var is not in the table we have other problems
         return symboltable.get(self.obj,"Obj")
         
-
 def find_file(start_dir, target_file):
     # Iterate over all files and directories in the start directory
     for root, dirs, files in os.walk(start_dir):
